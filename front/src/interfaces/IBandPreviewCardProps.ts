@@ -1,4 +1,4 @@
-export default interface IBandPreviewProps {
+export default interface IBandPreviewCardProps {
   name: string,
   image: string,
   location: string,
