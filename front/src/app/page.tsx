@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
-export default function Landing() {
+export default function LandingPage() {
   return (
     <main>
       <div className="flex flex-col justify-center text-center w-[70%] mx-auto my-24 gap-1.5">
@@ -14,14 +14,14 @@ export default function Landing() {
         <div className="flex flex-row gap-2 justify-around mx-auto mt-8 w-[40%]">
           <Link
           className="bg-tur1 py-1.5 px-4 rounded-md text-azul text-lg font-sans shadow-xl transition duration-300  hover:bg-tur2 hover:text-oscuro2 hover:-translate-y-0.5 hover:cursor-pointer"
-          href={"/"}
-          > {/* href Vacantes */}
+          href={"/quotesPreview"}
+          >
           Soy artista
           </Link>
           <Link
           className="py-1.5 rounded-md px-4 text-tur3 text-lg font-sans border-fondo1 transition duration-400 hover:bg-tur3 hover:border-verde hover:text-azul hover:-translate-y-0.5 hover:cursor-pointer"
-          href={"/"}
-          > {/* href Artistas */}
+          href={"/artistsPreview"}
+          >
           Busco artista
           </Link>
         </div>
