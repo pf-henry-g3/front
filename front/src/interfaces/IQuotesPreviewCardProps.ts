@@ -1,5 +1,5 @@
 export default interface IQuotesPreviewCardProps {
-  evente: string,
+  event: string,
   name: string,
   //image: string,
   date: Date,

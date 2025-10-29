@@ -39,7 +39,7 @@ export default function HorizontalScroller({
       <button
         onClick={() => scrollOne("left")}
         aria-label="Scroll left"
-        className="hidden md:flex items-center justify-center absolute left-0 top-1/2 -translate-y-1/2 h-10 w-10 text-oscuro2 bg-tur3 rounded-full shadow-md hover:cursor-pointer hover:text-oscuro1 hover:bg-tur1 transition"
+        className="hidden md:flex items-center justify-center absolute left-0 top-1/2 -translate-y-1/2 h-10 w-10 text-oscuro2 bg-tur3 rounded-full shadow-md hover:cursor-pointer hover:text-oscuro1 hover:bg-tur1 transition hover:-translate-x-0.5 duration-100"
         >
         ‹
       </button>
@@ -48,7 +48,7 @@ export default function HorizontalScroller({
       <button
         onClick={() => scrollOne("right")}
         aria-label="Scroll right"
-        className="hidden md:flex items-center justify-center absolute right-0 top-1/2 -translate-y-1/2 h-10 w-10 text-oscuro2 bg-tur3 rounded-full shadow-md hover:cursor-pointer hover:text-oscuro1 hover:bg-tur1"
+        className="hidden md:flex items-center justify-center absolute right-0 top-1/2 -translate-y-1/2 h-10 w-10 text-oscuro2 bg-tur3 rounded-full shadow-md hover:cursor-pointer hover:text-oscuro1 hover:bg-tur1 hover:translate-x-0.5 duration-100"
       >
         ›
       </button>

@@ -12,8 +12,9 @@ export default function QuotesPreviewPage() {
   const quotes: IProduct[] = mockData;
 
   return (
-    <div className="mt-32 gap-16">
-      <div className="w-[67%] mx-auto bg-oscuro2 rounded-4xl shadow-xl py-1.5 px-2">
+    <div className="mt-32">
+      <h1 className="text-txt1 font-bold text-center text-3xl text-shadow-md mb-4">Algunas de nuestras bandas registradas...</h1>
+      <div className="w-[75%] mx-auto mb-16 rounded-4xl py-1.5 px-2">
         <HorizontalScroller>
           {bands.map((band) => (
             <Link
@@ -31,8 +32,8 @@ export default function QuotesPreviewPage() {
           ))}
         </HorizontalScroller>
       </div>
-
-      <div className="w-[67%] mx-auto mt-8">
+    <h1 className="text-txt1 font-bold text-center text-3xl text-shadow-md mb-4">¡Participa en eventos creados por las mismas bandas!</h1>
+      <div className="w-[75%] mx-auto rounded-4xl py-1.5 px-2">
         <HorizontalScroller>
           {quotes.map((quote) => (
             <Link
