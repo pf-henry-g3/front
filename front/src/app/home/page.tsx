@@ -7,7 +7,7 @@ export default function HomePage () {
   
     return (
         <div className="pt-20 pb-20 px-4">
-            <h1 className="text-amber-200 text-center text-3xl mb-8">Búsqueda de Productos</h1>
+            <h1 className="text-txt1 text-3xl font-bold text-center">Búsqueda de Bandas</h1>
 
            <Filterproduct />
         </div>
