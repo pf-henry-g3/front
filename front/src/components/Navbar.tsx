@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AuthButtons from "./AuthButtons";
 
 export default function NavBar () {
 
@@ -26,13 +27,27 @@ export default function NavBar () {
 
             </Link>
 
-            <Link href="/dashboard">
+            
 
-            <div className="flex items-center justify-center"> <span className="text-center">Dashboard</span></div>
-
+            <Link href="/artistsPreview" className="text-sm text-txt1 hover:text-tur2 transition">
+            Artistas
             </Link>
-
+            
+            <Link href="/quotesPreview" className="text-sm text-txt1 hover:text-tur2 transition">
+            Vacantes
+            
+            </Link>
+            
+            <Link href="/myBands" className="text-sm text-txt1 hover:text-tur2 transition">
+            Mis Bandas
+          </Link>
             </span>
+
+            <div className="absolute right-6 md:right-12 lg:right-24">
+
+            <AuthButtons />
+
+            </div>
 
   
 
