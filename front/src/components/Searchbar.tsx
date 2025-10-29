@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
 import { useState, ChangeEvent, FormEvent } from "react";
 
 interface SearchbarProps {
-  onSearch?: (query: string) => void;
-  placeholder?: string;
+  onSearch: (query: string) => void;
+  placeholder: string;
 }
 
 export default function Searchbar ({ onSearch, placeholder = "Buscar..."}: SearchbarProps) {
@@ -58,7 +58,7 @@ export default function Searchbar ({ onSearch, placeholder = "Buscar..."}: Searc
       </div>
       <button 
         type="submit"
-        className="px-6 py-3 bg-blue-500 text-white border-none rounded-full cursor-pointer text-base transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        className="ppy-1.5 rounded-md px-4 text-tur3 text-lg font-sans border-fondo1 transition duration-400 hover:bg-tur3 hover:border-verde hover:text-azul hover:-translate-y-0.5 hover:cursor-pointer"
       >
         Buscar
       </button>

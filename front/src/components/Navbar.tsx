@@ -10,7 +10,7 @@ export default function NavBar () {
 
                 <Link href="/">
 
-                <div className="flex items-center justify-center"> <span className="text-center">Sincro</span></div>    
+                <div className="flex items-center justify-center"> <span className="text-txt1 text-3xl font-bold text-center">SINCRO</span></div>    
                 
                 </Link>
 
