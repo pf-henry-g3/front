@@ -1,7 +1,7 @@
 import { IProduct } from "@/src/interfaces/IProduct";
 import { mockData } from "@/src/mocks/Product";
 import { bandMockData } from "@/src/mocks/BandMock";
-import IBand from "@/src/interfaces/IBand";
+import { IBand } from "@/src/interfaces/IBand";
 import Link from "next/link";
 import BandsPreviewCard from "@/src/components/BandsPreviewCard";
 import QuotesPreviewCard from "@/src/components/quotesPreviewCard";
