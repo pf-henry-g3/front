@@ -24,9 +24,7 @@ export default function QuotesPreviewPage() {
             >
               <BandsPreviewCard
                 name={band.name}
-                image={band.image}
-                location={band.location}
-                val={band.val}
+                image={band.bandImage}
               />
             </Link>
           ))}

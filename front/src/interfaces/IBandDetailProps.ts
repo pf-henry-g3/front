@@ -1,6 +1,4 @@
-export default interface IBand {
-  id: number, // {PK}
-  leaderId: string, // {FK}
+export default interface IBandDetailProps {
   name: string,
   bandDescription: string,
   formationDate: Date,
