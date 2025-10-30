@@ -1,8 +1,9 @@
-export default interface IBand {
+export interface IBand {
   id: number, // {PK}
   leaderId: string, // {FK}
   name: string,
   bandDescription: string,
-  formationDate: Date,
+  category: string,
+  formationDate: string,
   bandImage: string,
 }

@@ -53,7 +53,7 @@ export default function LoginForm() {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.email}
-            className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 ${
+            className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
               formik.touched.email && formik.errors.email
                 ? "border-red-500 bg-red-50"
                 : "border-fondo1 bg-white focus:border-tur3"
@@ -67,7 +67,7 @@ export default function LoginForm() {
 
         {/* Campo Password */}
         <div className="text-left">
-          <label htmlFor="password" className="block color-grey-500 text-lg font-semibold mb-2">
+          <label htmlFor="password" className="block text-txt1 text-lg font-semibold mb-2">
             Contraseña
           </label>
           <input
@@ -77,7 +77,7 @@ export default function LoginForm() {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.password}
-            className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 ${
+            className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
               formik.touched.password && formik.errors.password
                 ? "border-red-500 bg-red-50"
                 : "border-fondo1 bg-white focus:border-tur3"

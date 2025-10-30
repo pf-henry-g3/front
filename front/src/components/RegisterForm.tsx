@@ -78,7 +78,7 @@ export default function RegisterForm() {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.name}
-              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 ${
+              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
                 formik.touched.name && formik.errors.name
                   ? "border-red-500 bg-red-50"
                   : "border-fondo1 bg-white focus:border-tur3"
@@ -102,7 +102,7 @@ export default function RegisterForm() {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.email}
-              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 ${
+              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
                 formik.touched.email && formik.errors.email
                   ? "border-red-500 bg-red-50"
                   : "border-fondo1 bg-white focus:border-tur3"
@@ -129,7 +129,7 @@ export default function RegisterForm() {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.password}
-              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 ${
+              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
                 formik.touched.password && formik.errors.password
                   ? "border-red-500 bg-red-50"
                   : "border-fondo1 bg-white focus:border-tur3"
@@ -137,13 +137,13 @@ export default function RegisterForm() {
               placeholder="••••••••"
             />
             {formik.touched.password && formik.errors.password && (
-              <p className="mt-2 text-sm text-white-600 font-medium">{formik.errors.password}</p>
+              <p className="mt-2 text-sm text-red-700 font-medium">{formik.errors.password}</p>
             )}
           </div>
 
           {/* Campo Confirmar Password */}
           <div className="text-left">
-            <label htmlFor="confirmPassword" className="block text-txt1 text-lg font-semibold mb-2">
+            <label htmlFor="confirmPassword" className="block  text-txt1 text-lg font-semibold mb-2">
               Confirmar Contraseña
             </label>
             <input
@@ -153,7 +153,7 @@ export default function RegisterForm() {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.confirmPassword}
-              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 ${
+              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
                 formik.touched.confirmPassword && formik.errors.confirmPassword
                   ? "border-red-500 bg-red-50"
                   : "border-fondo1 bg-white focus:border-tur3"
@@ -179,7 +179,7 @@ export default function RegisterForm() {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.instrument}
-              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 ${
+              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 text-gray-800 ${
                 formik.touched.instrument && formik.errors.instrument
                   ? "border-red-500 bg-red-50"
                   : "border-fondo1 bg-white focus:border-tur3"
@@ -212,7 +212,7 @@ export default function RegisterForm() {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.genre}
-              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 ${
+              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 text-gray-800 ${
                 formik.touched.genre && formik.errors.genre
                   ? "border-red-500 bg-red-50"
                   : "border-fondo1 bg-white focus:border-tur3"
@@ -245,7 +245,7 @@ export default function RegisterForm() {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.experience}
-              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 ${
+              className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 text-gray-800 ${
                 formik.touched.experience && formik.errors.experience
                   ? "border-red-500 bg-red-50"
                   : "border-fondo1 bg-white focus:border-tur3"

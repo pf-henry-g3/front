@@ -1,6 +1,6 @@
 export default interface IBandDetailProps {
   name: string,
   bandDescription: string,
-  formationDate: Date,
+  formationDate: string,
   bandImage: string,
 }
