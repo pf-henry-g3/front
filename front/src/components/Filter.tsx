@@ -27,7 +27,7 @@ export default function FilterProduct () {
         };
     
         return (
-                <div className="pt-20 pb-20 px-4">
+                <div className="py-10 px-4">
                     <div className="max-w-4xl mx-auto">
                         <Searchbar 
                             onSearch={handleSearch}
