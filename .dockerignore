@@ -1,7 +1,7 @@
-node_modules
-.next
-out
-dist
+front/node_modules
+front/.next
+front/out
+front/dist
 
 .git
 .gitignore
