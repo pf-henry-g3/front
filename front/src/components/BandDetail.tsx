@@ -2,6 +2,8 @@
 import IBandDetailProps from "../interfaces/IBandDetailProps"
 
 export default function BandDetail ({ name, bandImage, bandDescription, formationDate }:IBandDetailProps) {
+  const formattedDate = formationDate instanceof Date ? formationDate.toLocaleDateString() : String(formationDate);
+
   return (
     <div className="flex flex-col w-[35%] p-8 shadow-xl bg-azul rounded-xl">
       <div className="flex flex-row">
@@ -12,7 +14,7 @@ export default function BandDetail ({ name, bandImage, bandDescription, formatio
         />
         <div className="flex flex-col px-4">
           <h1 className="text-txt1 font-bold text-3xl"> {name}</h1>
-          <h3 className="text-txt2 font-light text-xl">{formationDate}</h3>
+          <h3 className="text-txt2 font-light text-xl">{formattedDate}</h3>
           <p className="text-txt1 font-medium text-lg">{bandDescription}</p>
         </div>
       </div>
