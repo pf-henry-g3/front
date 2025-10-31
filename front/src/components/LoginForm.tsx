@@ -36,9 +36,10 @@ export default function LoginForm() {
   });
 
   return (
-    <div className="flex flex-col justify-center text-center w-[70%] max-w-md mx-auto my-16 gap-6 p-8 bg-white/20 backdrop-blur-md border border-white/30 rounded-lg shadow-xl">
-      <h2 className="text-txt1 text-3xl font-bold mb-4">Iniciar Sesión</h2>
-      <p className="text-txt2 text-md mb-6">Conecta con otros artistas y descubre nuevas oportunidades</p>
+    <div className="flex flex-col justify-center items-center min-h-screen py-8 px-4">
+      <div className="w-full max-w-md bg-white/20 backdrop-blur-md border border-white/30 rounded-lg shadow-xl p-8 text-center">
+        <h2 className="text-txt1 text-3xl font-bold mb-4">Iniciar Sesión</h2>
+        <p className="text-txt2 text-md mb-6">Conecta con otros artistas y descubre nuevas oportunidades</p>
       
       <form onSubmit={formik.handleSubmit} className="space-y-6">
         {/* Campo Email */}
@@ -61,7 +62,7 @@ export default function LoginForm() {
             placeholder="tu@email.com"
           />
           {formik.touched.email && formik.errors.email && (
-            <p className="mt-2 text-sm text-red-600 font-medium">{formik.errors.email}</p>
+            <p className="mt-2 text-sm text-white-600 font-medium">{formik.errors.email}</p>
           )}
         </div>
 
@@ -85,7 +86,7 @@ export default function LoginForm() {
             placeholder="••••••••"
           />
           {formik.touched.password && formik.errors.password && (
-            <p className="mt-2 text-sm text-red-600 font-medium">{formik.errors.password}</p>
+            <p className="mt-2 text-sm text-white-600 font-medium">{formik.errors.password}</p>
           )}
         </div>
 
@@ -127,9 +128,10 @@ export default function LoginForm() {
         </p>
       </div>
 
-      {/* Decorative element */}
-      <div className="mt-6">
-        <h2 className="text-tur2 text-2xl font-semibold">♫</h2>
+        {/* Decorative element */}
+        <div className="mt-6">
+          <h2 className="text-tur2 text-2xl font-semibold">♫</h2>
+        </div>
       </div>
     </div>
   );
