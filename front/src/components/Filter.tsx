@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react";
-import { mockData } from "../mocks/Product";
+import { mockData } from "../mocks/EventMock";
 import Searchbar from "./Searchbar";
 import { bandMockData } from "../mocks/BandMock";
 import { IBand } from "../interfaces/IBand";

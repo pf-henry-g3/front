@@ -8,9 +8,9 @@ export default function BandsPreviewCard ({ name, image, }: IBandPreviewCardProp
       <img
         src={image}
         alt={name}
-        className="rounded-t-md"
+        className="rounded-t-md h-48"
       />
-      <h1 className="text-txt1 font-bold text-2xl text-shadow-md pl-2">{name}</h1>
+      <h1 className="text-txt1 font-bold text-2xl text-shadow-md pb-1 pl-2">{name}</h1>
     </div>
   );
 }

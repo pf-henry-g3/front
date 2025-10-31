@@ -14,7 +14,7 @@ export default function LandingPage() {
         <div className="flex flex-row gap-2 justify-around mx-auto mt-8 w-[40%]">
           <Link
           className="bg-tur1 py-1.5 px-4 rounded-md text-azul text-lg font-sans shadow-xl transition duration-300  hover:bg-tur2 hover:text-oscuro2 hover:-translate-y-0.5 hover:cursor-pointer"
-          href={"/quotesPreview"}
+          href={"/vacancyPreview"}
           >
           Soy artista
           </Link>

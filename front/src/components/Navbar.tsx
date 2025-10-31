@@ -21,9 +21,9 @@ export default function NavBar () {
 
             <span className='flex items-center justify-center space-x-8'>
 
-            <Link href="/home">
+            <Link href="/home ">
 
-            <div className="flex items-center justify-center"> <span className="text-center">Home</span></div>
+            <div className="flex items-center justify-center"> <span className="text-sm text-txt1 hover:text-tur2 transition">Home</span></div>
 
             </Link>
 
@@ -33,7 +33,7 @@ export default function NavBar () {
             Artistas
             </Link>
             
-            <Link href="/quotesPreview" className="text-sm text-txt1 hover:text-tur2 transition">
+            <Link href="/vacancyPreview" className="text-sm text-txt1 hover:text-tur2 transition">
             Vacantes
             
             </Link>

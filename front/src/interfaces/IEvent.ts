@@ -1,4 +1,4 @@
-export interface IProduct {
+export interface IEvent {
         id: number, 
         name: string, 
         category: string, 
@@ -6,4 +6,5 @@ export interface IProduct {
         date: Date,
         location: string,
         description: string
+        image: string,
 }
