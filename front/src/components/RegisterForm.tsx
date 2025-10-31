@@ -244,7 +244,7 @@ export default function RegisterForm() {
               href="/login"
               className="text-tur3 text-sm font-sans transition duration-400 hover:text-tur2 hover:cursor-pointer underline"
             >
-              Inicia sesión aquí
+              Inicia sesión aquí.
             </a>
           </p>
         </div>
