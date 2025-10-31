@@ -141,7 +141,7 @@ export default function RegisterForm() {
               <p className="mt-2 text-sm text-white-700 font-medium">{formik.errors.password}</p>
             )}
           </div>
-
+         </div>
             {/* Campo Confirmar Password */}
             <div className="text-left flex-1">
               <label htmlFor="confirmPassword" className="block text-txt1 text-sm font-semibold mb-1">
