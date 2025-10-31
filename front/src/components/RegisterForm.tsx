@@ -56,7 +56,7 @@ export default function RegisterForm() {
   });
 
   return (
-    <div className="flex flex-col justify-center items-center py-20 px-4">
+    <div className="flex flex-col justify-center items-center  py-20 px-4">
       <div className="w-full bg-white/20 backdrop-blur-md border border-white/30 rounded-lg shadow-xl p-6 text-center">
         <h2 className="text-txt1 text-2xl font-bold mb-2">Únete a la Comunidad</h2>
         <p className="text-txt2 text-sm mb-4">Crea tu perfil y conecta con músicos de todo el mundo</p>
@@ -86,7 +86,7 @@ export default function RegisterForm() {
               {formik.touched.name && formik.errors.name && (
                 <p className="mt-1 text-xs text-white-600 font-medium">{formik.errors.name}</p>
               )}
-            </div>
+          </div>
 
             {/* Campo Email */}
             <div className="text-left flex-1">
@@ -107,10 +107,60 @@ export default function RegisterForm() {
                 }`}
                 placeholder="tu@email.com"
               />
-              {formik.touched.email && formik.errors.email && (
-                <p className="mt-2 text-sm text-white-600 font-medium">{formik.errors.email}</p>
-              )}
-            </div>
+            {formik.touched.email && formik.errors.email && (
+              <p className="mt-2 text-sm text-white-600 font-medium">{formik.errors.email}</p>
+            )}
+          </div>
+        </div>
+
+          {/* Segunda fila - Contraseñas */}
+          <div className="flex flex-col md:flex-row gap-3">
+            {/* Campo Password */}
+            <div className="text-left flex-1">
+              <label htmlFor="password" className="block text-txt1 text-sm font-semibold mb-1">
+                Contraseña
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.password}
+                className={`w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-1 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 text-sm ${
+                  formik.touched.password && formik.errors.password
+                    ? "border-red-500 bg-red-50"
+                    : "border-fondo1 bg-white focus:border-tur3"
+                }`}
+                placeholder="••••••••"
+              />
+            {formik.touched.password && formik.errors.password && (
+              <p className="mt-2 text-sm text-white-700 font-medium">{formik.errors.password}</p>
+            )}
+          </div>
+
+            {/* Campo Confirmar Password */}
+            <div className="text-left flex-1">
+              <label htmlFor="confirmPassword" className="block text-txt1 text-sm font-semibold mb-1">
+                Confirmar Contraseña
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.confirmPassword}
+                className={`w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-1 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 text-sm ${
+                  formik.touched.confirmPassword && formik.errors.confirmPassword
+                    ? "border-red-500 bg-red-50"
+                    : "border-fondo1 bg-white focus:border-tur3"
+                }`}
+                placeholder="••••••••"
+              />
+            {formik.touched.confirmPassword && formik.errors.confirmPassword && (
+              <p className="mt-2 text-sm text-white-600 font-medium">{formik.errors.confirmPassword}</p>
+            )}
           </div>
 
           {/* Segunda fila - Contraseñas */}

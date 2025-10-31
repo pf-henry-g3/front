@@ -1,6 +1,6 @@
-import { IProduct } from "../interfaces/IProduct";
+import { IEvent } from "../interfaces/IEvent";
 
-export const mockData : IProduct[]= [ 
+export const mockData : IEvent[]= [ 
   {
     id: 1,
     name: "Luna Eclipse",
@@ -8,7 +8,8 @@ export const mockData : IProduct[]= [
     event: "Festival Nocturno 2024",
     date: new Date("2024-06-15"),
     location: "Barcelona, España",
-    description: "Una noche mágica con los sonidos indie más vibrantes"
+    description: "Una noche mágica con los sonidos indie más vibrantes",
+    image: "https://picsum.photos/seed/event1/800/600"
   },
   {
     id: 2,
@@ -17,7 +18,8 @@ export const mockData : IProduct[]= [
     event: "Noche Latina Tour",
     date: new Date("2024-07-20"),
     location: "Ciudad de México, México",
-    description: "El mejor reggaeton en una noche llena de energía"
+    description: "El mejor reggaeton en una noche llena de energía",
+    image: "https://picsum.photos/seed/event2/800/600"
   },
   {
     id: 3,
@@ -26,7 +28,8 @@ export const mockData : IProduct[]= [
     event: "Metal Fusion Festival",
     date: new Date("2024-08-05"),
     location: "Berlín, Alemania",
-    description: "Riffs potentes y baterías explosivas en un festival épico"
+    description: "Riffs potentes y baterías explosivas en un festival épico",
+    image: "https://picsum.photos/seed/event3/800/600"
   },
   {
     id: 4,
@@ -35,7 +38,8 @@ export const mockData : IProduct[]= [
     event: "Dance Revolution 2024",
     date: new Date("2024-09-12"),
     location: "Ibiza, España",
-    description: "Bailes y ritmos electrónicos bajo las estrellas"
+    description: "Bailes y ritmos electrónicos bajo las estrellas",
+    image: "https://picsum.photos/seed/event4/800/600"
   },
   {
     id: 5,
@@ -44,7 +48,8 @@ export const mockData : IProduct[]= [
     event: "Retro Rock Experience",
     date: new Date("2024-10-18"),
     location: "Londres, UK",
-    description: "Un viaje en el tiempo con los clásicos del rock"
+    description: "Un viaje en el tiempo con los clásicos del rock",
+    image: "https://picsum.photos/seed/event5/800/600"
   },
   {
     id: 6,
@@ -53,7 +58,8 @@ export const mockData : IProduct[]= [
     event: "Urban Beats Festival",
     date: new Date("2024-11-22"),
     location: "Nueva York, USA",
-    description: "Lo mejor del hip hop en la capital mundial"
+    description: "Lo mejor del hip hop en la capital mundial",
+    image: "https://picsum.photos/seed/event6/800/600"
   },
   {
     id: 7,
@@ -62,7 +68,8 @@ export const mockData : IProduct[]= [
     event: "Trip Festival 2024",
     date: new Date("2024-12-05"),
     location: "California, USA",
-    description: "Una experiencia sensorial única con sonidos psicodélicos"
+    description: "Una experiencia sensorial única con sonidos psicodélicos",
+    image: "https://picsum.photos/seed/event7/800/600"
   },
   {
     id: 8,
@@ -71,7 +78,8 @@ export const mockData : IProduct[]= [
     event: "Pasión Gitana Tour",
     date: new Date("2025-01-15"),
     location: "Sevilla, España",
-    description: "Flamenco moderno con raíces tradicionales"
+    description: "Flamenco moderno con raíces tradicionales",
+    image: "https://picsum.photos/seed/event8/800/600"
   },
   {
     id: 9,
@@ -80,7 +88,8 @@ export const mockData : IProduct[]= [
     event: "Alternative Nation",
     date: new Date("2025-02-20"),
     location: "Seattle, USA",
-    description: "Sonidos alternativos que rompen moldes"
+    description: "Sonidos alternativos que rompen moldes",
+    image: "https://picsum.photos/seed/event9/800/600"
   },
   {
     id: 10,
@@ -89,7 +98,8 @@ export const mockData : IProduct[]= [
     event: "Synth Wave Festival",
     date: new Date("2025-03-25"),
     location: "Tokyo, Japón",
-    description: "Futurismo musical con sintetizadores innovadores"
+    description: "Futurismo musical con sintetizadores innovadores",
+    image: "https://picsum.photos/seed/event10/800/600"
   },
   {
     id: 11,
@@ -98,7 +108,8 @@ export const mockData : IProduct[]= [
     event: "Funky Town Concert",
     date: new Date("2024-07-30"),
     location: "Nueva Orleans, USA",
-    description: "Groove y ritmo en la cuna del funk"
+    description: "Groove y ritmo en la cuna del funk",
+    image: "https://picsum.photos/seed/event11/800/600"
   },
   {
     id: 12,
@@ -107,7 +118,8 @@ export const mockData : IProduct[]= [
     event: "Country Fair 2024",
     date: new Date("2024-08-14"),
     location: "Nashville, USA",
-    description: "Country moderno con esencia tradicional"
+    description: "Country moderno con esencia tradicional",
+    image: "https://picsum.photos/seed/event12/800/600"
   },
   {
     id: 13,
@@ -116,7 +128,8 @@ export const mockData : IProduct[]= [
     event: "Avant-Garde Experience",
     date: new Date("2024-09-08"),
     location: "Reykjavik, Islandia",
-    description: "Exploración sonora en paisajes naturales únicos"
+    description: "Exploración sonora en paisajes naturales únicos",
+    image: "https://picsum.photos/seed/event13/800/600"
   },
   {
     id: 14,
@@ -125,7 +138,8 @@ export const mockData : IProduct[]= [
     event: "Street Poetry Slam",
     date: new Date("2024-10-30"),
     location: "Los Ángeles, USA",
-    description: "Poesía urbana y ritmos contundentes"
+    description: "Poesía urbana y ritmos contundentes",
+    image: "https://picsum.photos/seed/event14/800/600"
   },
   {
     id: 15,
@@ -134,7 +148,8 @@ export const mockData : IProduct[]= [
     event: "Soulful Nights Tour",
     date: new Date("2024-11-11"),
     location: "Memphis, USA",
-    description: "Emoción pura con los sonidos del soul moderno"
+    description: "Emoción pura con los sonidos del soul moderno",
+    image: "https://picsum.photos/seed/event15/800/600"
   },
   {
     id: 16,
@@ -143,7 +158,8 @@ export const mockData : IProduct[]= [
     event: "Global Harmony Festival",
     date: new Date("2024-12-20"),
     location: "Sídney, Australia",
-    description: "Pop rock que conecta culturas alrededor del mundo"
+    description: "Pop rock que conecta culturas alrededor del mundo",
+    image: "https://picsum.photos/seed/event16/800/600"
   },
   {
     id: 17,
@@ -152,7 +168,8 @@ export const mockData : IProduct[]= [
     event: "K-Wave Festival",
     date: new Date("2025-01-25"),
     location: "Seúl, Corea del Sur",
-    description: "La ola coreana en su máximo esplendor"
+    description: "La ola coreana en su máximo esplendor",
+    image: "https://picsum.photos/seed/event17/800/600"
   },
   {
     id: 18,
@@ -161,7 +178,8 @@ export const mockData : IProduct[]= [
     event: "Classic Revival Tour",
     date: new Date("2025-02-14"),
     location: "Liverpool, UK",
-    description: "Homenaje a los grandes del rock en su ciudad natal"
+    description: "Homenaje a los grandes del rock en su ciudad natal",
+    image: "https://picsum.photos/seed/event18/800/600"
   },
   {
     id: 19,
@@ -170,7 +188,8 @@ export const mockData : IProduct[]= [
     event: "Urban Flow Concert",
     date: new Date("2025-03-08"),
     location: "Chicago, USA",
-    description: "Hip hop con esencia urbana y letras profundas"
+    description: "Hip hop con esencia urbana y letras profundas",
+    image: "https://picsum.photos/seed/event19/800/600"
   },
   {
     id: 20,
@@ -179,8 +198,7 @@ export const mockData : IProduct[]= [
     event: "Elements Music Festival",
     date: new Date("2025-04-01"),
     location: "Río de Janeiro, Brasil",
-    description: "Energía pura en un festival rodeado de naturaleza"
+    description: "Energía pura en un festival rodeado de naturaleza",
+    image: "https://picsum.photos/seed/event20/800/600"
   }
-
-  
 ];

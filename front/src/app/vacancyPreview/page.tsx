@@ -1,15 +1,15 @@
-import { IProduct } from "@/src/interfaces/IProduct";
-import { mockData } from "@/src/mocks/Product";
+import { IEvent } from "@/src/interfaces/IEvent";
+import { mockData } from "@/src/mocks/EventMock";
 import { bandMockData } from "@/src/mocks/BandMock";
-import IBand from "@/src/interfaces/IBand";
+import { IBand } from "@/src/interfaces/IBand";
 import Link from "next/link";
 import BandsPreviewCard from "@/src/components/BandsPreviewCard";
-import QuotesPreviewCard from "@/src/components/quotesPreviewCard";
+import EventPreviewCard from "@/src/components/eventPreviewCard";
 import HorizontalScroller from "@/src/components/HorizontalScroller";
 
 export default function QuotesPreviewPage() {
   const bands: IBand[] = bandMockData;
-  const quotes: IProduct[] = mockData;
+  const quotes: IEvent[] = mockData;
 
   return (
     <div className="mt-32">
@@ -18,15 +18,13 @@ export default function QuotesPreviewPage() {
         <HorizontalScroller>
           {bands.map((band) => (
             <Link
-              href={`/quotes`}
+              href={`/home`}
               key={band.id}
               className="shrink-0 w-64 flex justify-center snap-start"
             >
               <BandsPreviewCard
                 name={band.name}
-                image={band.image}
-                location={band.location}
-                val={band.val}
+                image={band.bandImage}
               />
             </Link>
           ))}
@@ -37,14 +35,14 @@ export default function QuotesPreviewPage() {
         <HorizontalScroller>
           {quotes.map((quote) => (
             <Link
-              href={`/quotes`}
+              href={`/home`}
               key={quote.id}
               className="shrink-0 w-64 flex justify-center snap-start"
             >
-              <QuotesPreviewCard
+              <EventPreviewCard
                 name={quote.name} 
                 event={quote.event}
-                //image={quote.image} 
+                image={quote.image} 
                 date={quote.date}
               />
             </Link>

@@ -23,7 +23,7 @@ export default function Footer() {
           <Link href="/artistsPreview" className="text-sm text-txt1 hover:text-tur2 transition">
             Artistas
           </Link>
-          <Link href="/quotesPreview" className="text-sm text-txt1 hover:text-tur2 transition">
+          <Link href="/vacancyPreview" className="text-sm text-txt1 hover:text-tur2 transition">
             Vacantes
           </Link>
           <Link href="/myBands" className="text-sm text-txt1 hover:text-tur2 transition">
