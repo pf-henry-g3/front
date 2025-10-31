@@ -138,6 +138,7 @@ export default function RegisterForm() {
               <p className="mt-2 text-sm text-white-700 font-medium">{formik.errors.password}</p>
             )}
           </div>
+          </div>
 
             {/* Campo Confirmar Password */}
             <div className="text-left flex-1">
@@ -163,61 +164,10 @@ export default function RegisterForm() {
             )}
           </div>
 
-          {/* Segunda fila - Contraseñas */}
-          <div className="flex flex-col md:flex-row gap-3">
-            {/* Campo Password */}
-            <div className="text-left flex-1">
-              <label htmlFor="password" className="block text-txt1 text-sm font-semibold mb-1">
-                Contraseña
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.password}
-                className={`w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-1 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 text-sm ${
-                  formik.touched.password && formik.errors.password
-                    ? "border-red-500 bg-red-50"
-                    : "border-fondo1 bg-white focus:border-tur3"
-                }`}
-                placeholder="••••••••"
-              />
-              {formik.touched.password && formik.errors.password && (
-                <p className="mt-2 text-sm text-white-600 font-medium">{formik.errors.password}</p>
-              )}
-            </div>
-
-            {/* Campo Confirmar Password */}
-            <div className="text-left flex-1">
-              <label htmlFor="confirmPassword" className="block text-txt1 text-sm font-semibold mb-1">
-                Confirmar Contraseña
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.confirmPassword}
-                className={`w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-1 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 text-sm ${
-                  formik.touched.confirmPassword && formik.errors.confirmPassword
-                    ? "border-red-500 bg-red-50"
-                    : "border-fondo1 bg-white focus:border-tur3"
-                }`}
-                placeholder="••••••••"
-              />
-              {formik.touched.confirmPassword && formik.errors.confirmPassword && (
-                <p className="mt-2 text-sm text-white-600 font-medium">{formik.errors.confirmPassword}</p>
-              )}
-            </div>
-          </div>
-
           {/* Tercera fila - Fecha de Nacimiento */}
           <div className="flex flex-col md:flex-row gap-3">
             <div className="text-left flex-1">
-              <label htmlFor="birthDate" className="block text-txt1 text-sm font-semibold mb-1">
+              <label htmlFor="birthDate" className="block text-gray-600 text-sm font-semibold mb-1">
                 Fecha de Nacimiento
               </label>
               <input
@@ -234,32 +184,12 @@ export default function RegisterForm() {
                 }`}
               />
               {formik.touched.birthDate && formik.errors.birthDate && (
-                <p className="mt-2 text-sm text-white-600 font-medium">{formik.errors.birthDate}</p>
+                <p className="mt-2 text-sm text-grey-600 font-medium">{formik.errors.birthDate}</p>
               )}
             </div>
           </div>
 
-          {/* Checkbox de términos */}
-          <div className="flex items-center">
-            <input
-              id="terms"
-              name="terms"
-              type="checkbox"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              checked={formik.values.terms}
-              className="h-4 w-4 text-tur2 focus:ring-tur2 border-gray-300 rounded"
-            />
-            <label htmlFor="terms" className="ml-2 block text-sm text-txt1">
-              Acepto los{" "}
-              <a href="#" className="text-tur3 hover:text-tur2 underline">
-                términos y condiciones
-              </a>
-            </label>
-          </div>
-          {formik.touched.terms && formik.errors.terms && (
-            <p className="text-sm text-white-600 font-medium">{formik.errors.terms}</p>
-          )}
+          
 
           {/* Botón Submit */}
           <button
