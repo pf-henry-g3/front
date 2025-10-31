@@ -8,12 +8,6 @@ export default function LoginPage () {
         
         <div className="w-full max-w-md p-9">
         <LoginForm />
-             <p className="text-teal-500 text-center m-auto text-sm text-white-600">
-             No tienes cuenta ? {" "} 
-            
-                <Link className= "text-teal-500 underline font-semibold" href={"/register"}>Registrate</Link>
-            </p>
         </div>
-
     </div>);
 }

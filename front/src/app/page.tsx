@@ -83,7 +83,7 @@ export default function LandingPage() {
             </h2>
             <Link
             className="py-1.5 px-4 text-tur3 text-xl font-sans transition duration-400 hover:text-tur2 hover:cursor-pointer"
-            href={"/login"}
+            href={"/register"}
             >
               ↪ Registrarse 
             </Link>
