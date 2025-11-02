@@ -1,68 +1,82 @@
 "use client"
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect } from "react";
 
 interface SearchbarProps {
-  onSearch: (query: string) => void;
-  placeholder: string;
+  placeholder?: string;
+  label?: string;
+  value?: string;
+  onSearchChange: (searchText: string) => void;
+  className?: string;
 }
 
-export default function Searchbar ({ onSearch, placeholder = "Buscar..."}: SearchbarProps) {
+export default function Searchbar({ 
+  placeholder = "Escribe para buscar...", 
+  label = "Buscar por nombre o descripción",
+  value = "",
+  onSearchChange,
+  className = ""
+}: SearchbarProps) {
+  const [searchText, setSearchText] = useState<string>(value);
 
-    const [query, setQuery] = useState<string>('');
+  // Sincronizar con el valor externo si cambia
+  useEffect(() => {
+    setSearchText(value);
+  }, [value]);
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setQuery(value);
-    if (onSearch) {
-      onSearch(value);
-    }
+  // Manejar cambios en el input
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value;
+    setSearchText(newValue);
+    onSearchChange(newValue);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (onSearch) {
-      onSearch(query);
-    }
-  };
-
+  // Limpiar búsqueda
   const clearSearch = () => {
-    setQuery('');
-    if (onSearch) {
-      onSearch('');
-    }
+    setSearchText("");
+    onSearchChange("");
   };
-    return (
-        <div>
-             <form 
-      onSubmit={handleSubmit}
-      className="flex gap-3 max-w-md mx-auto"
-    >
-      <div className="relative flex-1">
+
+  return (
+    <div className={className}>
+      <label className="block text-xs font-semibold text-oscuro1 mb-1">
+        {label}
+      </label>
+      <div className="relative">
         <input
           type="text"
-          value={query}
+          value={searchText}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-full text-base outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          className="w-full px-3 py-2 pr-8 text-sm text-oscuro1 bg-white/95 backdrop-blur-sm border-2 border-tur3/40 rounded-lg focus:border-tur1 focus:outline-none focus:ring-2 focus:ring-tur1/30 transition-all duration-300 shadow-sm hover:shadow-md placeholder-oscuro3 font-medium"
         />
-        {query && (
-          <button
-            type="button"
-            onClick={clearSearch}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-transparent border-none text-xl text-gray-500 cursor-pointer hover:text-gray-700"
-          >
-            ×
-          </button>
-        )}
-      </div>
-      <button 
-        type="submit"
-        className="ppy-1.5 rounded-md px-4 text-tur3 text-lg font-sans border-fondo1 transition duration-400 hover:bg-tur3 hover:border-verde hover:text-azul hover:-translate-y-0.5 hover:cursor-pointer"
-      >
-        Buscar
-      </button>
-    </form>
+        
+        {/* Icono de búsqueda */}
+        <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+          {searchText ? (
+            <button
+              onClick={clearSearch}
+              className="text-oscuro2 hover:text-tur1 focus:outline-none p-0.5 rounded-full hover:bg-tur1/20 transition-all duration-200"
+              title="Limpiar búsqueda"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          ) : (
+            <svg className="w-3.5 h-3.5 text-oscuro2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          )}
         </div>
-    )
+      </div>
+      
+      {/* Indicador de búsqueda activa - más compacto */}
+      {searchText && (
+        <div className="mt-1 text-xs text-tur1 bg-tur1/15 rounded-md px-2 py-0.5 border border-tur3/30">
+          🔍 "<span className="font-semibold text-oscuro1">{searchText}</span>"
+        </div>
+      )}
+    </div>
+  );
 } 
