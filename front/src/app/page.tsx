@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import ArtistsPreview from "../components/artistsPreview";
 import BandsPreview from "../components/BandsPreview";
-import EventsPreview from "../components/EventsPreview";
+ import EventsPreview from "../components/EventsPreview"; 
 import Link from "next/link";
 
 export default function LandingPage() {
@@ -81,7 +81,7 @@ export default function LandingPage() {
         </div>
         <ArtistsPreview/>
         <BandsPreview/>
-        <EventsPreview/>
+        <EventsPreview/> 
       </div>
     </main>
   );
