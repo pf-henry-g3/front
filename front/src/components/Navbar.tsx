@@ -27,20 +27,6 @@ export default function NavBar () {
 
             </Link>
 
-            
-
-            <Link href="/artistsPreview" className="text-sm text-txt1 hover:text-tur2 transition">
-            Artistas
-            </Link>
-            
-            <Link href="/vacancyPreview" className="text-sm text-txt1 hover:text-tur2 transition">
-            Vacantes
-            
-            </Link>
-            
-            <Link href="/myBands" className="text-sm text-txt1 hover:text-tur2 transition">
-            Mis Bandas
-          </Link>
             </span>
 
             <div className="absolute right-6 md:right-12 lg:right-24">

@@ -1,7 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
+import ArtistsPreview from "../components/artistsPreview";
+import BandsPreview from "../components/BandsPreview";
+ import EventsPreview from "../components/EventsPreview"; 
 import Link from "next/link";
 
 export default function LandingPage() {
+
   return (
     <main>
       <div className="flex flex-col justify-center text-center w-[70%] mx-auto my-24 gap-1.5">
@@ -11,22 +15,8 @@ export default function LandingPage() {
         <p className="text-txt2 mx-auto w-[50%] text-md">
           Conecta con otros artistas, descubre proyectos y oportunidades para colaborar en tu próxima canción.
         </p>
-        <div className="flex flex-row gap-2 justify-around mx-auto mt-8 w-[40%]">
-          <Link
-          className="bg-tur1 py-1.5 px-4 rounded-md text-azul text-lg font-sans shadow-xl transition duration-300  hover:bg-tur2 hover:text-oscuro2 hover:-translate-y-0.5 hover:cursor-pointer"
-          href={"/vacancyPreview"}
-          >
-          Soy artista
-          </Link>
-          <Link
-          className="py-1.5 rounded-md px-4 text-tur3 text-lg font-sans border-fondo1 transition duration-400 hover:bg-tur3 hover:border-verde hover:text-azul hover:-translate-y-0.5 hover:cursor-pointer"
-          href={"/artistsPreview"}
-          >
-          Busco artista
-          </Link>
-        </div>
         <img 
-          className="w-lg mx-auto my-12"
+          className="w-lg mx-auto my-8"
           src="https://ohmagazinerd.com/wp-content/uploads/2020/08/47601C44-9EF0-452C-8D19-90B9E91C7297-2.png"
           alt="img"
         />
@@ -65,7 +55,7 @@ export default function LandingPage() {
             </p>
           </div>
         </div>
-        <div className="flex flex-row justify-around w-[80%] mx-auto mt-16">
+        <div className="flex flex-row justify-around w-[80%] mx-auto mt-12">
           <div className="flex flex-col">
             <h2 className="text- text-2xl font-bold">
               ¿Deseas ver más?
@@ -89,6 +79,9 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
+        <ArtistsPreview/>
+        <BandsPreview/>
+        <EventsPreview/> 
       </div>
     </main>
   );
