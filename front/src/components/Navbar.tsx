@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AuthButtons from "./AuthButtons";
+import DonationButton from "./DonationButton";
 
 export default function NavBar () {
 
@@ -38,9 +39,8 @@ export default function NavBar () {
             
             </Link>
             
-            <Link href="/myBands" className="text-sm text-txt1 hover:text-tur2 transition">
-            Mis Bandas
-          </Link>
+            <DonationButton/>
+
             </span>
 
             <div className="absolute right-6 md:right-12 lg:right-24">
