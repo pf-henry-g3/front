@@ -1,20 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
-import HorizontalScroller from "../components/HorizontalScroller";
-import ArtistsPreviewCard from "../components/artistsPreviewCard";
-import IUser from "../interfaces/IUser";
-import { userMockData } from "../mocks/UserMock";
-import { IEvent } from "@/src/interfaces/IEvent";
-import { mockData } from "@/src/mocks/EventMock";
-import { bandMockData } from "@/src/mocks/BandMock";
-import { IBand } from "@/src/interfaces/IBand";
-import BandsPreviewCard from "@/src/components/BandsPreviewCard";
-import EventPreviewCard from "@/src/components/eventPreviewCard";
+import ArtistsPreview from "../components/artistsPreview";
+import BandsPreview from "../components/BandsPreview";
+import EventsPreview from "../components/EventsPreview";
 import Link from "next/link";
 
 export default function LandingPage() {
-  const artists: IUser[] = userMockData;
-  const bands: IBand[] = bandMockData;
-  const quotes: IEvent[] = mockData;
 
   return (
     <main>
@@ -89,63 +79,9 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-        <div className="mt-16">
-          <h1 className="text-txt1 font-bold text-center text-3xl text-shadow-md mb-4">Nuestros preciados artistas</h1>
-          <div className="mx-auto max-w-[83%] rounded-4xl py-1.5 px-2">
-            <HorizontalScroller>
-              {artists.map((artist) => (
-                <Link
-                  href={`/home`}
-                  key={artist.id}
-                  className="shrink-0 w-64 flex justify-center snap-start"
-                >
-                  <ArtistsPreviewCard
-                    userName={artist.userName}
-                    profilePicture={artist.profilePicture}
-                    country={artist.country}
-                    averageRating={artist.averageRating}
-                  />
-                </Link>
-              ))}
-            </HorizontalScroller>
-          </div>
-        </div>
-        <h1 className="text-txt1 mt-16 font-bold text-center text-3xl text-shadow-md mb-4 ">Algunas de nuestras bandas registradas...</h1>
-        <div className="mx-auto max-w-[83%] rounded-4xl py-1.5 px-2">
-          <HorizontalScroller>
-            {bands.map((band) => (
-              <Link
-                href={`/home`}
-                key={band.id}
-                className="shrink-0 w-64 flex justify-center snap-start"
-              >
-                <BandsPreviewCard
-                  name={band.name}
-                  image={band.bandImage}
-                />
-              </Link>
-            ))}
-          </HorizontalScroller>
-        </div>
-        <h1 className="text-txt1 font-bold text-center text-3xl text-shadow-md mb-4 mt-16">¡Participa en eventos creados por las mismas bandas!</h1>
-        <div className="mx-auto max-w-[83%] rounded-4xl py-1.5 px-2">
-          <HorizontalScroller>
-            {quotes.map((quote) => (
-              <Link
-                href={`/home`}
-                key={quote.id}
-                className="shrink-0 w-64 flex justify-center snap-start"
-              >
-                <EventPreviewCard
-                  name={quote.name} 
-                  event={quote.event}
-                  image={quote.image} 
-                  date={quote.date}
-                />
-              </Link>
-            ))}
-          </HorizontalScroller>
-        </div>
+        <ArtistsPreview/>
+        <BandsPreview/>
+        <EventsPreview/>
       </div>
     </main>
   );
