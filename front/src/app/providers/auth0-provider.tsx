@@ -7,7 +7,7 @@ export function Auth0ProviderWrapper({ children }: { children: React.ReactNode }
     const router = useRouter();
 
     const onRedirectCallback = (appState: any) => {
-        router.push(appState?.returnTo || '/dashboard');
+        router.push(appState?.returnTo || '/');
     };
 
     return (

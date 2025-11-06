@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
-import ArtistsPreview from "../components/artistsPreview";
+import ArtistsPreview from "../components/ArtistsPreview";
 import BandsPreview from "../components/BandsPreview";
- import EventsPreview from "../components/EventsPreview"; 
+import EventsPreview from "../components/EventsPreview";
 import Link from "next/link";
 
 export default function LandingPage() {
@@ -15,7 +15,7 @@ export default function LandingPage() {
         <p className="text-txt2 mx-auto w-[50%] text-md">
           Conecta con otros artistas, descubre proyectos y oportunidades para colaborar en tu próxima canción.
         </p>
-        <img 
+        <img
           className="w-lg mx-auto my-8"
           src="https://ohmagazinerd.com/wp-content/uploads/2020/08/47601C44-9EF0-452C-8D19-90B9E91C7297-2.png"
           alt="img"
@@ -34,7 +34,7 @@ export default function LandingPage() {
           </div>
           <div className="flex flex-col w-[30%] gap-1">
             <h2 className="text-tur2 text-3xl font-semibold">
-              ϟ 
+              ϟ
             </h2>
             <h3 className="text-txt1 text-xl font-bold">
               ¿Cómo funciona?
@@ -45,7 +45,7 @@ export default function LandingPage() {
           </div>
           <div className="flex flex-col w-[30%] gap-1">
             <h2 className="text-tur2 text-3xl font-semibold">
-              ✛ 
+              ✛
             </h2>
             <h3 className="text-txt1 text-xl font-bold">
               Únete hoy
@@ -61,10 +61,10 @@ export default function LandingPage() {
               ¿Deseas ver más?
             </h2>
             <Link
-            className="py-1.5 px-4 text-tur3 text-xl font-sans transition duration-400 hover:text-tur2 hover:cursor-pointer"
-            href={"/home"}
+              className="py-1.5 px-4 text-tur3 text-xl font-sans transition duration-400 hover:text-tur2 hover:cursor-pointer"
+              href={"/home"}
             >
-              ↪ Explorar 
+              ↪ Explorar
             </Link>
           </div>
           <div className="flex flex-col">
@@ -72,16 +72,16 @@ export default function LandingPage() {
               ¿Listo para empezar?
             </h2>
             <Link
-            className="py-1.5 px-4 text-tur3 text-xl font-sans transition duration-400 hover:text-tur2 hover:cursor-pointer"
-            href={"/register"}
+              className="py-1.5 px-4 text-tur3 text-xl font-sans transition duration-400 hover:text-tur2 hover:cursor-pointer"
+              href={"/register"}
             >
-              ↪ Registrarse 
+              ↪ Registrarse
             </Link>
           </div>
         </div>
-        <ArtistsPreview/>
-        <BandsPreview/>
-        <EventsPreview/> 
+        <ArtistsPreview />
+        <BandsPreview />
+        <EventsPreview />
       </div>
     </main>
   );
