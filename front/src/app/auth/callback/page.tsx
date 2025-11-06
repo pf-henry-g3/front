@@ -22,13 +22,13 @@ export default function Auth0CallbackPage() {
                 // Obtener token de Auth0
                 const auth0Token = await getAccessTokenSilently();
 
-                // Enviar token al backend para sincronizar usuario
                 const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/auth0/callback`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${auth0Token}`,
                         'Content-Type': 'application/json',
                     },
+                    body: JSON.stringify({ user })
                 });
 
                 if (!response.ok) {
@@ -41,8 +41,7 @@ export default function Auth0CallbackPage() {
                 localStorage.setItem('access_token', data.data.access_token);
                 localStorage.setItem('user', JSON.stringify(data.data.user));
 
-                // Redirigir al dashboard
-                router.push('/dashboard');
+                router.push('/home');
 
             } catch (err: any) {
                 console.error('Error en callback:', err);

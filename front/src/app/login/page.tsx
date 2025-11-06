@@ -9,7 +9,7 @@ export default function LoginPage() {
 
     const handleAuth0Login = () => {
         loginWithRedirect({
-            appState: { returnTo: '/dashboard' }
+            appState: { returnTo: '/' }
         });
     };
 
