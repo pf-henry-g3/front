@@ -28,17 +28,6 @@ export default function NavBar () {
 
             </Link>
 
-            
-
-            <Link href="/artistsPreview" className="text-sm text-txt1 hover:text-tur2 transition">
-            Artistas
-            </Link>
-            
-            <Link href="/vacancyPreview" className="text-sm text-txt1 hover:text-tur2 transition">
-            Vacantes
-            
-            </Link>
-            
             <DonationButton/>
 
             </span>
