@@ -28,7 +28,7 @@ export default function Auth0CallbackPage() {
                         'Authorization': `Bearer ${auth0Token}`,
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ user })
+                    body: JSON.stringify({ user }),
                 });
                 console.log(response);
 
