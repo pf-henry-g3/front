@@ -11,7 +11,7 @@ export default function ArtistsPreviewCard ({ profilePicture, userName, country,
         className="rounded-t-md"
       />
       <div className="flex flex-col">
-        <h1 className="text-txt1 font-bold text-2xl text-shadow-md px-2">{userName}</h1>
+        <h1 className="text-txt1 font-bold text-xl text-shadow-md px-2">{userName}</h1>
         <div className="flex flex-row justify-between px-2 mb-1" >
           <h4 className="text-txt2 font-medium text-shadow-sm mt-0.5">{country}</h4>
           <h3 className="text-tur2 text-xl font-semibold text-shadow-lg">{averageRating}</h3>

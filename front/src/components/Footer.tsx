@@ -5,9 +5,9 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer className="w-full border-t bg-linear-to-t from-oscuro3 via-oscuro2 to-oscuro1 mt-24 px-6 py-8">
-      <div className="max-w-[68%] mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+      <div className="max-w-[65%] mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
         <div className="flex flex-col items-center md:items-start gap-2">
-          <h3 className="text-xl font-bold text-txt1">Sincro</h3>
+          <h3 className="text-xl font-bold text-txt1">Syncro</h3>
           <p className="text-sm text-txt2 max-w-sm text-center md:text-left">
             Conecta con músicos, publica vacantes y encuentra colaboradores para tu próximo proyecto.
           </p>
@@ -19,15 +19,6 @@ export default function Footer() {
           </Link>
           <Link href="/home" className="text-sm text-txt1 hover:text-tur2 transition">
             Home
-          </Link>
-          <Link href="/artistsPreview" className="text-sm text-txt1 hover:text-tur2 transition">
-            Artistas
-          </Link>
-          <Link href="/vacancyPreview" className="text-sm text-txt1 hover:text-tur2 transition">
-            Vacantes
-          </Link>
-          <Link href="/myBands" className="text-sm text-txt1 hover:text-tur2 transition">
-            Mis Bandas
           </Link>
         </div>
 
