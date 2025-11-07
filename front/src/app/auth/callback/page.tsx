@@ -30,6 +30,8 @@ export default function Auth0CallbackPage() {
                     },
                     body: JSON.stringify({ user })
                 });
+                console.log(response);
+
 
                 if (!response.ok) {
                     throw new Error('Error sincronizando usuario');
@@ -37,11 +39,14 @@ export default function Auth0CallbackPage() {
 
                 const data = await response.json();
 
+                console.log(data);
+
+
                 // Guardar tu JWT local en localStorage
                 localStorage.setItem('access_token', data.data.access_token);
-                localStorage.setItem('user', JSON.stringify(data.data.user));
+                localStorage.setItem('user', JSON.stringify(data.data.userWithoutPassword));
 
-                router.push('/home');
+                router.push('/');
 
             } catch (err: any) {
                 console.error('Error en callback:', err);
