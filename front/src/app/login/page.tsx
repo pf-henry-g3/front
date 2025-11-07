@@ -2,7 +2,7 @@
 
 import { useAuth0 } from '@auth0/auth0-react';
 import LoginForm from "@/src/components/LoginForm";
-import Link from "next/link";
+
 
 export default function LoginPage() {
     const { loginWithRedirect } = useAuth0();

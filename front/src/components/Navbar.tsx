@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AuthButtons from "./AuthButtons";
+import DonationButton from "./DonationButton";
 
 export default function NavBar () {
 
@@ -26,6 +27,8 @@ export default function NavBar () {
             <div className="flex items-center justify-center"> <span className="text-sm text-txt1 hover:text-tur2 transition">Home</span></div>
 
             </Link>
+
+            <DonationButton/>
 
             </span>
 
