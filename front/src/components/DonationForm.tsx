@@ -2,31 +2,34 @@
 import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import axios from "axios";
 
 const validationSchema = Yup.object({
   amount: Yup.number().required("Selecciona un monto").min(1, "El monto debe ser mayor a 0"),
 });
 
 async function createDonationOnBackend(amount: number) {
-  const apiBase = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3013";
-  const res = await fetch(`${apiBase}/payment/create-donation`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ amount }),
-  });
+  const apiBase = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3000";
+  try {
+    const res = await axios.post(`${apiBase}/payment/create-donation`, { amount }, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 10000,
+    });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `HTTP ${res.status}`);
-  }
+    const data = res.data;
 
-  // backend returns JSON with init_point (MercadoPago) or a plain string URL
-  const contentType = res.headers.get("content-type") ?? "";
-  if (contentType.includes("application/json")) {
-    const json = await res.json();
-    return (json.init_point ?? json.url ?? json.checkoutUrl ?? JSON.stringify(json)) as string;
+    // intenta extraer la URL de checkout (init_point para MercadoPago)
+    if (!data) throw new Error("Respuesta vacía del servidor");
+
+    if (typeof data === "string") return data;
+    return (data.init_point ?? data.url ?? data.checkoutUrl ?? JSON.stringify(data)) as string;
+  } catch (err: any) {
+    // axios error handling
+    const msg = err?.response?.data
+      ? (typeof err.response.data === "string" ? err.response.data : JSON.stringify(err.response.data))
+      : err?.message ?? "Error en la petición";
+    throw new Error(msg);
   }
-  return (await res.text()) as string;
 }
 
 export default function DonationForm() {
@@ -42,7 +45,6 @@ export default function DonationForm() {
         const checkoutUrl = await createDonationOnBackend(amount);
         if (!checkoutUrl) throw new Error("No se recibió URL de pago desde el servidor");
 
-        // redirigir al checkout
         window.location.assign(checkoutUrl);
       } catch (err: any) {
         console.error("Error creando donación:", err);
