@@ -13,7 +13,7 @@ export default function LandingPage() {
           Encuentra músicos y bandas para colaborar
         </h1>
         <p className="text-txt2 mx-auto w-[50%] text-md">
-          Conecta con otros artistas, descubre proyectos y oportunidades para colaborar en tu próxima canción.
+          Conecta con otros artistas, descubre proyectos y oportunidades para colaborar en tu próxima canción
         </p>
         <img
           className="w-lg mx-auto my-8"
@@ -29,7 +29,7 @@ export default function LandingPage() {
               Características
             </h3>
             <p className="text-txt2 text-md">
-              Crea tu perfi, destaca tus habilidades y experiencias.
+              Crea tu perfi, destaca tus habilidades y experiencias
             </p>
           </div>
           <div className="flex flex-col w-[30%] gap-1">
@@ -40,7 +40,7 @@ export default function LandingPage() {
               ¿Cómo funciona?
             </h3>
             <p className="text-txt2 text-md">
-              Publica vacantes o busca artistas que se ajusten a tus necesidades.
+              Publica vacantes o busca artistas que se ajusten a tus necesidades
             </p>
           </div>
           <div className="flex flex-col w-[30%] gap-1">
@@ -51,7 +51,7 @@ export default function LandingPage() {
               Únete hoy
             </h3>
             <p className="text-txt2 text-md">
-              Registrate gratis y comienza a conectar con otros músicos ahora mismo.
+              Registrate gratis y comienza a conectar con otros músicos ahora mismo
             </p>
           </div>
         </div>
