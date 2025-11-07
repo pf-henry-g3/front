@@ -28,11 +28,11 @@ export default function HomePage() {
     const [filteredItems, setFilteredItems] = useState<ProductCardProps[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+
     // Estados para paginación
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(3);
-    
+
     // Estado para el elemento seleccionado
     const [selectedItem, setSelectedItem] = useState<ProductCardProps | null>(null);
 
@@ -47,7 +47,7 @@ export default function HomePage() {
 
             // Cargar datos directamente de los endpoints individuales (sin búsqueda)
             console.log('📥 Cargando todos los datos automáticamente...');
-            
+
             const [bandResponse, userResponse, vacancyResponse] = await Promise.all([
                 axios.get(`${process.env.NEXT_PUBLIC_API_URL}/band`),
                 axios.get(`${process.env.NEXT_PUBLIC_API_URL}/user`),
@@ -123,7 +123,7 @@ export default function HomePage() {
             // Combinar todos los elementos
             const combinedData = [...bands, ...users, ...vacancies];
             console.log('🎯 Datos combinados finales:', combinedData.length, combinedData);
-            
+
             setAllItems(combinedData);
             setFilteredItems(combinedData);
 
@@ -152,7 +152,7 @@ export default function HomePage() {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         const paginatedItems = filteredItems.slice(startIndex, endIndex);
-        
+
         return {
             totalPages,
             paginatedItems,
@@ -182,10 +182,10 @@ export default function HomePage() {
     const debugSingleCall = async () => {
         try {
             console.log('🔍 DEBUG: Iniciando diagnóstico completo...');
-            
+
             // Probar el endpoint de search con diferentes términos
             const searchTests = ['Arctic', 'e', 'o', 'a', 'banda', 'música', 'usuarios', 'vacantes'];
-            
+
             for (const term of searchTests) {
                 try {
                     console.log(`🔍 Probando búsqueda con término: "${term}"`);
@@ -196,7 +196,7 @@ export default function HomePage() {
                         meta: response.data?.meta,
                         hasData: !!response.data?.data?.length
                     });
-                    
+
                     if (response.data?.data?.length > 0) {
                         console.log(`🎯 ¡Encontrados datos con "${term}"!`, response.data.data[0]);
                         break; // Si encontramos datos, paramos aquí
@@ -208,13 +208,13 @@ export default function HomePage() {
 
             // Probar endpoints individuales para ver si hay datos
             console.log('🔍 Probando endpoints individuales...');
-            
+
             try {
                 const bandResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/band`);
                 console.log('🎵 Endpoint /band:', {
                     status: bandResponse.status,
-                    dataLength: Array.isArray(bandResponse.data?.data) ? bandResponse.data.data.length : 
-                               Array.isArray(bandResponse.data) ? bandResponse.data.length : 'No es array',
+                    dataLength: Array.isArray(bandResponse.data?.data) ? bandResponse.data.data.length :
+                        Array.isArray(bandResponse.data) ? bandResponse.data.length : 'No es array',
                     hasData: !!(bandResponse.data?.data?.length || bandResponse.data?.length)
                 });
             } catch (error) {
@@ -226,7 +226,7 @@ export default function HomePage() {
                 console.log('👤 Endpoint /user:', {
                     status: userResponse.status,
                     dataLength: Array.isArray(userResponse.data?.data) ? userResponse.data.data.length :
-                               Array.isArray(userResponse.data) ? userResponse.data.length : 'No es array',
+                        Array.isArray(userResponse.data) ? userResponse.data.length : 'No es array',
                     hasData: !!(userResponse.data?.data?.length || userResponse.data?.length)
                 });
             } catch (error) {
@@ -238,13 +238,13 @@ export default function HomePage() {
                 console.log('💼 Endpoint /vacancy:', {
                     status: vacancyResponse.status,
                     dataLength: Array.isArray(vacancyResponse.data?.data) ? vacancyResponse.data.data.length :
-                               Array.isArray(vacancyResponse.data) ? vacancyResponse.data.length : 'No es array',
+                        Array.isArray(vacancyResponse.data) ? vacancyResponse.data.length : 'No es array',
                     hasData: !!(vacancyResponse.data?.data?.length || vacancyResponse.data?.length)
                 });
             } catch (error) {
                 console.error('❌ Error en /vacancy:', error);
             }
-            
+
         } catch (error) {
             console.error('🔍 DEBUG Error general:', error);
         }
@@ -269,7 +269,7 @@ export default function HomePage() {
                 <div className="text-center bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl max-w-md">
                     <h2 className="text-red-700 text-xl font-bold mb-2">❌ Error</h2>
                     <p className="text-oscuro2 mb-6 font-medium">{error}</p>
-                    <button 
+                    <button
                         onClick={loadDataFromBackend}
                         className="px-6 py-3 bg-gradient-to-r from-tur2 to-tur1 text-azul font-bold rounded-xl hover:from-tur1 hover:to-tur2 transition-all duration-300 shadow-lg transform hover:scale-105"
                     >
@@ -286,7 +286,7 @@ export default function HomePage() {
                 {/* Título principal con estilo del landing - Añadimos padding top para evitar navbar */}
                 <div className="text-center mb-8 pt-16">
                     <h1 className="text-white text-4xl font-bold mb-2 drop-shadow-lg">
-                         Bienvenidos a Home
+                        Bienvenidos a Home
                     </h1>
                     <p className="text-white/90 text-lg font-medium drop-shadow-md">
                         Explora bandas, usuarios y vacantes en nuestra plataforma musical
@@ -299,12 +299,12 @@ export default function HomePage() {
                     <div className="lg:w-2/5 flex flex-col space-y-4">
                         {/* Componente Filter con estilo del landing */}
                         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30">
-                            <Filter 
+                            <Filter
                                 allItems={allItems}
                                 onFilterResults={handleFilterResults}
                             />
                         </div>
-                        
+
                         {/* Cards de resultados paginados */}
                         <div className="flex-1 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30 overflow-hidden">
                             {/* Contenedor de cards */}
@@ -312,7 +312,7 @@ export default function HomePage() {
                                 {paginationData.paginatedItems.length > 0 ? (
                                     <div className="p-4 space-y-3">
                                         {paginationData.paginatedItems.map((item: ProductCardProps) => (
-                                            <ProductCard 
+                                            <ProductCard
                                                 key={item.id}
                                                 {...item}
                                                 isSelected={selectedItem?.id === item.id}
