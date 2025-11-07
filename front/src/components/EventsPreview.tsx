@@ -14,7 +14,7 @@ export default function EventsPreview() {
     const fetchEvents = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL ?? ""}/event`);
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/vacancy`);
         const raw = res.data?.data ?? res.data ?? [];
 
         if (Array.isArray(raw) && raw.length > 0) {

@@ -1,11 +1,13 @@
 "use client"
-
+import { config as dotenvConfig } from 'dotenv';
 import { useEffect, useState, useCallback, useMemo } from "react";
 import Filter from "../../components/Filter";
 import ProductCard from "../../components/ProductCard";
 import Pagination from "../../components/Pagination";
 import DetailView from "../../components/DetailView";
 import axios from "axios";
+
+
 
 // Interfaz ProductCardProps (la misma que en Filter.tsx)
 interface ProductCardProps {
@@ -43,15 +45,15 @@ export default function HomePage() {
             setError(null);
 
             console.log('🔄 Iniciando carga de datos del backend...');
-            console.log('🌐 API URL:', process.env.NEXT_PUBLIC_API_URL);
+            console.log('🌐 API URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
 
             // Cargar datos directamente de los endpoints individuales (sin búsqueda)
             console.log('📥 Cargando todos los datos automáticamente...');
 
             const [bandResponse, userResponse, vacancyResponse] = await Promise.all([
-                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/band`),
-                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/user`),
-                axios.get(`${process.env.NEXT_PUBLIC_API_URL}/vacancy`)
+                axios.get(`http://localhost:3000/band`),
+                axios.get(`http://localhost:3000/user`),
+                axios.get(`http://localhost:3000/vacancy`)
             ]);
 
             console.log('📊 Respuestas de endpoints individuales:', {
