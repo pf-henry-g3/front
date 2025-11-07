@@ -15,23 +15,50 @@ export default function DonationForm() {
       custom: "",
     },
     validationSchema,
-    onSubmit: (values, { setSubmitting }) => {
+    onSubmit: async (values, { setSubmitting, setStatus }) => {
       setSubmitting(true);
-      const amount = Number(values.custom) > 0 ? Number(values.custom) : Number(values.amount);
-      const params = new URLSearchParams({ amount: String(amount) }).toString();
+      try {
+        const amount = Number(values.custom) > 0 ? Number(values.custom) : Number(values.amount);
+        const apiBase = process.env.NEXT_PUBLIC_API_URL ?? ""; // ej: http://localhost:3013
+        const res = await fetch(`${apiBase}/payment/create-donation`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount }),
+        });
 
-      // Redirige a la pasarela de pago (URL placeholder)
-      const paymentUrl = `https://payment.example.com/checkout?${params}`;
-      window.location.assign(paymentUrl);
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || `HTTP ${res.status}`);
+        }
+
+        // el backend devuelve la URL de checkout (puede ser texto o JSON)
+        let checkoutUrl: string;
+        try {
+          const json = await res.json();
+          // si devuelve un string simple, adaptalo; si devuelve { url: "..."} ajusta aquí
+          checkoutUrl = typeof json === "string" ? json : json.init_point ?? json.url ?? JSON.stringify(json);
+        } catch {
+          checkoutUrl = await res.text();
+        }
+
+        if (!checkoutUrl) throw new Error("No se recibió URL de pago");
+
+        // redirigir al checkout
+        window.location.assign(checkoutUrl);
+      } catch (err: any) {
+        console.error("Error creando donación:", err);
+        setStatus({ type: "error", message: err?.message ?? "Error al crear la donación" });
+        setSubmitting(false);
+      }
     },
   });
 
-  const presetAmounts = [0.99, 4.99, 9.99];
+  const presetAmounts = [1000, 5000, 20000];
 
   return (
     <div className="flex flex-col justify-center items-center py-8 px-4">
       <div className="w-full max-w-md bg-white/10 backdrop-blur-md border border-white/20 rounded-lg shadow-xl p-6">
-        <h2 className="text-2xl text-txt1 font-bold mb-2 text-center">¡Apoyanos realizando donaciones!</h2>
+        <h2 className="text-2xl text-txt1 font-bold mb-2 text-center">¡Apóyanos con una donación!</h2>
         <p className="text-sm mb-4 text-txt2 text-center">Puedes ayudar al desarrollo y crecimiento de la página gracias a tu aporte monetario</p>
 
         <form onSubmit={formik.handleSubmit} className="space-y-4">
@@ -50,8 +77,8 @@ export default function DonationForm() {
                     }}
                     className={`px-4 py-2 rounded-md font-semibold transition hover:cursor-pointer ${
                       active
-                        ? "bg-tur2 text-white shadow"
-                        : "bg-white text-gray-800 border border-gray-200 hover:bg-tur1 hover:shadow-sm"
+                        ? "bg-tur2 text-white shadow border-0"
+                        : "bg-white text-gray-800 border-0 border-gray-200 hover:bg-tur1 hover:shadow-sm"
                     }`}
                   >
                     ${amt}
@@ -69,7 +96,7 @@ export default function DonationForm() {
                   formik.setFieldValue("custom", v);
                   formik.setFieldValue("amount", 0);
                 }}
-                className="ml-2 w-28 px-3 py-2 border rounded-md bg-white"
+                className="ml-2 w-28 px-3 py-2 rounded-md border-0 text-gray-800 bg-white"
               />
             </div>
             {formik.touched.amount && formik.errors.amount && (
@@ -84,12 +111,18 @@ export default function DonationForm() {
               className={`w-full py-3 rounded-md text-lg font-semibold transition  ${
                 formik.isSubmitting || (Number(formik.values.amount) <= 0 && Number(formik.values.custom || 0) <= 0)
                   ? "bg-verde cursor-not-allowed text-white"
-                  : "bg-tur1 text-white hover:bg-tur2 hover:cursor-pointer"
+                  : "bg-tur1 text-gray-800 hover:text-txt1 hover:bg-tur2 hover:cursor-pointer"
               }`}
             >
               {formik.isSubmitting ? "Redireccionando..." : `Pagar $${Number(formik.values.custom) > 0 ? formik.values.custom : formik.values.amount}`}
             </button>
           </div>
+
+          {formik.status && (
+            <div className={`mt-3 p-3 rounded-md ${formik.status.type === "error" ? "bg-red-50 text-red-900" : "bg-green-50 text-green-900"}`}>
+              <p className="text-sm">{String(formik.status.message)}</p>
+            </div>
+          )}
         </form>
 
         <p className="mt-4 text-xs text-center text-gray-300">
