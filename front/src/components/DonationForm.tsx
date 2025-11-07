@@ -1,47 +1,46 @@
 "use client"
+import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import React from "react";
 
-// Schema de validación: solo monto
 const validationSchema = Yup.object({
   amount: Yup.number().required("Selecciona un monto").min(1, "El monto debe ser mayor a 0"),
 });
 
+async function createDonationOnBackend(amount: number) {
+  const apiBase = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3013";
+  const res = await fetch(`${apiBase}/payment/create-donation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+
+  // backend returns JSON with init_point (MercadoPago) or a plain string URL
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    const json = await res.json();
+    return (json.init_point ?? json.url ?? json.checkoutUrl ?? JSON.stringify(json)) as string;
+  }
+  return (await res.text()) as string;
+}
+
 export default function DonationForm() {
   const formik = useFormik({
-    initialValues: {
-      amount: 0,
-      custom: "",
-    },
+    initialValues: { amount: 0, custom: "" },
     validationSchema,
     onSubmit: async (values, { setSubmitting, setStatus }) => {
       setSubmitting(true);
       try {
         const amount = Number(values.custom) > 0 ? Number(values.custom) : Number(values.amount);
-        const apiBase = process.env.NEXT_PUBLIC_API_URL ?? ""; // ej: http://localhost:3013
-        const res = await fetch(`${apiBase}/payment/create-donation`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount }),
-        });
+        if (!amount || amount <= 0) throw new Error("Selecciona un monto válido");
 
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-
-        // el backend devuelve la URL de checkout (puede ser texto o JSON)
-        let checkoutUrl: string;
-        try {
-          const json = await res.json();
-          // si devuelve un string simple, adaptalo; si devuelve { url: "..."} ajusta aquí
-          checkoutUrl = typeof json === "string" ? json : json.init_point ?? json.url ?? JSON.stringify(json);
-        } catch {
-          checkoutUrl = await res.text();
-        }
-
-        if (!checkoutUrl) throw new Error("No se recibió URL de pago");
+        const checkoutUrl = await createDonationOnBackend(amount);
+        if (!checkoutUrl) throw new Error("No se recibió URL de pago desde el servidor");
 
         // redirigir al checkout
         window.location.assign(checkoutUrl);
