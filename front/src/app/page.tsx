@@ -81,7 +81,7 @@ export default function LandingPage() {
         </div>
         <ArtistsPreview />
         <BandsPreview />
-        <EventsPreview />
+        {/*<EventsPreview />*/}
       </div>
     </main>
   );
