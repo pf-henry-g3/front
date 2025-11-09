@@ -25,7 +25,7 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 COPY front/package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
