@@ -5,8 +5,9 @@ ARG NODE_VERSION=20
 FROM node:${NODE_VERSION}-alpine AS deps
 WORKDIR /app
 ENV CI=true
+ENV NODE_ENV=development
 COPY front/package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 FROM node:${NODE_VERSION}-alpine AS builder
 WORKDIR /app
