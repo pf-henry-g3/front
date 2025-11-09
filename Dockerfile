@@ -15,7 +15,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY front/. ./
-RUN npm run build
+RUN npm run build && npm prune --omit=dev
 
 FROM node:${NODE_VERSION}-alpine AS runner
 WORKDIR /app
@@ -24,8 +24,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-COPY front/package*.json ./
-RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
+COPY --from=builder /app/node_modules ./node_modules
 
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
