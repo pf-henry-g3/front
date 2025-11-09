@@ -15,6 +15,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY front/. ./
+COPY --from=deps /app/package-lock.json ./package-lock.json
 RUN npm run build && npm prune --omit=dev
 
 FROM node:${NODE_VERSION}-alpine AS runner
