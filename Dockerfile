@@ -7,7 +7,7 @@ WORKDIR /app
 ENV CI=true
 ENV NODE_ENV=development
 COPY front/package*.json ./
-RUN npm ci --include=dev
+RUN npm ci --include=dev --legacy-peer-deps
 
 FROM node:${NODE_VERSION}-alpine AS builder
 WORKDIR /app
