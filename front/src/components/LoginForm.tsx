@@ -164,7 +164,7 @@ export default function LoginForm() {
     });
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen py-8 px-4">
+    <div className="flex flex-col justify-center items-center pt-16 px-4">
       <div className="w-full max-w-md bg-white/20 backdrop-blur-md border border-white/30 rounded-lg shadow-xl p-8 text-center">
         <h2 className="text-txt1 text-3xl font-bold mb-4">Iniciar Sesión</h2>
         <p className="text-txt2 text-md mb-6">Conecta con otros artistas y descubre nuevas oportunidades</p>
