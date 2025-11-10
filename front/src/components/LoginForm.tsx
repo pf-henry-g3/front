@@ -47,8 +47,8 @@ export default function LoginForm() {
                 
                 // 2. Preparar datos para el backend
                 const loginData = {
-                    email: values.email,
-                    password: values.password
+                    email: values.email.trim(),
+                    password: values.password.trim()
                 };
                 
                 // Debug: Mostrar datos que se envían
@@ -108,6 +108,18 @@ export default function LoginForm() {
                 if (axiosError.response?.status === 400) {
                     // Errores de validación
                     const errorData = axiosError.response.data;
+
+                    // Mostrar mensaje directo del backend si existe
+                    const backendMsg = typeof errorData?.message === 'string' ? errorData.message : undefined;
+                    if (backendMsg) {
+                        await Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: backendMsg,
+                            confirmButtonColor: "#EF4444"
+                        });
+                        return;
+                    }
                     
                     if (errorData.message && Array.isArray(errorData.message)) {
                         await Swal.fire({
