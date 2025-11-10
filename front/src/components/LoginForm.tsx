@@ -1,39 +1,167 @@
-"use client"
+"use client";
+import axios, { AxiosError } from "axios";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
+
+// Interfaz para los datos de login
+interface LoginData {
+    email: string;
+    password: string;
+}
 
 // Schema de validación con Yup
 const validationSchema = Yup.object({
-  email: Yup.string()
-    .email("Email inválido")
-    .required("El email es requerido"),
-  password: Yup.string()
-    .min(6, "La contraseña debe tener al menos 6 caracteres")
-    .required("La contraseña es requerida")
+    email: Yup.string()
+        .email("Email inválido")
+        .required("El email es requerido"),
+    password: Yup.string()
+        .min(6, "La contraseña debe tener al menos 6 caracteres")
+        .required("La contraseña es requerida")
 });
 
 export default function LoginForm() {
-  const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: ""
-    },
-    validationSchema,
-    onSubmit: (values, { setSubmitting, setStatus }) => {
-      // Simular llamada a API de login
-      console.log("Datos del login:", values);
-      
-      setTimeout(() => {
-        // Aquí iría la lógica real de autenticación
-        if (values.email === "test@test.com" && values.password === "123456") {
-          setStatus({ type: "success", message: "Login exitoso!" });
-        } else {
-          setStatus({ type: "error", message: "Datos incorrectos" });
+    const router = useRouter();
+
+    const formik = useFormik<LoginData>({
+        initialValues: {
+            email: "",
+            password: ""
+        },
+        validationSchema,
+        onSubmit: async (values, { setSubmitting, setFieldError, resetForm }) => {
+            // Validar que todos los campos estén completos
+            const { email, password } = values;
+            if (!email || !password) {
+                return Swal.fire({
+                    icon: "error",
+                    title: "Faltan datos",
+                    text: "Por favor completa todos los campos"
+                });
+            }
+
+            try {
+                // 1. Activar estado de loading
+                setSubmitting(true);
+                
+                // 2. Preparar datos para el backend
+                const loginData = {
+                    email: values.email,
+                    password: values.password
+                };
+                
+                // Debug: Mostrar datos que se envían
+                console.log('Datos a enviar:', loginData);
+                
+                // 3. Hacer petición POST al backend
+                const response = await axios.post(
+                    `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
+                    loginData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                // 4. Manejar respuesta exitosa
+                console.log('Respuesta del servidor:', response.data);
+                
+                // Si llegamos aquí sin errores, el login fue exitoso
+                if (response.status === 200 || response.status === 201) {
+                    // Guardar token si el backend lo devuelve
+                    if (response.data.token) {
+                        localStorage.setItem('token', response.data.token);
+                    }
+                    
+                    // Resetear formulario
+                    resetForm({
+                        values: {
+                            email: "",
+                            password: ""
+                        },
+                        errors: {},
+                        touched: {}
+                    });
+                    
+                    // Mostrar mensaje de éxito y redirigir
+                    await Swal.fire({
+                        icon: "success",
+                        title: "¡Inicio de sesión exitoso!",
+                        text: "Bienvenido de vuelta",
+                        confirmButtonText: "Continuar",
+                        confirmButtonColor: "#10B981",
+                        timer: 2000
+                    });
+                    
+                    // Redireccionar al home
+                    router.push('/home');
+                }
+                
+            } catch (error) {
+                // 5. Manejar diferentes tipos de errores
+                const axiosError = error as AxiosError<any>;
+                
+                console.error('Error de login:', axiosError);
+                
+                if (axiosError.response?.status === 400) {
+                    // Errores de validación
+                    const errorData = axiosError.response.data;
+                    
+                    if (errorData.message && Array.isArray(errorData.message)) {
+                        await Swal.fire({
+                            icon: "error",
+                            title: "Errores de validación",
+                            html: errorData.message.map((msg: string) => `• ${msg}`).join('<br>'),
+                            confirmButtonColor: "#EF4444"
+                        });
+                    } else {
+                        await Swal.fire({
+                            icon: "error",
+                            title: "Error de validación",
+                            text: errorData.message || "Datos inválidos",
+                            confirmButtonColor: "#EF4444"
+                        });
+                    }
+                    
+                } else if (axiosError.response?.status === 401) {
+                    // Credenciales incorrectas
+                    setFieldError('email', 'Email o contraseña incorrectos');
+                    setFieldError('password', 'Email o contraseña incorrectos');
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Credenciales incorrectas",
+                        text: "El email o la contraseña son incorrectos",
+                        confirmButtonColor: "#EF4444"
+                    });
+                    
+                } else if (axiosError.response?.status === 404) {
+                    // Usuario no encontrado
+                    setFieldError('email', 'Usuario no encontrado');
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Usuario no encontrado",
+                        text: "No existe una cuenta con este email",
+                        confirmButtonColor: "#EF4444"
+                    });
+                    
+                } else {
+                    // Error de red o servidor
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Error de conexión",
+                        text: "Hubo un error al iniciar sesión. Inténtalo de nuevo más tarde.",
+                        confirmButtonColor: "#EF4444"
+                    });
+                }
+                
+            } finally {
+                // 6. Siempre desactivar loading
+                setSubmitting(false);
+            }
         }
-        setSubmitting(false);
-      }, 1000);
-    }
-  });
+    });
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen py-8 px-4">
@@ -54,7 +182,7 @@ export default function LoginForm() {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.email}
-            className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
+            className={`w-full px-4 py-3 border-2 rounded-md text-gray-600 focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
               formik.touched.email && formik.errors.email
                 ? "border-red-500 bg-red-50"
                 : "border-fondo1 bg-white focus:border-tur3"
@@ -78,7 +206,7 @@ export default function LoginForm() {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.password}
-            className={`w-full px-4 py-3 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
+            className={`w-full px-4 py-3 border-2 text-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
               formik.touched.password && formik.errors.password
                 ? "border-red-500 bg-red-50"
                 : "border-fondo1 bg-white focus:border-tur3"
