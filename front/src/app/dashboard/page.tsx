@@ -40,10 +40,10 @@ export default function DashboardHome() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !backendToken) {
-      // Not logged in anywhere, send to login
-      loginWithRedirect({ appState: { returnTo: '/dashboard' } });
+      // No sesión (ni Auth0 ni JWT propio) -> ir al login tradicional
+      router.push('/login');
     }
-  }, [isLoading, isAuthenticated, backendToken, loginWithRedirect]);
+  }, [isLoading, isAuthenticated, backendToken, router]);
 
   return (
     <div className="pt-20 px-6 md:px-12 lg:px-24">
