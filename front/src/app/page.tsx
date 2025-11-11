@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import ArtistsPreview from "../components/ArtistsPreview";
 import BandsPreview from "../components/BandsPreview";
-import EventsPreview from "../components/EventsPreview";
 import Link from "next/link";
 
 export default function LandingPage() {
