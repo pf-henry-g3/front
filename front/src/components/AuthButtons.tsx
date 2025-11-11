@@ -44,7 +44,7 @@ export default function AuthButtons () {
                 (typeof window !== "undefined" ? window.location.origin : ""))
                 .replace(/\/+$/, ""); // sin barra final
 
-        logout({ logoutParams: { returnTo: siteUrl } });
+        logout({ logoutParams: { returnTo: siteUrl, client_id: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID } });
     };
 
     const loggedIn = isAuthenticated || hasBackendToken;
