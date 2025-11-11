@@ -192,7 +192,8 @@ export default function HomePage() {
             for (const term of searchTests) {
                 try {
                     console.log(`🔍 Probando búsqueda con término: "${term}"`);
-                    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/search/global?q=${term}&limit=100`);
+                    const base = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/$/, '');
+                    const response = await axios.get(`${base}/search/global?q=${term}&limit=100`);
                     console.log(`✅ Respuesta para "${term}":`, {
                         status: response.status,
                         dataLength: response.data?.data?.length || 0,
@@ -213,7 +214,8 @@ export default function HomePage() {
             console.log('🔍 Probando endpoints individuales...');
 
             try {
-                const bandResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/band`);
+                const base = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/$/, '');
+                const bandResponse = await axios.get(`${base}/band`);
                 console.log('🎵 Endpoint /band:', {
                     status: bandResponse.status,
                     dataLength: Array.isArray(bandResponse.data?.data) ? bandResponse.data.data.length :
@@ -225,7 +227,7 @@ export default function HomePage() {
             }
 
             try {
-                const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/user`);
+                const userResponse = await axios.get(`${base}/user`);
                 console.log('👤 Endpoint /user:', {
                     status: userResponse.status,
                     dataLength: Array.isArray(userResponse.data?.data) ? userResponse.data.data.length :
@@ -237,7 +239,7 @@ export default function HomePage() {
             }
 
             try {
-                const vacancyResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/vacancy`);
+                const vacancyResponse = await axios.get(`${base}/vacancy`);
                 console.log('💼 Endpoint /vacancy:', {
                     status: vacancyResponse.status,
                     dataLength: Array.isArray(vacancyResponse.data?.data) ? vacancyResponse.data.data.length :

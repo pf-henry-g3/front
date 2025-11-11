@@ -22,7 +22,8 @@ export default function Auth0CallbackPage() {
                 // Obtener token de Auth0
                 const auth0Token = await getAccessTokenSilently();
 
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/auth0/callback`, {
+                const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
+                const response = await fetch(`${base}/auth/auth0/callback`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${auth0Token}`,
