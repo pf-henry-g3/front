@@ -258,6 +258,7 @@ export default function LoginForm() {
         </button>
       </form>
 
+
       {/* Mensajes de estado */}
       {formik.status && (
         <div className={`mt-4 p-4 rounded-md shadow-md ${
