@@ -113,15 +113,14 @@ const formik = useFormik<CreateUserDto>({
                 {
                     headers: {
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    // Manejamos status manualmente
+                    validateStatus: () => true,
                 }
             );
             
-            // 4. Manejar respuesta exitosa
-            console.log('Respuesta del servidor:', response.data);
-            
-            // Si llegamos aquí sin errores, el registro fue exitoso
-            if (response.status === 200 || response.status === 201) {
+            // 4. Manejar respuesta según código
+            if (response.status >= 200 && response.status < 300) {
                 // Resetear formulario completamente
                 resetForm({
                     values: {
@@ -137,18 +136,29 @@ const formik = useFormik<CreateUserDto>({
                 });
                 
                 // Mostrar mensaje de éxito con SweetAlert2
-                await 
-                    router.push("/login");
-                    Swal.fire({
-                    icon: "success",
-                    title: "¡Registro completado con éxito!",
-                    text: "Tu cuenta ha sido creada correctamente",
-                    confirmButtonText: "Ir al Login",
-                    confirmButtonColor: "#10B981"
+                await Swal.fire({
+                  icon: "success",
+                  title: "¡Registro completado con éxito!",
+                  text: typeof response.data === 'string' ? response.data : (response.data?.message || "Tu cuenta ha sido creada correctamente"),
+                  confirmButtonText: "Ir al Login",
+                  confirmButtonColor: "#10B981",
+                  timer: 1500
                 });
+                router.push("/login");
                 
                 // Opcional: Redireccionar al login después del alert
                 // router.push('/login');
+            } else if (response.status === 400) {
+                const errorData = response.data;
+                if (errorData?.message && Array.isArray(errorData.message)) {
+                    await Swal.fire({ icon: "error", title: "Errores de validación", html: errorData.message.map((m: string) => `• ${m}`).join('<br>'), confirmButtonColor: "#EF4444" });
+                } else {
+                    await Swal.fire({ icon: "error", title: "Error de validación", text: errorData?.message || "Datos inválidos", confirmButtonColor: "#EF4444" });
+                }
+            } else if (response.status === 409) {
+                await Swal.fire({ icon: "error", title: "Usuario ya existe", text: "Este email ya está registrado.", confirmButtonColor: "#EF4444" });
+            } else {
+                await Swal.fire({ icon: "error", title: "Error", text: "No se pudo registrar. Intenta nuevamente.", confirmButtonColor: "#EF4444" });
             }
             
         } catch (error) {
