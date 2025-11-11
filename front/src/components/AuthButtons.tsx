@@ -61,18 +61,6 @@ export default function AuthButtons () {
                     </button>
 
                     <button 
-                        className="py-1.5 rounded-md px-4 text-purple-400 text-lg font-sans border border-fondo1 transition duration-400 hover:bg-purple-400 hover:text-azul hover:-translate-y-0.5 hover:cursor-pointer flex items-center gap-2" 
-                        onClick={() => {
-                            loginWithRedirect({ appState: { returnTo: "/dashboard" } });
-                        }}
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                        Auth0
-                    </button>
-
-                    <button 
                         className="py-1.5 rounded-md px-4 text-tur3 text-lg font-sans border border-fondo1 transition duration-400 hover:bg-tur3 hover:border-verde hover:text-azul hover:-translate-y-0.5 hover:cursor-pointer flex items-center gap-2" 
                         onClick={() => {router.push("/register");}}
                     >
