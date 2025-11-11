@@ -50,10 +50,11 @@ export default function HomePage() {
             // Cargar datos directamente de los endpoints individuales (sin búsqueda)
             console.log('📥 Cargando todos los datos automáticamente...');
 
+            const apiBase = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/$/, '');
             const [bandResponse, userResponse, vacancyResponse] = await Promise.all([
-                axios.get(`http://localhost:3000/band`),
-                axios.get(`http://localhost:3000/user`),
-                axios.get(`http://localhost:3000/vacancy`)
+                axios.get(`${apiBase}/band`),
+                axios.get(`${apiBase}/user`),
+                axios.get(`${apiBase}/vacancy`)
             ]);
 
             console.log('📊 Respuestas de endpoints individuales:', {

@@ -9,7 +9,10 @@ const validationSchema = Yup.object({
 });
 
 async function createDonationOnBackend(amount: number) {
-  const apiBase = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3000";
+  const apiBase = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/$/, '');
+  if (!apiBase) {
+    throw new Error("API base URL no configurada. Define NEXT_PUBLIC_API_URL en el entorno.");
+  }
   try {
     const res = await axios.post(`${apiBase}/payment/create-donation`, { amount }, {
       headers: { "Content-Type": "application/json" },

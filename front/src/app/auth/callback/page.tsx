@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
@@ -22,7 +22,7 @@ export default function Auth0CallbackPage() {
                 // Obtener token de Auth0
                 const auth0Token = await getAccessTokenSilently();
 
-                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/auth0/callback`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/auth0/callback`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${auth0Token}`,
