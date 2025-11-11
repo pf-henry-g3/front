@@ -61,42 +61,56 @@ export default function LoginForm() {
                     {
                         headers: {
                             'Content-Type': 'application/json'
-                        }
+                        },
+                        // Evita que Axios lance excepción por 4xx/5xx; manejamos nosotros
+                        validateStatus: () => true,
                     }
                 );
                 
-                // 4. Manejar respuesta exitosa
-                console.log('Respuesta del servidor:', response.data);
-                
-                // Si llegamos aquí sin errores, el login fue exitoso
-                if (response.status === 200 || response.status === 201) {
-                    // Guardar token si el backend lo devuelve
-                    if (response.data.token) {
-                        localStorage.setItem('token', response.data.token);
-                    }
-                    
-                    // Resetear formulario
-                    resetForm({
-                        values: {
-                            email: "",
-                            password: ""
-                        },
-                        errors: {},
-                        touched: {}
-                    });
-                    
-                    // Mostrar mensaje de éxito y redirigir
+                // 4. Manejar respuesta según código
+                if (response.status >= 200 && response.status < 300) {
+                    const payload = response.data?.data || response.data;
+                    const accessToken = payload?.access_token || payload?.token;
+                    const user = payload?.userWithoutPassword || payload?.user;
+
+                    if (accessToken) localStorage.setItem('access_token', accessToken);
+                    if (user) localStorage.setItem('user', JSON.stringify(user));
+
+                    resetForm({ values: { email: "", password: "" }, errors: {}, touched: {} });
+
                     await Swal.fire({
                         icon: "success",
                         title: "¡Inicio de sesión exitoso!",
                         text: "Bienvenido de vuelta",
                         confirmButtonText: "Continuar",
                         confirmButtonColor: "#10B981",
-                        timer: 2000
+                        timer: 1500
                     });
-                    
-                    // Redireccionar al home
-                    router.push('/home');
+
+                    router.push('/dashboard');
+                    return;
+                } else if (response.status === 400) {
+                    const errorData = response.data;
+                    const backendMsg = typeof errorData?.message === 'string' ? errorData.message : undefined;
+                    if (backendMsg) {
+                        await Swal.fire({ icon: "error", title: "Error", text: backendMsg, confirmButtonColor: "#EF4444" });
+                        return;
+                    }
+                    if (errorData?.message && Array.isArray(errorData.message)) {
+                        await Swal.fire({ icon: "error", title: "Errores de validación", html: errorData.message.map((m: string) => `• ${m}`).join('<br>'), confirmButtonColor: "#EF4444" });
+                        return;
+                    }
+                    await Swal.fire({ icon: "error", title: "Error de validación", text: errorData?.message || "Datos inválidos", confirmButtonColor: "#EF4444" });
+                    return;
+                } else if (response.status === 401) {
+                    await Swal.fire({ icon: "error", title: "Credenciales incorrectas", text: "El email o la contraseña son incorrectos", confirmButtonColor: "#EF4444" });
+                    return;
+                } else if (response.status === 404) {
+                    await Swal.fire({ icon: "error", title: "Usuario no encontrado", text: "No existe una cuenta con este email", confirmButtonColor: "#EF4444" });
+                    return;
+                } else {
+                    await Swal.fire({ icon: "error", title: "Error", text: "No se pudo iniciar sesión. Intenta nuevamente.", confirmButtonColor: "#EF4444" });
+                    return;
                 }
                 
             } catch (error) {
@@ -104,7 +118,7 @@ export default function LoginForm() {
                 const axiosError = error as AxiosError<any>;
                 
                 console.error('Error de login:', axiosError);
-                
+
                 if (axiosError.response?.status === 400) {
                     // Errores de validación
                     const errorData = axiosError.response.data;
