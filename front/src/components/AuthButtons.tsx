@@ -39,7 +39,12 @@ export default function AuthButtons () {
             localStorage.removeItem("access_token");
             localStorage.removeItem("user");
         }
-        logout({ logoutParams: { returnTo: typeof window !== "undefined" ? window.location.origin : undefined } });
+        const siteUrl =
+            (process.env.NEXT_PUBLIC_SITE_URL ||
+                (typeof window !== "undefined" ? window.location.origin : ""))
+                .replace(/\/+$/, ""); // sin barra final
+
+        logout({ logoutParams: { returnTo: siteUrl } });
     };
 
     const loggedIn = isAuthenticated || hasBackendToken;
