@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
@@ -19,10 +19,16 @@ export default function Auth0CallbackPage() {
             }
 
             try {
-                // Obtener token de Auth0
-                const auth0Token = await getAccessTokenSilently();
+                // Obtener token de Auth0 con audience correcto
+                const auth0Token = await getAccessTokenSilently({
+                    authorizationParams: {
+                        audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+                        scope: 'openid profile email',
+                    },
+                });
 
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/auth0/callback`, {
+                const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
+                const response = await fetch(`${base}/auth/auth0/callback`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${auth0Token}`,
@@ -34,7 +40,8 @@ export default function Auth0CallbackPage() {
 
 
                 if (!response.ok) {
-                    throw new Error('Error sincronizando usuario');
+                    const body = await response.text().catch(() => '');
+                    throw new Error(`Error sincronizando usuario (${response.status}): ${body}`);
                 }
 
                 const data = await response.json();

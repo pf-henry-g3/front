@@ -39,7 +39,12 @@ export default function AuthButtons () {
             localStorage.removeItem("access_token");
             localStorage.removeItem("user");
         }
-        logout({ logoutParams: { returnTo: typeof window !== "undefined" ? window.location.origin : undefined } });
+        const siteUrl =
+            (process.env.NEXT_PUBLIC_SITE_URL ||
+                (typeof window !== "undefined" ? window.location.origin : ""))
+                .replace(/\/+$/, ""); // sin barra final
+
+        logout({ logoutParams: { returnTo: siteUrl, client_id: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID } });
     };
 
     const loggedIn = isAuthenticated || hasBackendToken;
@@ -51,7 +56,7 @@ export default function AuthButtons () {
                     <button 
                         className="bg-tur1 py-1.5 px-4 rounded-md text-azul text-lg font-sans shadow-xl transition duration-300 hover:bg-tur2 hover:text-oscuro2 hover:-translate-y-0.5 hover:cursor-pointer flex items-center gap-2" 
                         onClick={() => {
-                            loginWithRedirect({ appState: { returnTo: "/dashboard" } });
+                            router.push("/login");
                         }}
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -7,10 +7,12 @@ type User = {
   name?: string;
   userName?: string;
   email?: string;
+  birthDate?: string;
   city?: string;
   country?: string;
   aboutMe?: string;
   urlImage?: string;
+  roles?: Array<{ id?: string; name?: string }>;
 };
 
 export default function ProfilePage() {
@@ -40,7 +42,8 @@ export default function ProfilePage() {
     try {
       const token = localStorage.getItem('access_token');
       if (!token || !user?.id) throw new Error('No autenticado');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${user.id}`, {
+      const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
+      const res = await fetch(`${base}/user/${user.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -49,9 +52,11 @@ export default function ProfilePage() {
         body: JSON.stringify({
           name: user.name,
           userName: user.userName,
+          birthDate: user.birthDate,
           city: user.city,
           country: user.country,
           aboutMe: user.aboutMe,
+          urlImage: user.urlImage,
         }),
       });
       if (!res.ok) {
@@ -86,6 +91,19 @@ export default function ProfilePage() {
         <div className="rounded-xl border bg-white/70 p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Mi perfil</h2>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Imagen de perfil */}
+            <div className="md:col-span-2 flex items-center gap-4">
+              <img
+                src={user.urlImage || '/default-user.jpg'}
+                alt="avatar"
+                className="h-16 w-16 rounded-full object-cover border"
+              />
+              <div className="flex-1">
+                <label className="text-sm text-gray-600 mb-1 block">URL Imagen</label>
+                <input className="w-full rounded-md border px-3 py-2" value={user.urlImage || ''} onChange={handleChange('urlImage')} />
+              </div>
+            </div>
+
             <div className="flex flex-col">
               <label className="text-sm text-gray-600 mb-1">Nombre</label>
               <input className="rounded-md border px-3 py-2" value={user.name || ''} onChange={handleChange('name')} />
@@ -93,6 +111,14 @@ export default function ProfilePage() {
             <div className="flex flex-col">
               <label className="text-sm text-gray-600 mb-1">Usuario</label>
               <input className="rounded-md border px-3 py-2" value={user.userName || ''} onChange={handleChange('userName')} />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm text-gray-600 mb-1">Email</label>
+              <input className="rounded-md border px-3 py-2 bg-gray-100" value={user.email || ''} disabled />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm text-gray-600 mb-1">Fecha de nacimiento</label>
+              <input type="date" className="rounded-md border px-3 py-2" value={user.birthDate || ''} onChange={handleChange('birthDate')} />
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-gray-600 mb-1">Ciudad</label>
@@ -106,6 +132,19 @@ export default function ProfilePage() {
               <label className="text-sm text-gray-600 mb-1">Sobre mí</label>
               <textarea className="rounded-md border px-3 py-2" rows={4} value={user.aboutMe || ''} onChange={handleChange('aboutMe')} />
             </div>
+
+            {/* Roles solo lectura */}
+            {Array.isArray(user.roles) && user.roles.length > 0 && (
+              <div className="md:col-span-2">
+                <label className="text-sm text-gray-600 mb-1 block">Roles</label>
+                <div className="flex flex-wrap gap-2">
+                  {user.roles.map((r, idx) => (
+                    <span key={idx} className="px-2 py-1 rounded-md bg-gray-200 text-gray-700 text-sm">{r?.name}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="md:col-span-2 flex gap-3 items-center">
               <button disabled={saving} className="px-4 py-2 rounded-md bg-tur1 text-azul hover:bg-tur2 transition disabled:opacity-60">
                 {saving ? 'Guardando…' : 'Guardar cambios'}
