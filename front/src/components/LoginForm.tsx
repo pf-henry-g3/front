@@ -5,12 +5,9 @@ import * as Yup from "yup";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { useAuth0 } from "@auth0/auth0-react";
+import { LoginData } from "../interfaces/ILoginData";
 
-// Interfaz para los datos de login
-interface LoginData {
-    email: string;
-    password: string;
-}
+
 
 // Schema de validación con Yup
 const validationSchema = Yup.object({
