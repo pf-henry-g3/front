@@ -14,7 +14,12 @@ export default function BandsPreview() {
     const fetchBands = async () => {
       setLoading(true);
       try {
-        const base = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
+        const base = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
+        if (!base) {
+          setBands([]);
+          setLoading(false);
+          return;
+        }
         const res = await axios.get(`${base}/band`);
         const raw = res.data?.data ?? res.data ?? [];
 
@@ -29,7 +34,6 @@ export default function BandsPreview() {
           setBands([]); 
         }
       } catch (err) {
-        console.error("Error fetching bands:", err);
         setBands([]); 
       } finally {
         setLoading(false);

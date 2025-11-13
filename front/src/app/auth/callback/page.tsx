@@ -19,15 +19,23 @@ export default function Auth0CallbackPage() {
             }
 
             try {
-                // Obtener token de Auth0 con audience correcto
                 const auth0Token = await getAccessTokenSilently({
                     authorizationParams: {
                         audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
                         scope: 'openid profile email',
                     },
+                    cacheMode: 'off',
                 });
 
-                const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
+                if (!auth0Token) {
+                    throw new Error('No se pudo obtener el token de Auth0');
+                }
+
+                const base = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
+                if (!base) {
+                    throw new Error('URL del backend no configurada');
+                }
+
                 const response = await fetch(`${base}/auth/auth0/callback`, {
                     method: 'POST',
                     headers: {
@@ -36,28 +44,33 @@ export default function Auth0CallbackPage() {
                     },
                     body: JSON.stringify({ user })
                 });
-                console.log(response);
-
 
                 if (!response.ok) {
                     const body = await response.text().catch(() => '');
-                    throw new Error(`Error sincronizando usuario (${response.status}): ${body}`);
+                    let errorMessage = `Error sincronizando usuario (${response.status})`;
+                    try {
+                        const errorJson = JSON.parse(body);
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch {
+                        errorMessage = body || errorMessage;
+                    }
+                    throw new Error(errorMessage);
                 }
 
                 const data = await response.json();
 
-                console.log(data);
+                if (!data?.data?.access_token) {
+                    throw new Error('No se recibió el token del backend');
+                }
 
-
-                // Guardar tu JWT local en localStorage
                 localStorage.setItem('access_token', data.data.access_token);
                 localStorage.setItem('user', JSON.stringify(data.data.userWithoutPassword));
+                window.dispatchEvent(new Event('auth-changed'));
 
                 router.push('/');
 
             } catch (err: any) {
-                console.error('Error en callback:', err);
-                setError(err.message);
+                setError(err.message || 'Error al sincronizar con el backend');
             }
         };
 

@@ -38,48 +38,30 @@ export default function HomePage() {
     // Estado para el elemento seleccionado
     const [selectedItem, setSelectedItem] = useState<ProductCardProps | null>(null);
 
-    // Función para cargar datos del backend
     const loadDataFromBackend = async () => {
         try {
             setLoading(true);
             setError(null);
 
-            console.log('🔄 Iniciando carga de datos del backend...');
-            console.log('🌐 API URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
+            const apiBase = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/+$/, '');
+            if (!apiBase) {
+                setError('URL del backend no configurada');
+                setLoading(false);
+                return;
+            }
 
-            // Cargar datos directamente de los endpoints individuales (sin búsqueda)
-            console.log('📥 Cargando todos los datos automáticamente...');
-
-            const apiBase = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/$/, '');
             const [bandResponse, userResponse, vacancyResponse] = await Promise.all([
                 axios.get(`${apiBase}/band`),
                 axios.get(`${apiBase}/user`),
                 axios.get(`${apiBase}/vacancy`)
             ]);
 
-            console.log('📊 Respuestas de endpoints individuales:', {
-                bandsStatus: bandResponse.status,
-                bandsCount: bandResponse.data?.data?.length || (Array.isArray(bandResponse.data) ? bandResponse.data.length : 0),
-                usersStatus: userResponse.status,
-                usersCount: userResponse.data?.data?.length || (Array.isArray(userResponse.data) ? userResponse.data.length : 0),
-                vacanciesStatus: vacancyResponse.status,
-                vacanciesCount: vacancyResponse.data?.data?.length || (Array.isArray(vacancyResponse.data) ? vacancyResponse.data.length : 0)
-            });
-
             // Extraer datos - algunos endpoints pueden devolver { success, data } otros directamente el array
             const rawBandsData = bandResponse.data?.data || bandResponse.data || [];
             const rawUsersData = userResponse.data?.data || userResponse.data || [];
             const rawVacanciesData = vacancyResponse.data?.data || vacancyResponse.data || [];
 
-            console.log('📋 Datos extraídos:', {
-                bandsRaw: Array.isArray(rawBandsData) ? rawBandsData.length : 0,
-                usersRaw: Array.isArray(rawUsersData) ? rawUsersData.length : 0,
-                vacanciesRaw: Array.isArray(rawVacanciesData) ? rawVacanciesData.length : 0
-            });
-
-            // Convertir bandas al formato ProductCardProps
-            const bands: ProductCardProps[] = Array.isArray(rawBandsData) ? rawBandsData.map((band: any, index: number) => {
-                console.log(`🎵 Procesando banda ${index + 1}:`, band);
+            const bands: ProductCardProps[] = Array.isArray(rawBandsData) ? rawBandsData.map((band: any) => {
                 return {
                     id: band.id?.toString() || `band-${Math.random()}`,
                     name: band.bandName || band.name || "Banda sin nombre",
@@ -90,9 +72,7 @@ export default function HomePage() {
                 };
             }) : [];
 
-            // Convertir usuarios al formato ProductCardProps
-            const users: ProductCardProps[] = Array.isArray(rawUsersData) ? rawUsersData.map((user: any, index: number) => {
-                console.log(`👤 Procesando usuario ${index + 1}:`, user);
+            const users: ProductCardProps[] = Array.isArray(rawUsersData) ? rawUsersData.map((user: any) => {
                 return {
                     id: user.id?.toString() || `user-${Math.random()}`,
                     name: user.userName || user.name || "Usuario sin nombre",
@@ -104,9 +84,7 @@ export default function HomePage() {
                 };
             }) : [];
 
-            // Convertir vacantes al formato ProductCardProps
-            const vacancies: ProductCardProps[] = Array.isArray(rawVacanciesData) ? rawVacanciesData.map((vacancy: any, index: number) => {
-                console.log(`💼 Procesando vacante ${index + 1}:`, vacancy);
+            const vacancies: ProductCardProps[] = Array.isArray(rawVacanciesData) ? rawVacanciesData.map((vacancy: any) => {
                 return {
                     id: vacancy.id?.toString() || `vacancy-${Math.random()}`,
                     name: vacancy.name || "Vacante sin título",
@@ -119,19 +97,12 @@ export default function HomePage() {
                 };
             }) : [];
 
-            console.log('✅ Bandas convertidas:', bands.length, bands);
-            console.log('✅ Usuarios convertidos:', users.length, users);
-            console.log('✅ Vacantes convertidas:', vacancies.length, vacancies);
-
-            // Combinar todos los elementos
             const combinedData = [...bands, ...users, ...vacancies];
-            console.log('🎯 Datos combinados finales:', combinedData.length, combinedData);
 
             setAllItems(combinedData);
             setFilteredItems(combinedData);
 
         } catch (err) {
-            console.error('Error loading data:', err);
             setError('Error al cargar los datos del servidor');
         } finally {
             setLoading(false);
@@ -181,79 +152,6 @@ export default function HomePage() {
         setSelectedItem(item);
     }, []);
 
-    // Función de debugging para probar diferentes endpoints
-    const debugSingleCall = async () => {
-        try {
-            console.log('🔍 DEBUG: Iniciando diagnóstico completo...');
-
-            // Probar el endpoint de search con diferentes términos
-            const searchTests = ['Arctic', 'e', 'o', 'a', 'banda', 'música', 'usuarios', 'vacantes'];
-
-            for (const term of searchTests) {
-                try {
-                    console.log(`🔍 Probando búsqueda con término: "${term}"`);
-                    const base = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/$/, '');
-                    const response = await axios.get(`${base}/search/global?q=${term}&limit=100`);
-                    console.log(`✅ Respuesta para "${term}":`, {
-                        status: response.status,
-                        dataLength: response.data?.data?.length || 0,
-                        meta: response.data?.meta,
-                        hasData: !!response.data?.data?.length
-                    });
-
-                    if (response.data?.data?.length > 0) {
-                        console.log(`🎯 ¡Encontrados datos con "${term}"!`, response.data.data[0]);
-                        break; // Si encontramos datos, paramos aquí
-                    }
-                } catch (error) {
-                    console.error(`❌ Error con término "${term}":`, error);
-                }
-            }
-
-            // Probar endpoints individuales para ver si hay datos
-            console.log('🔍 Probando endpoints individuales...');
-
-            try {
-                const base = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/$/, '');
-                const bandResponse = await axios.get(`${base}/band`);
-                console.log('🎵 Endpoint /band:', {
-                    status: bandResponse.status,
-                    dataLength: Array.isArray(bandResponse.data?.data) ? bandResponse.data.data.length :
-                        Array.isArray(bandResponse.data) ? bandResponse.data.length : 'No es array',
-                    hasData: !!(bandResponse.data?.data?.length || bandResponse.data?.length)
-                });
-            } catch (error) {
-                console.error('❌ Error en /band:', error);
-            }
-
-            try {
-                const userResponse = await axios.get(`${base}/user`);
-                console.log('👤 Endpoint /user:', {
-                    status: userResponse.status,
-                    dataLength: Array.isArray(userResponse.data?.data) ? userResponse.data.data.length :
-                        Array.isArray(userResponse.data) ? userResponse.data.length : 'No es array',
-                    hasData: !!(userResponse.data?.data?.length || userResponse.data?.length)
-                });
-            } catch (error) {
-                console.error('❌ Error en /user:', error);
-            }
-
-            try {
-                const vacancyResponse = await axios.get(`${base}/vacancy`);
-                console.log('💼 Endpoint /vacancy:', {
-                    status: vacancyResponse.status,
-                    dataLength: Array.isArray(vacancyResponse.data?.data) ? vacancyResponse.data.data.length :
-                        Array.isArray(vacancyResponse.data) ? vacancyResponse.data.length : 'No es array',
-                    hasData: !!(vacancyResponse.data?.data?.length || vacancyResponse.data?.length)
-                });
-            } catch (error) {
-                console.error('❌ Error en /vacancy:', error);
-            }
-
-        } catch (error) {
-            console.error('🔍 DEBUG Error general:', error);
-        }
-    };
 
     // Mostrar loading
     if (loading) {

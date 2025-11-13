@@ -75,8 +75,9 @@ export default function LoginForm() {
                 console.log('Datos a enviar:', loginData);
                 
                 // 3. Hacer petición POST al backend
+                const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
                 const response = await axios.post(
-                    `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
+                    `${base}/auth/signin`,
                     loginData,
                     {
                         headers: {
@@ -95,6 +96,9 @@ export default function LoginForm() {
 
                     if (accessToken) localStorage.setItem('access_token', accessToken);
                     if (user) localStorage.setItem('user', JSON.stringify(user));
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new Event('auth-changed'));
+                    }
 
                     resetForm({ values: { email: "", password: "" }, errors: {}, touched: {} });
 
@@ -107,7 +111,7 @@ export default function LoginForm() {
                         timer: 1500
                     });
 
-                    router.push('/dashboard');
+                    router.replace('/dashboard');
                     return;
                 } else if (response.status === 400) {
                     const errorData = response.data;
