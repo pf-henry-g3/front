@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { useAuth0 } from "@auth0/auth0-react";
+import { apiClient, apiClientWithToken } from "../lib/api-client";
 
 // Interfaz para los datos de login
 interface LoginData {
@@ -74,34 +75,23 @@ export default function LoginForm() {
         // Debug: Mostrar datos que se envían
         console.log('Datos a enviar:', loginData);
 
-        // 3. Hacer petición POST al backend
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
-          loginData,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            withCredentials: true,
-            // Evita que Axios lance excepción por 4xx/5xx; manejamos nosotros
-            validateStatus: () => true,
-          }
-        );
+
+        const response = await apiClient.post('auth/signin', loginData);
+        const user = response.data.data.userWithoutPassword
+        console.log('✅ Login exitoso:', user);
+        console.log('🍪 Cookie guardada automáticamente');
+
 
         // 4. Manejar respuesta según código
         if (response.status >= 200 && response.status < 300) {
-          const payload = response.data?.data || response.data;
-          const user = payload?.userWithoutPassword || payload?.user;
           // ❌ YA NO guardamos el token en localStorage
           // ✅ El token ahora está en una cookie HttpOnly (automático)
 
           // Solo guardamos el usuario para UI (opcional)
           if (user) {
             localStorage.setItem('user', JSON.stringify(user));
+            console.log('👤 Usuario guarado en localStorage:', user);
           }
-
-          console.log('✅ Login exitoso, cookie guardada automáticamente');
-          console.log('👤 Usuario:', user);
 
           resetForm({ values: { email: "", password: "" }, errors: {}, touched: {} });
 
@@ -116,6 +106,7 @@ export default function LoginForm() {
 
           router.push('/dashboard');
           return;
+
         } else if (response.status === 400) {
           const errorData = response.data;
           const backendMsg = typeof errorData?.message === 'string' ? errorData.message : undefined;
@@ -236,8 +227,8 @@ export default function LoginForm() {
               onBlur={formik.handleBlur}
               value={formik.values.email}
               className={`w-full px-4 py-3 border-2 rounded-md text-gray-600 focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${formik.touched.email && formik.errors.email
-                  ? "border-red-500 bg-red-50"
-                  : "border-fondo1 bg-white focus:border-tur3"
+                ? "border-red-500 bg-red-50"
+                : "border-fondo1 bg-white focus:border-tur3"
                 }`}
               placeholder="tu@email.com"
             />
@@ -259,8 +250,8 @@ export default function LoginForm() {
               onBlur={formik.handleBlur}
               value={formik.values.password}
               className={`w-full px-4 py-3 border-2 text-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${formik.touched.password && formik.errors.password
-                  ? "border-red-500 bg-red-50"
-                  : "border-fondo1 bg-white focus:border-tur3"
+                ? "border-red-500 bg-red-50"
+                : "border-fondo1 bg-white focus:border-tur3"
                 }`}
               placeholder="••••••••"
             />
@@ -274,8 +265,8 @@ export default function LoginForm() {
             type="submit"
             disabled={formik.isSubmitting || !formik.isValid}
             className={`w-full py-3 px-6 rounded-md text-lg font-sans shadow-xl transition duration-300 ${formik.isSubmitting || !formik.isValid
-                ? "bg-gray-400 cursor-not-allowed text-white"
-                : "bg-tur1 text-azul hover:bg-tur2 hover:text-oscuro2 hover:-translate-y-0.5 hover:cursor-pointer"
+              ? "bg-gray-400 cursor-not-allowed text-white"
+              : "bg-tur1 text-azul hover:bg-tur2 hover:text-oscuro2 hover:-translate-y-0.5 hover:cursor-pointer"
               }`}
           >
             {formik.isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
@@ -307,8 +298,8 @@ export default function LoginForm() {
         {/* Mensajes de estado */}
         {formik.status && (
           <div className={`mt-4 p-4 rounded-md shadow-md ${formik.status.type === "success"
-              ? "bg-tur1 border border-tur2 text-azul"
-              : "bg-red-100 border border-red-400 text-red-700"
+            ? "bg-tur1 border border-tur2 text-azul"
+            : "bg-red-100 border border-red-400 text-red-700"
             }`}>
             <p className="font-medium">{formik.status.message}</p>
           </div>

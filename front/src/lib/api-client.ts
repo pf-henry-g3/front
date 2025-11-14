@@ -1,11 +1,9 @@
 // src/lib/api-client.ts
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
-
 // Crear instancia de axios con configuración base
 export const apiClient = axios.create({
-    baseURL: API_URL,
+    baseURL: process.env.NEXT_PUBLIC_API_URL,
     withCredentials: true,  // 👈 Envía cookies automáticamente
     headers: {
         'Content-Type': 'application/json',
@@ -22,10 +20,9 @@ apiClient.interceptors.response.use(
     }
 );
 
-// Helper para peticiones con token manual (Auth0)
 export const apiClientWithToken = (token: string) => {
     return axios.create({
-        baseURL: API_URL,
+        baseURL: process.env.NEXT_PUBLIC_API_URL,
         withCredentials: true,
         headers: {
             'Content-Type': 'application/json',

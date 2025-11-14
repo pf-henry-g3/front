@@ -24,25 +24,22 @@ export default function Auth0CallbackPage() {
 
             try {
                 setSyncStatus('Obteniendo token de Auth0...');
-                // 1. Obtener token de Auth0
                 const auth0Token = await getAccessTokenSilently();
 
                 setSyncStatus('Sincronizando con el backend...');
-                // 2. Crear cliente con el token de Auth0
                 const clientWithAuth0Token = apiClientWithToken(auth0Token);
 
-                // 3. Enviar al backend (backend responderá con una cookie)
                 const response = await clientWithAuth0Token.post('/auth/auth0/callback', {
                     user,
                 });
+
+                console.log('🎈 Complete response: ', response);
 
                 console.log('✅ Usuario sincronizado:', response.data.data.userWithoutPassword);
                 console.log('🍪 Cookie guardada automáticamente por el navegador');
 
                 setSyncStatus('¡Listo! Redirigiendo...');
 
-                // 4. NO guardar nada en localStorage (la cookie se maneja sola)
-                // 5. Redirigir al dashboard
                 setTimeout(() => {
                     router.push('/dashboard');
                 }, 500);
