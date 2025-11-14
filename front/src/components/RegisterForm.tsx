@@ -107,8 +107,9 @@ const formik = useFormik<CreateUserDto>({
             });
             
             // 3. Hacer petición POST al backend
-            const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`,
+                   const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
+                   const response = await axios.post(
+                       `${base}/auth/signup`,
                 registerData,
                 {
                     headers: {

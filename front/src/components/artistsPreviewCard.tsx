@@ -8,7 +8,7 @@ export default function ArtistsPreviewCard ({ profilePicture, userName, country,
       <img
         src={profilePicture}
         alt={userName}
-        className="rounded-t-md"
+        className="rounded-t-md w-5xl h-5xl"
       />
       <div className="flex flex-col">
         <h1 className="text-txt1 font-bold text-xl text-shadow-md px-2">{userName}</h1>

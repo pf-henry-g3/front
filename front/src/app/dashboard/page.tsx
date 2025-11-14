@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/hooks/useAuth';
 
@@ -9,9 +8,10 @@ export default function DashboardHome() {
   const { user, loading, logout } = useAuth();
 
   // Verificar si el usuario es admin
-  const isAdmin = user?.roles?.some(
-    role => role.name === 'Admin' || role.name === 'SuperAdmin'
-  ) || false;
+  const isAdmin =
+    user?.roles?.some(
+      role => role.name === 'Admin' || role.name === 'SuperAdmin'
+    ) || false;
 
   // Mostrar loading mientras verifica autenticación
   if (loading) {
@@ -26,7 +26,6 @@ export default function DashboardHome() {
   }
 
   // Si no hay usuario, useAuth ya redirigió a /login
-  // Pero por seguridad, mostramos un estado de carga
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -39,8 +38,13 @@ export default function DashboardHome() {
     <div className="pt-20 px-6 md:px-12 lg:px-24">
       <div className="grid grid-cols-1 gap-6">
         <div className="rounded-xl border bg-white/70 p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold text-gray-800">Bienvenido{user.userName ? `, ${user.userName}` : ''}</h1>
-          <p className="mt-2 text-gray-600">Gestiona tu perfil y accede a herramientas.</p>
+          <h1 className="text-2xl font-semibold text-gray-800">
+            Bienvenido{user.userName ? `, ${user.userName}` : ''}
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Gestiona tu perfil y accede a herramientas.
+          </p>
+
           <div className="mt-4 flex gap-3">
             <button
               className="px-4 py-2 rounded-md bg-tur1 text-azul hover:bg-tur2 transition"
@@ -48,6 +52,7 @@ export default function DashboardHome() {
             >
               Editar mi información
             </button>
+
             {isAdmin && (
               <button
                 className="px-4 py-2 rounded-md bg-purple-500 text-white hover:bg-purple-600 transition"
@@ -62,5 +67,3 @@ export default function DashboardHome() {
     </div>
   );
 }
-
-

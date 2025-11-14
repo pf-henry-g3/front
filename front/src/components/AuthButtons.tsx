@@ -1,30 +1,66 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function AuthButtons () {
     const router = useRouter();
+    const pathname = usePathname();
     const { isAuthenticated, isLoading, loginWithRedirect, logout } = useAuth0();
     const [hasBackendToken, setHasBackendToken] = useState<boolean>(false);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-    useEffect(() => {
+    const recompute = useCallback(() => {
         try {
             const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
             setHasBackendToken(Boolean(token));
             if (token) {
                 const payload = JSON.parse(atob(token.split(".")[1]));
-                const roles: string[] = Array.isArray(payload?.roles) ? payload.roles : [];
-                setIsAdmin(roles.includes("Admin") || roles.includes("SuperAdmin"));
+                let roles: string[] = Array.isArray(payload?.roles) ? payload.roles : [];
+                let isAdminCheck = roles.includes("Admin") || roles.includes("SuperAdmin");
+
+                if (!isAdminCheck) {
+                    try {
+                        const userStr = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+                        if (userStr) {
+                            const user = JSON.parse(userStr);
+                            const userRoles = user?.roles?.map((r: any) => r.name) || [];
+                            roles = userRoles;
+                            isAdminCheck = userRoles.includes("Admin") || userRoles.includes("SuperAdmin");
+                        }
+                    } catch {
+                        // ignore
+                    }
+                }
+
+                setIsAdmin(isAdminCheck);
             } else {
                 setIsAdmin(false);
             }
         } catch {
             setIsAdmin(false);
         }
-    }, [isAuthenticated]);
+    }, []);
+
+    // Recalcular cuando cambia Auth0, la ruta o se dispara un evento global
+    useEffect(() => { recompute(); }, [isAuthenticated, pathname, recompute]);
+    useEffect(() => {
+        const onStorage = (e: StorageEvent) => {
+            if (e.key === "access_token" || e.key === "user") recompute();
+        };
+        const onAuthChanged = () => recompute();
+        if (typeof window !== "undefined") {
+            window.addEventListener("storage", onStorage);
+            window.addEventListener("auth-changed" as any, onAuthChanged);
+        }
+        return () => {
+            if (typeof window !== "undefined") {
+                window.removeEventListener("storage", onStorage);
+                window.removeEventListener("auth-changed" as any, onAuthChanged);
+            }
+        };
+    }, [recompute]);
 
     if (isLoading) {
         return (
@@ -38,6 +74,7 @@ export default function AuthButtons () {
         if (typeof window !== "undefined") {
             localStorage.removeItem("access_token");
             localStorage.removeItem("user");
+            window.dispatchEvent(new Event("auth-changed"));
         }
         const siteUrl =
             (process.env.NEXT_PUBLIC_SITE_URL ||

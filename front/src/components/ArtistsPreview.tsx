@@ -14,7 +14,12 @@ export default function ArtistsPreview() {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
+        const base = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
+        if (!base) {
+          setArtists([]);
+          setLoading(false);
+          return;
+        }
         const res = await axios.get(`${base}/user`);
         const raw = res.data?.data ?? res.data ?? [];
 
@@ -28,10 +33,9 @@ export default function ArtistsPreview() {
           }));
           setArtists(users);
         } else {
-          setArtists([]); // vacío si no hay datos
+          setArtists([]);
         }
       } catch (err) {
-        console.error("Error fetching users:", err);
         setArtists([]);
       } finally {
         setLoading(false);

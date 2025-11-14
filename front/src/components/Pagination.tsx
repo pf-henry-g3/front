@@ -65,21 +65,21 @@ export default function Pagination({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-between bg-gradient-to-r from-white/90 to-white/80 backdrop-blur-sm px-3 py-2 border border-tur3/30 rounded-lg shadow-md">
+    <div className="flex flex-col lg:flex-row items-center justify-between bg-linear-to-r from-white/90 to-white/80 backdrop-blur-sm px-3 py-2 border border-tur3/30 rounded-lg shadow-md">
       {/* Información de elementos - estilo landing */}
       <div className="text-xs text-oscuro2 mb-2 lg:mb-0 order-2 lg:order-1">
-        <span className="bg-gradient-to-r from-tur2/40 to-tur1/40 text-azul px-2 py-1 rounded-full font-medium shadow-sm backdrop-blur-sm border border-tur3/30 text-xs">
+        <span className="bg-linear-to-r from-tur2/40 to-tur1/40 text-azul px-2 py-1 rounded-full font-medium shadow-sm backdrop-blur-sm border border-tur3/30 text-xs">
           {startItem}-{endItem} de {totalItems}
         </span>
       </div>
 
       {/* Controles de paginación - estilo landing */}
-      <div className="flex items-center space-x-1.5 order-1 lg:order-2 mb-2 lg:mb-0">
+      <div className="flex items-center space-x-1 order-1 lg:order-2 mb-2 lg:mb-0">
         {/* Botón anterior - estilo landing */}
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="inline-flex items-center justify-center w-7 h-7 text-xs font-semibold text-oscuro1 bg-white/90 backdrop-blur-sm border border-tur3/30 rounded-lg hover:bg-tur1/20 hover:border-tur1 hover:text-tur1 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-sm hover:shadow-md"
+          className="inline-flex items-center justify-center w-7 h-7 text-xs font-semibold text-oscuro1 bg-white/90 backdrop-blur-sm border border-tur3/30 rounded-lg hover:bg-tur1/20 hover:border-tur1 hover:text-tur2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-sm hover:shadow-md"
         >
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
@@ -94,9 +94,9 @@ export default function Pagination({
             disabled={typeof page !== 'number'}
             className={`inline-flex items-center justify-center w-7 h-7 text-xs font-semibold border rounded-lg transition-all duration-300 shadow-sm backdrop-blur-sm ${
               page === currentPage
-                ? 'bg-gradient-to-r from-tur1 to-tur2 border-tur1 text-azul shadow-md'
+                ? 'bg-linear-to-r from-tur1 to-tur2 border-tur1 text-azul shadow-md'
                 : typeof page === 'number'
-                ? 'bg-white/90 border-tur3/30 text-oscuro1 hover:bg-tur1/20 hover:border-tur1 hover:text-tur1 hover:shadow-md'
+                ? 'bg-white/90 border-tur3/30 text-oscuro1 hover:bg-tur1/20 hover:border-tur1 hover:text-tur2 hover:shadow-md'
                 : 'bg-white/60 border-tur3/20 text-oscuro3 cursor-default'
             }`}
           >
@@ -108,7 +108,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="inline-flex items-center justify-center w-7 h-7 text-xs font-semibold text-oscuro1 bg-white/90 backdrop-blur-sm border border-tur3/30 rounded-lg hover:bg-tur1/20 hover:border-tur1 hover:text-tur1 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-sm hover:shadow-md"
+          className="inline-flex items-center justify-center w-7 h-7 text-xs font-semibold text-oscuro1 bg-white/90 backdrop-blur-sm border border-tur3/30 rounded-lg hover:bg-tur1/20 hover:border-tur1 hover:text-tur2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-sm hover:shadow-md"
         >
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -117,7 +117,7 @@ export default function Pagination({
       </div>
 
       {/* Selector de elementos por página - estilo landing */}
-      <div className="flex items-center space-x-2 order-3">
+      <div className="flex items-center space-x-1 order-3">
         <label htmlFor="itemsPerPage" className="text-xs text-oscuro1 font-medium">
           Ver:
         </label>

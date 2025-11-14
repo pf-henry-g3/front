@@ -1,26 +1,22 @@
 "use client";
-import axios, { AxiosError } from "axios";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { useAuth0 } from "@auth0/auth0-react";
-import { apiClient, apiClientWithToken } from "../lib/api-client";
+import { apiClient } from "../lib/api-client";
+import { AxiosError } from "axios";
 
-// Interfaz para los datos de login
 interface LoginData {
   email: string;
   password: string;
 }
 
-// Schema de validación con Yup
 const validationSchema = Yup.object({
-  email: Yup.string()
-    .email("Email inválido")
-    .required("El email es requerido"),
+  email: Yup.string().email("Email inválido").required("El email es requerido"),
   password: Yup.string()
     .min(6, "La contraseña debe tener al menos 6 caracteres")
-    .required("La contraseña es requerida")
+    .required("La contraseña es requerida"),
 });
 
 export default function LoginForm() {
@@ -32,7 +28,10 @@ export default function LoginForm() {
       await loginWithRedirect({
         authorizationParams: {
           connection: "google-oauth2",
-          redirect_uri: typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined,
+          redirect_uri:
+            typeof window !== "undefined"
+              ? `${window.location.origin}/auth/callback`
+              : undefined,
         },
       });
     } catch {
@@ -46,165 +45,71 @@ export default function LoginForm() {
   };
 
   const formik = useFormik<LoginData>({
-    initialValues: {
-      email: "",
-      password: ""
-    },
+    initialValues: { email: "", password: "" },
     validationSchema,
-    onSubmit: async (values, { setSubmitting, setFieldError, resetForm }) => {
-      // Validar que todos los campos estén completos
-      const { email, password } = values;
-      if (!email || !password) {
-        return Swal.fire({
-          icon: "error",
-          title: "Faltan datos",
-          text: "Por favor completa todos los campos"
-        });
-      }
-
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        // 1. Activar estado de loading
         setSubmitting(true);
 
-        // 2. Preparar datos para el backend
         const loginData = {
           email: values.email.trim(),
-          password: values.password.trim()
+          password: values.password.trim(),
         };
 
-        // Debug: Mostrar datos que se envían
-        console.log('Datos a enviar:', loginData);
+        console.log("Datos a enviar:", loginData);
 
+        const response = await apiClient.post("auth/signin", loginData);
+        const user = response.data.data.userWithoutPassword;
 
-        const response = await apiClient.post('auth/signin', loginData);
-        const user = response.data.data.userWithoutPassword
-        console.log('✅ Login exitoso:', user);
-        console.log('🍪 Cookie guardada automáticamente');
+        console.log("✅ Login exitoso:", user);
+        console.log("🍪 Cookie guardada automáticamente");
 
-
-        // 4. Manejar respuesta según código
-        if (response.status >= 200 && response.status < 300) {
-          // ❌ YA NO guardamos el token en localStorage
-          // ✅ El token ahora está en una cookie HttpOnly (automático)
-
-          // Solo guardamos el usuario para UI (opcional)
-          if (user) {
-            localStorage.setItem('user', JSON.stringify(user));
-            console.log('👤 Usuario guarado en localStorage:', user);
-          }
-
-          resetForm({ values: { email: "", password: "" }, errors: {}, touched: {} });
-
-          await Swal.fire({
-            icon: "success",
-            title: "¡Inicio de sesión exitoso!",
-            text: "Bienvenido de vuelta",
-            confirmButtonText: "Continuar",
-            confirmButtonColor: "#10B981",
-            timer: 1500
-          });
-
-          router.push('/dashboard');
-          return;
-
-        } else if (response.status === 400) {
-          const errorData = response.data;
-          const backendMsg = typeof errorData?.message === 'string' ? errorData.message : undefined;
-          if (backendMsg) {
-            await Swal.fire({ icon: "error", title: "Error", text: backendMsg, confirmButtonColor: "#EF4444" });
-            return;
-          }
-          if (errorData?.message && Array.isArray(errorData.message)) {
-            await Swal.fire({ icon: "error", title: "Errores de validación", html: errorData.message.map((m: string) => `• ${m}`).join('<br>'), confirmButtonColor: "#EF4444" });
-            return;
-          }
-          await Swal.fire({ icon: "error", title: "Error de validación", text: errorData?.message || "Datos inválidos", confirmButtonColor: "#EF4444" });
-          return;
-        } else if (response.status === 401) {
-          await Swal.fire({ icon: "error", title: "Credenciales incorrectas", text: "El email o la contraseña son incorrectos", confirmButtonColor: "#EF4444" });
-          return;
-        } else if (response.status === 404) {
-          await Swal.fire({ icon: "error", title: "Usuario no encontrado", text: "No existe una cuenta con este email", confirmButtonColor: "#EF4444" });
-          return;
-        } else {
-          await Swal.fire({ icon: "error", title: "Error", text: "No se pudo iniciar sesión. Intenta nuevamente.", confirmButtonColor: "#EF4444" });
-          return;
+        if (user) {
+          localStorage.setItem("user", JSON.stringify(user));
         }
 
+        resetForm();
+
+        await Swal.fire({
+          icon: "success",
+          title: "¡Inicio de sesión exitoso!",
+          text: "Bienvenido de vuelta",
+          confirmButtonColor: "#10B981",
+          timer: 1200,
+        });
+
+        router.push("/dashboard");
       } catch (error) {
-        // 5. Manejar diferentes tipos de errores
         const axiosError = error as AxiosError<any>;
 
-        console.error('Error de login:', axiosError);
+        console.error("Error de login:", axiosError);
 
-        if (axiosError.response?.status === 400) {
-          // Errores de validación
-          const errorData = axiosError.response.data;
-
-          // Mostrar mensaje directo del backend si existe
-          const backendMsg = typeof errorData?.message === 'string' ? errorData.message : undefined;
-          if (backendMsg) {
-            await Swal.fire({
-              icon: "error",
-              title: "Error",
-              text: backendMsg,
-              confirmButtonColor: "#EF4444"
-            });
-            return;
-          }
-
-          if (errorData.message && Array.isArray(errorData.message)) {
-            await Swal.fire({
-              icon: "error",
-              title: "Errores de validación",
-              html: errorData.message.map((msg: string) => `• ${msg}`).join('<br>'),
-              confirmButtonColor: "#EF4444"
-            });
-          } else {
-            await Swal.fire({
-              icon: "error",
-              title: "Error de validación",
-              text: errorData.message || "Datos inválidos",
-              confirmButtonColor: "#EF4444"
-            });
-          }
-
-        } else if (axiosError.response?.status === 401) {
-          // Credenciales incorrectas
-          setFieldError('email', 'Email o contraseña incorrectos');
-          setFieldError('password', 'Email o contraseña incorrectos');
+        if (axiosError.response?.status === 401) {
           await Swal.fire({
             icon: "error",
             title: "Credenciales incorrectas",
-            text: "El email o la contraseña son incorrectos",
-            confirmButtonColor: "#EF4444"
+            text: "Email o contraseña incorrectos",
           });
+          return;
+        }
 
-        } else if (axiosError.response?.status === 404) {
-          // Usuario no encontrado
-          setFieldError('email', 'Usuario no encontrado');
+        if (axiosError.response?.status === 404) {
           await Swal.fire({
             icon: "error",
             title: "Usuario no encontrado",
-            text: "No existe una cuenta con este email",
-            confirmButtonColor: "#EF4444"
           });
-
-        } else {
-          // Error de red o servidor
-          await Swal.fire({
-            icon: "error",
-            title: "Error de conexión",
-            text: "Hubo un error al iniciar sesión. Inténtalo de nuevo más tarde.",
-            confirmButtonColor: "#EF4444"
-          });
+          return;
         }
 
+        await Swal.fire({
+          icon: "error",
+          title: "Error de conexión",
+          text: "Intenta nuevamente.",
+        });
       } finally {
-        // 6. Siempre desactivar loading
         setSubmitting(false);
       }
-    }
+    },
   });
 
   return (

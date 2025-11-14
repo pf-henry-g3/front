@@ -49,10 +49,10 @@ export default function ProductCard({
     };
     return (
         <div 
-            className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-4 border cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
+            className={`bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-4 border cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
                 isSelected 
-                    ? 'border-tur1 bg-tur1/20 ring-2 ring-tur1/30 shadow-2xl' 
-                    : 'border-tur3/30 hover:border-tur1/60 hover:bg-tur1/10'
+                    ? 'border-tur2 bg-white ring-2 ring-tur1/30 shadow-2xl transition' 
+                    : 'border-white/95 hover:border-white/55 hover:bg-white/55'
             }`}
             onClick={onClick}
         >

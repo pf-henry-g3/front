@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AuthButtons from "./AuthButtons";
 import DonationButton from "./DonationButton";
+import VacantButton from "./VacantButton";
 
 export default function NavBar () {
 
@@ -30,7 +31,11 @@ export default function NavBar () {
 
             <DonationButton/>
 
+            <VacantButton />
+
             </span>
+
+            
 
             <div className="absolute right-6 md:right-12 lg:right-24">
 

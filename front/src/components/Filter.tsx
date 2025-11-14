@@ -175,7 +175,7 @@ export default function Filter({ allItems, onFilterResults }: FilterProps) {
   }
 
   return (
-    <div className="mb-3 p-4 bg-gradient-to-r from-white/85 to-white/75 backdrop-blur-sm rounded-xl shadow-lg border border-tur3/30 relative z-10">
+    <div className="mb-3 p-4 bg-linear-to-r from-white/90 to-white/80 rounded-xl shadow-lg relative z-10">
       
       {/* Layout vertical reorganizado */}
       <div className="flex flex-col gap-3">
@@ -218,7 +218,7 @@ export default function Filter({ allItems, onFilterResults }: FilterProps) {
           <div className="flex justify-center mt-2">
             <button
               onClick={clearFilters}
-              className="px-4 py-2 text-sm bg-gradient-to-r from-tur2/80 to-tur1/80 hover:from-tur2 hover:to-tur1 text-azul font-semibold rounded-lg transition-all duration-300 border border-tur3/30 shadow-sm hover:shadow-md backdrop-blur-sm transform hover:scale-105"
+              className="px-4 py-2 text-sm bg-linear-to-r from-tur2/80 to-tur1/80 hover:from-tur2 hover:to-tur1 text-azul font-semibold rounded-lg transition-all duration-300 border border-tur3/30 shadow-sm hover:shadow-md backdrop-blur-sm transform hover:scale-105"
               title="Limpiar todos los filtros"
             >
               ✨ Limpiar filtros

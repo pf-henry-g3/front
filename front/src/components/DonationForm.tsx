@@ -5,7 +5,20 @@ import * as Yup from "yup";
 import axios from "axios";
 
 const validationSchema = Yup.object({
-  amount: Yup.number().required("Selecciona un monto").min(1, "El monto debe ser mayor a 0"),
+  // el test en 'amount' permite que se valide si amount OR custom es > 0
+  amount: Yup.number().test(
+    "amount-or-custom",
+    "El monto debe ser mayor a 0",
+    function (amount) {
+      const custom = this.parent?.custom;
+      const customNum = Number(custom);
+      if ((typeof amount === "number" && amount > 0) || (!isNaN(customNum) && customNum > 0)) {
+        return true;
+      }
+      return false;
+    }
+  ),
+  custom: Yup.string(), // solo para mantener la estructura
 });
 
 async function createDonationOnBackend(amount: number) {
