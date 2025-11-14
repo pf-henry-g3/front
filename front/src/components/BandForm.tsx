@@ -6,13 +6,10 @@ import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
-import IUser from "@/interfaces/IUser";
+import IUser from "../interfaces/IUser";
+import IBandMember from "../interfaces/IBandMember";
 
 
-interface BandMember {
-  userId?: string;
-  isOpen: boolean;
-}
 
 interface CreateBandDto {
   name: string;
@@ -20,7 +17,7 @@ interface CreateBandDto {
   bandImage: string;
   bandDescription: string;
   locality: string;
-  members: BandMember[];
+  members: IBandMember[];
 }
 
 const validationSchema = Yup.object({
