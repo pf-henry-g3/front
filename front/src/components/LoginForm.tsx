@@ -58,7 +58,7 @@ export default function LoginForm() {
 
         console.log("Datos a enviar:", loginData);
 
-        const response = await apiClient.post("auth/signin", loginData);
+        const response = await apiClient.post("/auth/signin", loginData);
         const user = response.data.data.userWithoutPassword;
 
         console.log("✅ Login exitoso:", user);

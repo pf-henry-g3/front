@@ -24,13 +24,28 @@ export function useAuth(redirectTo: string = '/login') {
     useEffect(() => {
         const checkAuth = async () => {
             try {
+                console.log('🔍 Verificando autenticación en:', process.env.NEXT_PUBLIC_API_URL);
+
                 // La cookie se envía automáticamente con withCredentials: true
                 const response = await apiClient.get('/auth/me');
-                setUser(response.data.user);
+                console.log('📦 Respuesta /auth/me:', response);
+                setUser(response.data.data.user);
                 console.log('✅ Usuario autenticado:', response.data.data.user);
             } catch (error) {
                 if (error instanceof AxiosError) {
                     console.log('❌ No autenticado:', error.response?.data?.message);
+                }
+
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('user');
+                }
+
+                if (typeof window !== 'undefined') {
+                    const currentPath = window.location.pathname;
+                    if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+                        console.log('🔄 Redirigiendo a:', redirectTo);
+                        router.push(redirectTo);
+                    }
                 }
                 router.push(redirectTo);
             } finally {
