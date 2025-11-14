@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react";
-import Select from "react-select";
 import Searchbar from "./Searchbar";
 
 // Importar la interfaz IProductCardProps
@@ -20,20 +19,15 @@ interface ProductCardProps {
     isOpen?: boolean;       // Para vacantes
 }
 
-// Tipos para react-select
-interface FilterOptionType {
-  value: string;
-  label: string;
-  type: "all" | "band" | "user" | "vacancy";
-}
-
 interface FilterProps {
   allItems: ProductCardProps[];
   onFilterResults: (filteredItems: ProductCardProps[]) => void;
 }
 
+type FilterType = "all" | "band" | "user" | "vacancy";
+
 export default function Filter({ allItems, onFilterResults }: FilterProps) {
-  const [selectedType, setSelectedType] = useState<FilterOptionType | null>(null);
+  const [selectedType, setSelectedType] = useState<FilterType>("all");
   const [searchText, setSearchText] = useState<string>("");
   const [mounted, setMounted] = useState(false);
 
@@ -42,21 +36,13 @@ export default function Filter({ allItems, onFilterResults }: FilterProps) {
     setMounted(true);
   }, []);
 
-  // Opciones de filtro por tipo
-  const typeOptions: FilterOptionType[] = useMemo(() => [
-    { value: "all", label: "🌟 Todos los tipos", type: "all" },
-    { value: "band", label: "🎵 Bandas", type: "band" },
-    { value: "user", label: "👤 Usuarios", type: "user" },
-    { value: "vacancy", label: "💼 Vacantes", type: "vacancy" }
-  ], []);
-
   // Función para filtrar los elementos
   const filterItems = useMemo(() => {
     let filtered = allItems;
 
-    // Filtrar por tipo si hay uno seleccionado
-    if (selectedType && selectedType.type !== "all") {
-      filtered = filtered.filter(item => item.type === selectedType.type);
+    // Filtrar por tipo si no es "all"
+    if (selectedType !== "all") {
+      filtered = filtered.filter(item => item.type === selectedType);
     }
 
     // Filtrar por texto de búsqueda
@@ -78,16 +64,9 @@ export default function Filter({ allItems, onFilterResults }: FilterProps) {
     onFilterResults(filterItems);
   }, [filterItems, onFilterResults]);
 
-  // Función para manejar cambios en la selección de tipo
-  const handleTypeChange = (option: FilterOptionType | null) => {
-    setSelectedType(option);
-  };
-
-
-
   // Función para limpiar filtros
   const clearFilters = () => {
-    setSelectedType(null);
+    setSelectedType("all");
     setSearchText("");
   };
 
@@ -106,60 +85,6 @@ export default function Filter({ allItems, onFilterResults }: FilterProps) {
     };
   }, [allItems, filterItems]);
 
-  // Estilos personalizados para react-select con tema del landing - más compacto
-  const customStyles = {
-    control: (provided: any, state: any) => ({
-      ...provided,
-      minHeight: '36px',
-      borderRadius: '10px',
-      border: `2px solid ${state.isFocused ? 'var(--color-tur1)' : 'rgba(var(--color-tur3-rgb), 0.4)'}`,
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(4px)',
-      boxShadow: state.isFocused ? '0 0 0 2px rgba(var(--color-tur1-rgb), 0.3)' : '0 2px 4px rgba(0, 0, 0, 0.1)',
-      '&:hover': {
-        border: '2px solid rgba(var(--color-tur1-rgb), 0.7)',
-      },
-      transition: 'all 0.3s ease',
-      fontSize: '13px',
-    }),
-    placeholder: (provided: any) => ({
-      ...provided,
-      color: 'var(--color-oscuro3)',
-      fontSize: '14px',
-      fontWeight: '500',
-    }),
-    option: (provided: any, state: any) => ({
-      ...provided,
-      backgroundColor: state.isFocused 
-        ? 'rgba(var(--color-tur1-rgb), 0.2)'
-        : state.isSelected 
-          ? 'var(--color-tur1)'
-          : 'white',
-      color: state.isSelected ? 'var(--color-azul)' : 'var(--color-oscuro1)',
-      padding: '10px 12px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: state.isSelected ? '600' : '500',
-      '&:hover': {
-        backgroundColor: state.isSelected ? 'var(--color-tur1)' : 'rgba(var(--color-tur1-rgb), 0.2)',
-        color: state.isSelected ? 'var(--color-azul)' : 'var(--color-oscuro1)',
-      }
-    }),
-    menu: (provided: any) => ({
-      ...provided,
-      borderRadius: '12px',
-      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-      border: '2px solid rgba(var(--color-tur3-rgb), 0.2)',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(8px)',
-      zIndex: 9999, // Z-index alto para aparecer por encima de otros elementos
-    }),
-    menuPortal: (provided: any) => ({
-      ...provided,
-      zIndex: 9999, // También para el portal si se usa
-    }),
-  };
-
   // No renderizar hasta que el componente esté montado (evita hydration mismatch)
   if (!mounted) {
     return (
@@ -175,57 +100,108 @@ export default function Filter({ allItems, onFilterResults }: FilterProps) {
   }
 
   return (
-    <div className="mb-3 p-4 bg-gradient-to-r from-white/85 to-white/75 backdrop-blur-sm rounded-xl shadow-lg border border-tur3/30 relative z-10">
+    <div className="mb-6 space-y-4">
       
-      {/* Layout vertical reorganizado */}
-      <div className="flex flex-col gap-3">
-        {/* Fila de inputs - layout horizontal balanceado */}
-        <div className="flex items-end gap-6">
-          {/* Búsqueda por texto */}
-          <div className="flex-1 max-w-xs">
-            <Searchbar
-              placeholder="Buscar por nombre..."
-              label="Búsqueda"
-              value={searchText}
-              onSearchChange={setSearchText}
-              className=""
-            />
-          </div>
+      {/* ✅ Sección 1: Búsqueda (separada) */}
+      <div className="p-5 backdrop-blur-sm rounded-xl">
+        <Searchbar
+          placeholder="Buscar por nombre, descripción, ciudad..."
+          label="Búsqueda"
+          value={searchText}
+          onSearchChange={setSearchText}
+        />
+      </div>
 
-          {/* Filtro por tipo */}
-          <div className="w-52">
-            <label className="block text-xs font-semibold text-oscuro1 mb-1">
-              Filtrar por tipo
-            </label>
-            <Select<FilterOptionType>
-              value={selectedType}
-              onChange={handleTypeChange}
-              options={typeOptions}
-              styles={customStyles}
-              placeholder="Seleccionar tipo..."
-              isClearable
-              isSearchable={false}
-              noOptionsMessage={() => "No hay opciones"}
-              menuPortalTarget={mounted ? document.body : null}
-              menuPlacement="bottom"
-              menuShouldScrollIntoView={false}
-            />
-          </div>
+      {/* Sección 2: Filtros por tipo (separada) */}
+      <div className=" backdrop-blur-sm rounded-xl">
+        {/* <label className="block text-sm font-semibold text-white mb-4">
+          {/* Filtrar por tipo */}
+        {/* </label> */} 
+        
+        <div className="flex flex-wrap gap-3 justify-center">
+          {/* Botón: Todos */}
+          <button
+            onClick={() => setSelectedType("all")}
+            className={` px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 transform hover:scale-105 shadow-md ${
+              selectedType === "all"
+                ? "bg-gradient-to-r from-tur2 to-tur1 text-azul border-2 border-tur3 shadow-lg scale-105"
+                : "bg-white/90 text-oscuro1 border-2 border-tur3/30 hover:border-tur3/60 hover:bg-white"
+            }`}
+          >
+            <span className="mr-2"></span>
+            Todos
+            <span className="ml-2 px-2 py-0.5 bg-azul/20 rounded-full text-xs">
+              {counts.total}
+            </span>
+          </button>
+
+          {/* Botón: Bandas */}
+          <button
+            onClick={() => setSelectedType("band")}
+            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 transform hover:scale-105 shadow-md ${
+              selectedType === "band"
+                ? "bg-gradient-to-r from-tur2 to-tur1 text-azul border-2 border-tur3 shadow-lg scale-105"
+                : "bg-white/90 text-oscuro1 border-2 border-tur3/30 hover:border-tur3/60 hover:bg-white"
+            }`}
+          >
+            <span className="mr-2"></span>
+            Bandas
+            <span className="ml-2 px-2 py-0.5 bg-azul/20 rounded-full text-xs">
+              {counts.bands}
+            </span>
+          </button>
+
+          {/* Botón: Artistas */}
+          <button
+            onClick={() => setSelectedType("user")}
+            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 transform hover:scale-105 shadow-md ${
+              selectedType === "user"
+                ? "bg-gradient-to-r from-tur2 to-tur1 text-azul border-2 border-tur3 shadow-lg scale-105"
+                : "bg-white/90 text-oscuro1 border-2 border-tur3/30 hover:border-tur3/60 hover:bg-white"
+            }`}
+          >
+            <span className="mr-2"></span>
+            Artistas
+            <span className="ml-2 px-2 py-0.5 bg-azul/20 rounded-full text-xs">
+              {counts.users}
+            </span>
+          </button>
+
+          {/* Botón: Vacantes */}
+          <button
+            onClick={() => setSelectedType("vacancy")}
+            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 transform hover:scale-105 shadow-md ${
+              selectedType === "vacancy"
+                ? "bg-gradient-to-r from-tur2 to-tur1 text-azul border-2 border-tur3 shadow-lg scale-105"
+                : "bg-white/90 text-oscuro1 border-2 border-tur3/30 hover:border-tur3/60 hover:bg-white"
+            }`}
+          >
+            <span className="mr-2"></span>
+            Vacantes
+            <span className="ml-2 px-2 py-0.5 bg-azul/20 rounded-full text-xs">
+              {counts.vacancies}
+            </span>
+          </button>
         </div>
 
-        {/* Fila inferior: Solo botón limpiar */}
-        {(selectedType || searchText) && (
-          <div className="flex justify-center mt-2">
+        {/* Resultados y botón limpiar (dentro de la sección de filtros) */}
+        {(selectedType !== "all" || searchText) && (
+          <div className="flex items-center justify-between pt-4 mt-4 border-t border-tur3/30">
+            <p className="text-sm text-oscuro2 font-medium">
+              Mostrando <span className="font-bold text-tur1">{counts.filtered}</span> de <span className="font-bold text-oscuro1">{counts.total}</span> resultados
+            </p>
             <button
               onClick={clearFilters}
-              className="px-4 py-2 text-sm bg-gradient-to-r from-tur2/80 to-tur1/80 hover:from-tur2 hover:to-tur1 text-azul font-semibold rounded-lg transition-all duration-300 border border-tur3/30 shadow-sm hover:shadow-md backdrop-blur-sm transform hover:scale-105"
+              className="px-5 py-2.5 text-sm bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-700 font-semibold rounded-lg transition-all duration-300 border-2 border-red-200 hover:border-red-300 shadow-sm hover:shadow-md transform hover:scale-105"
               title="Limpiar todos los filtros"
             >
-              ✨ Limpiar filtros
+              <span className="mr-1"></span>
+              Limpiar filtros
             </button>
           </div>
-        )}
+          )}
       </div>
-    </div>
+
+    </div>  
   );
 }

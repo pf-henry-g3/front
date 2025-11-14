@@ -4,8 +4,9 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import Filter from "../../components/Filter";
 import ProductCard from "../../components/ProductCard";
 import Pagination from "../../components/Pagination";
-import DetailView from "../../components/DetailView";
+
 import axios from "axios";
+import { useRouter } from 'next/navigation';
 
 
 
@@ -26,6 +27,7 @@ interface ProductCardProps {
 }
 
 export default function HomePage() {
+    const router = useRouter();
     const [allItems, setAllItems] = useState<ProductCardProps[]>([]);
     const [filteredItems, setFilteredItems] = useState<ProductCardProps[]>([]);
     const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ export default function HomePage() {
     const [itemsPerPage, setItemsPerPage] = useState(3);
 
     // Estado para el elemento seleccionado
-    const [selectedItem, setSelectedItem] = useState<ProductCardProps | null>(null);
+    //const [selectedItem, setSelectedItem] = useState<ProductCardProps | null>(null);
 
     const loadDataFromBackend = async () => {
         try {
@@ -148,9 +150,9 @@ export default function HomePage() {
     }, []);
 
     // Función para manejar la selección de un elemento
-    const handleItemSelect = useCallback((item: ProductCardProps) => {
-        setSelectedItem(item);
-    }, []);
+    const handleItemClick = useCallback((item: ProductCardProps) => {
+        router.push(`/detail/${item.id}?type=${item.type}`);
+    }, [router]);
 
 
     // Mostrar loading
@@ -185,90 +187,76 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen bg-azul py-8 px-4">
-            <div className="max-w-7xl mx-auto">
-                {/* Título principal con estilo del landing - Añadimos padding top para evitar navbar */}
+            {/* ✅ LAYOUT SIMPLIFICADO: Una sola columna centrada */}
+            <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-8 pt-16">
                     <h1 className="text-white text-4xl font-bold mb-2 drop-shadow-lg">
-                        Bienvenidos a Home
+                        Bienvenidos!
                     </h1>
                     <p className="text-white/90 text-lg font-medium drop-shadow-md">
                         Explora bandas, usuarios y vacantes en nuestra plataforma musical
                     </p>
                 </div>
 
-                {/* Layout principal con estilos del landing */}
-                <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Panel izquierdo - Filtros y Cards */}
-                    <div className="lg:w-2/5 flex flex-col space-y-4">
-                        {/* Componente Filter con estilo del landing */}
-                        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30">
-                            <Filter
-                                allItems={allItems}
-                                onFilterResults={handleFilterResults}
+                
+
+                {/* Filtros */}
+                <div className=" backdrop-blur-sm rounded-2xl">
+                    <Filter
+                        allItems={allItems}
+                        onFilterResults={handleFilterResults}
+                    />
+                </div>
+
+                {/* Cards */}
+                <div className=" backdrop-blur-sm rounded-2xl">
+                    <div className="min-h-96">
+                        {paginationData.paginatedItems.length > 0 ? (
+                            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {paginationData.paginatedItems.map((item: ProductCardProps) => (
+                                    <ProductCard
+                                        key={item.id}
+                                        {...item}
+                                        onClick={() => handleItemClick(item)} // ✅ Redirigir al hacer clic
+                                    />
+                                ))}
+                            </div>
+                        ) : filteredItems.length === 0 ? (
+                            <div className="flex items-center justify-center py-20">
+                                <div className="text-center">
+                                    <div className="text-6xl mb-4">😔</div>
+                                    <p className="text-oscuro1 text-lg mb-2 font-bold">
+                                        No se encontraron resultados
+                                    </p>
+                                    <p className="text-oscuro2 text-sm font-medium">
+                                        Intenta ajustar los filtros de búsqueda
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center py-20">
+                                <div className="text-center">
+                                    <div className="text-6xl mb-4">📄</div>
+                                    <p className="text-oscuro1 text-lg font-bold">
+                                        No hay elementos en esta página
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {filteredItems.length > 0 && (
+                        <div className="border-t border-tur3/20">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={paginationData.totalPages}
+                                totalItems={paginationData.totalItems}
+                                itemsPerPage={itemsPerPage}
+                                onPageChange={handlePageChange}
+                                onItemsPerPageChange={handleItemsPerPageChange}
                             />
                         </div>
-
-                        {/* Cards de resultados paginados */}
-                        <div className="flex-1 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30 overflow-hidden">
-                            {/* Contenedor de cards */}
-                            <div className="min-h-96">
-                                {paginationData.paginatedItems.length > 0 ? (
-                                    <div className="p-4 space-y-3">
-                                        {paginationData.paginatedItems.map((item: ProductCardProps) => (
-                                            <ProductCard
-                                                key={item.id}
-                                                {...item}
-                                                isSelected={selectedItem?.id === item.id}
-                                                onClick={() => handleItemSelect(item)}
-                                            />
-                                        ))}
-                                    </div>
-                                ) : filteredItems.length === 0 ? (
-                                    <div className="flex items-center justify-center py-20">
-                                        <div className="text-center">
-                                            <div className="text-6xl mb-4">😔</div>
-                                            <p className="text-oscuro1 text-lg mb-2 font-bold">
-                                                No se encontraron resultados
-                                            </p>
-                                            <p className="text-oscuro2 text-sm font-medium">
-                                                Intenta ajustar los filtros de búsqueda
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center justify-center py-20">
-                                        <div className="text-center">
-                                            <div className="text-6xl mb-4">📄</div>
-                                            <p className="text-oscuro1 text-lg font-bold">
-                                                No hay elementos en esta página
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Componente de paginación */}
-                            {filteredItems.length > 0 && (
-                                <div className="border-t border-tur3/20">
-                                    <Pagination
-                                        currentPage={currentPage}
-                                        totalPages={paginationData.totalPages}
-                                        totalItems={paginationData.totalItems}
-                                        itemsPerPage={itemsPerPage}
-                                        onPageChange={handlePageChange}
-                                        onItemsPerPageChange={handleItemsPerPageChange}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Panel derecho - Vista de detalles con estilo del landing */}
-                    <div className="lg:w-3/5 flex items-start justify-center">
-                        <div className="w-full max-w-2xl">
-                            <DetailView selectedItem={selectedItem} />
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

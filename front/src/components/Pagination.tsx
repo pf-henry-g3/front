@@ -65,7 +65,7 @@ export default function Pagination({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-between bg-gradient-to-r from-white/90 to-white/80 backdrop-blur-sm px-3 py-2 border border-tur3/30 rounded-lg shadow-md">
+    <div className="flex flex-col lg:flex-row items-center justify-between bg-gradient-to-r backdrop-blur-sm px-3 py-2">
       {/* Información de elementos - estilo landing */}
       <div className="text-xs text-oscuro2 mb-2 lg:mb-0 order-2 lg:order-1">
         <span className="bg-gradient-to-r from-tur2/40 to-tur1/40 text-azul px-2 py-1 rounded-full font-medium shadow-sm backdrop-blur-sm border border-tur3/30 text-xs">

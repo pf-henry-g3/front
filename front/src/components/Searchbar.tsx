@@ -39,7 +39,7 @@ export default function Searchbar({
 
   return (
     <div className={className}>
-      <label className="block text-xs font-semibold text-oscuro1 mb-1">
+      <label className="block text-xs font-semibold text-white mb-1">
         {label}
       </label>
       <div className="relative">

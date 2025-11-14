@@ -25,7 +25,7 @@ export default function NavBar () {
 
             <Link href="/home ">
 
-            <div className="flex items-center justify-center"> <span className="text-sm text-txt1 hover:text-tur2 transition">Home</span></div>
+            <div className="flex items-center justify-center"> <span className="text-sm bg-azul py-1.5 px-4 rounded-md text-text2 font-sans shadow-xl transition duration-300 hover:bg-verde hover:text-txt1 hover:cursor-pointer flex items-center gap-2">Busqueda</span></div>
 
             </Link>
 

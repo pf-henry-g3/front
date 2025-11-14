@@ -41,6 +41,8 @@ export default function LoginForm() {
         }
     };
 
+    
+
     const formik = useFormik<LoginData>({
         initialValues: {
             email: "",
@@ -209,6 +211,8 @@ export default function LoginForm() {
             }
         }
     });
+
+    
 
   return (
     <div className="flex flex-col justify-center items-center pt-16 px-4">
