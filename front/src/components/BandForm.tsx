@@ -7,9 +7,11 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 import IUser from "../interfaces/IUser";
-import IBandMember from "../interfaces/IBandMember";
 
-
+interface IBandMember {
+  userId?: string;
+  isOpen: boolean;
+}
 
 interface CreateBandDto {
   name: string;
@@ -265,8 +267,8 @@ export default function BandForm() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-fondo1 via-fondo2 to-fondo3 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="container mx-auto max-w-[1400px]">
+    <div className="py-12 px-4 sm:px-6 lg:px-8">
+      <div className="container max-w-[80%] mx-auto">
         <div className="text-center mb-8">
           <h2 className="text-4xl font-bold text-txt1 mb-2">🎸 Crear Nueva Banda</h2>
           <p className="text-txt2 text-lg">Configura tu banda: géneros, miembros y más.</p>
@@ -274,7 +276,7 @@ export default function BandForm() {
 
         <form
           onSubmit={formik.handleSubmit}
-          className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl p-6 md:p-8 lg:p-10"
+          className="bg-azul  border border-white/20 rounded-2xl shadow-2xl p-6 md:p-8 lg:p-10"
         >
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 lg:gap-8">
             {/* Géneros - Sidebar */}
@@ -467,16 +469,26 @@ export default function BandForm() {
                 <label className="block text-lg font-bold text-txt1 mb-2">
                   👥 Miembros
                 </label>
-                <p className="text-sm text-txt2 mb-3">
-                  Escribe para buscar usuarios. También puedes marcar como
-                  "Puesto libre".
-                </p>
+                <span className="mb-3 flex flex-row justify-between ">
+                  <p className="text-sm mt-2.5 pl-0.5 text-txt2 ">
+                    Escribe para buscar artistas. También puedes marcar el puesto como libre.
+                    </p>
+                  <button
+                  type="button"
+                  onClick={() => addMember()}
+                  className="px-4 py-2 bg-tur1 text-azul rounded-md cursor-pointer hover:bg-tur2 transition font-semibold"
+                >
+                  + Añadir miembro
+                </button>
+                </span>
+                
+                
 
                 <div className="space-y-3">
                   {formik.values.members.map((member, idx) => (
                     <div
                       key={idx}
-                      className="relative bg-white/5 p-3 rounded-lg border border-white/10"
+                      className="relative"
                     >
                       <div className="flex gap-3 items-end">
                         <div className="flex-1">
@@ -531,20 +543,14 @@ export default function BandForm() {
                           className="px-3 py-2 bg-red-500 text-white rounded-md cursor-pointer hover:bg-red-600 transition disabled:opacity-50"
                           disabled={formik.values.members.length === 1}
                         >
-                          Eliminar
+                          X
                         </button>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => addMember()}
-                  className="px-4 py-2 mt-3 bg-tur1 text-azul rounded-md cursor-pointer hover:bg-tur2 transition font-semibold"
-                >
-                  + Añadir miembro
-                </button>
+                
               </div>
 
               {/* Submit */}
