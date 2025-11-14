@@ -112,6 +112,8 @@ export default function LoginForm() {
     },
   });
 
+
+
   return (
     <div className="flex flex-col justify-center items-center pt-16 px-4">
       <div className="w-full max-w-md bg-white/20 backdrop-blur-md border border-white/30 rounded-lg shadow-xl p-8 text-center">
