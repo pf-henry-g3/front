@@ -10,6 +10,7 @@ export default interface IUser {
   city: string,
   country: string,
   addres: string,
+  roles: Array<{ name: string }>;
   //latitude: float,
   //longitude: float,
   profilePicture: string,
