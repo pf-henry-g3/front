@@ -174,7 +174,7 @@ export default function HomePage() {
                     <p className="text-oscuro2 mb-6 font-medium">{error}</p>
                     <button
                         onClick={loadDataFromBackend}
-                        className="px-6 py-3 bg-gradient-to-r from-tur2 to-tur1 text-azul font-bold rounded-xl hover:from-tur1 hover:to-tur2 transition-all duration-300 shadow-lg transform hover:scale-105"
+                        className="px-6 py-3 bg-linear-to-r from-tur2 to-tur1 text-azul font-bold rounded-xl hover:from-tur1 hover:to-tur2 transition-all duration-300 shadow-lg transform hover:scale-105"
                     >
                         🔄 Intentar de nuevo
                     </button>
@@ -184,7 +184,7 @@ export default function HomePage() {
     }
 
     return (
-        <div className="min-h-screen bg-azul py-8 px-4">
+        <div className="min-h-screen py-8 px-4">
             <div className="max-w-7xl mx-auto">
                 {/* Título principal con estilo del landing - Añadimos padding top para evitar navbar */}
                 <div className="text-center mb-8 pt-16">
@@ -199,9 +199,9 @@ export default function HomePage() {
                 {/* Layout principal con estilos del landing */}
                 <div className="flex flex-col lg:flex-row gap-6">
                     {/* Panel izquierdo - Filtros y Cards */}
-                    <div className="lg:w-2/5 flex flex-col space-y-4">
+                    <div className="lg:w-3/7 flex flex-col space-y-4">
                         {/* Componente Filter con estilo del landing */}
-                        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30">
+                        <div className="rounded-2xl">
                             <Filter
                                 allItems={allItems}
                                 onFilterResults={handleFilterResults}
@@ -209,7 +209,7 @@ export default function HomePage() {
                         </div>
 
                         {/* Cards de resultados paginados */}
-                        <div className="flex-1 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30 overflow-hidden">
+                        <div className="flex-1 bg-linear-to-r from-white/90 to-white/85 rounded-2xl shadow-xl overflow-hidden">
                             {/* Contenedor de cards */}
                             <div className="min-h-96">
                                 {paginationData.paginatedItems.length > 0 ? (
@@ -249,7 +249,7 @@ export default function HomePage() {
 
                             {/* Componente de paginación */}
                             {filteredItems.length > 0 && (
-                                <div className="border-t border-tur3/20">
+                                <div className="border-t border-tur3/20 px-4">
                                     <Pagination
                                         currentPage={currentPage}
                                         totalPages={paginationData.totalPages}
