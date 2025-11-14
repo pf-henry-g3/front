@@ -4,20 +4,27 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { apiClientWithToken } from '@/src/lib/api-client';
 import { AxiosError } from 'axios';
+import { useAuth } from '@/src/hooks/useAuth';
+import { authService } from '@/src/services/auth.service';
 
 export default function Auth0CallbackPage() {
-    const { getAccessTokenSilently, isAuthenticated, isLoading, user } = useAuth0();
+    const { getAccessTokenSilently, isAuthenticated, isLoading } = useAuth0();
+    const { user } = useAuth();
+
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [syncStatus, setSyncStatus] = useState<string>('Conectando con Auth0...');
 
     useEffect(() => {
         const syncUserWithBackend = async () => {
+
             if (isLoading) return;
 
+
             if (!isAuthenticated) {
+                console.log(isAuthenticated);
+
                 router.push('/login');
                 return;
             }
@@ -27,15 +34,12 @@ export default function Auth0CallbackPage() {
                 const auth0Token = await getAccessTokenSilently();
 
                 setSyncStatus('Sincronizando con el backend...');
-                const clientWithAuth0Token = apiClientWithToken(auth0Token);
 
-                const response = await clientWithAuth0Token.post('/auth/auth0/callback', {
-                    user,
-                });
+                const response = await authService.syncAuth0User(auth0Token, user)
 
                 console.log('🎈 Complete response: ', response);
 
-                console.log('✅ Usuario sincronizado:', response.data.data.userWithoutPassword);
+                console.log('✅ Usuario sincronizado:', response.data.tranformedUser);
                 console.log('🍪 Cookie guardada automáticamente por el navegador');
 
                 setSyncStatus('¡Listo! Redirigiendo...');

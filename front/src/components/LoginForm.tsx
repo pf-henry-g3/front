@@ -4,8 +4,8 @@ import * as Yup from "yup";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { useAuth0 } from "@auth0/auth0-react";
-import { apiClient } from "../lib/api-client";
 import { AxiosError } from "axios";
+import { authService } from "../services/auth.service";
 
 interface LoginData {
   email: string;
@@ -25,16 +25,11 @@ export default function LoginForm() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await loginWithRedirect({
-        authorizationParams: {
-          connection: "google-oauth2",
-          redirect_uri:
-            typeof window !== "undefined"
-              ? `${window.location.origin}/auth/callback`
-              : undefined,
-        },
-      });
-    } catch {
+      await authService.loginWithGoogle(loginWithRedirect);
+      console.log('🧨 Ejecutando la funcion de loginWithGoogle');
+
+    }
+    catch (error) {
       await Swal.fire({
         icon: "error",
         title: "Error",
@@ -58,8 +53,10 @@ export default function LoginForm() {
 
         console.log("Datos a enviar:", loginData);
 
-        const response = await apiClient.post("/auth/signin", loginData);
-        const user = response.data.data.userWithoutPassword;
+        const response = await authService.signin(loginData);
+
+        // const response = await apiClient.post("/auth/signin", loginData);
+        const user = response.data.tranformedUser;
 
         console.log("✅ Login exitoso:", user);
         console.log("🍪 Cookie guardada automáticamente");

@@ -26,10 +26,10 @@ export function useAuth(redirectTo: string = '/login') {
             try {
                 console.log('🔍 Verificando autenticación en:', process.env.NEXT_PUBLIC_API_URL);
 
-                // La cookie se envía automáticamente con withCredentials: true
                 const response = await apiClient.get('/auth/me');
                 console.log('📦 Respuesta /auth/me:', response);
                 setUser(response.data.data.user);
+                localStorage.setItem('user', response.data.data.user)
                 console.log('✅ Usuario autenticado:', response.data.data.user);
             } catch (error) {
                 if (error instanceof AxiosError) {
@@ -60,7 +60,7 @@ export function useAuth(redirectTo: string = '/login') {
         try {
             await apiClient.post('/auth/logout');
             console.log('✅ Logout exitoso, cookie eliminada');
-            setUser(null);
+            localStorage.removeItem('user')
             router.push('/login');
         } catch (error) {
             console.error('❌ Error al cerrar sesión:', error);
