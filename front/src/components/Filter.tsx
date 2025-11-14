@@ -192,7 +192,8 @@ export default function Filter({ allItems, onFilterResults }: FilterProps) {
             </p>
             <button
               onClick={clearFilters}
-              className="px-5 py-2.5 text-sm bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-700 font-semibold rounded-lg transition-all duration-300 border-2 border-red-200 hover:border-red-300 shadow-sm hover:shadow-md transform hover:scale-105"
+              
+              className="px-4 py-2 text-sm bg-linear-to-r from-tur2/80 to-tur1/80 hover:from-tur2 hover:to-tur1 text-azul font-semibold rounded-lg transition-all duration-300 border border-tur3/30 shadow-sm hover:shadow-md backdrop-blur-sm transform hover:scale-105"
               title="Limpiar todos los filtros"
             >
               <span className="mr-1"></span>

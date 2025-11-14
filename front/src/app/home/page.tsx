@@ -176,7 +176,7 @@ export default function HomePage() {
                     <p className="text-oscuro2 mb-6 font-medium">{error}</p>
                     <button
                         onClick={loadDataFromBackend}
-                        className="px-6 py-3 bg-gradient-to-r from-tur2 to-tur1 text-azul font-bold rounded-xl hover:from-tur1 hover:to-tur2 transition-all duration-300 shadow-lg transform hover:scale-105"
+                        className="px-6 py-3 bg-linear-to-r from-tur2 to-tur1 text-azul font-bold rounded-xl hover:from-tur1 hover:to-tur2 transition-all duration-300 shadow-lg transform hover:scale-105"
                     >
                         🔄 Intentar de nuevo
                     </button>
