@@ -5,7 +5,7 @@ import IMyBandPreviewDetailProps from "../interfaces/IMyBandPreviewDetailProps";
 export default function MyBandPreview ({id, name, formationYear, bandImage, description}: IMyBandPreviewDetailProps) {
   return (
     <Link 
-      className="flex items-center bg-white/95 gap-4 rounded-xl p-4 shadow-xl"
+      className="flex items-center bg-white/95 hover:bg-white/55 transition gap-4 rounded-xl p-4 shadow-xl"
       href={`/band/${id}`}
     >
       <img 
