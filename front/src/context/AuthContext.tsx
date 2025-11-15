@@ -1,4 +1,3 @@
-// src/context/AuthContext.tsx
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -18,31 +17,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 🔄 Función para verificar autenticación con el backend
     const checkAuth = async () => {
         try {
-            const response = await apiClient.get('/auth/me');
-            console.log('response es 🎄: ', response);
+            // ✅ Verificar si hay token en localStorage primero
+            const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+            
+            if (!token) {
+                console.log('⚠️ No hay token almacenado');
+                setUser(null);
+                setLoading(false);
+                return null;
+            }
 
-            const userData = response.data.data.user;
+            // Solo llamar al backend si HAY token
+            console.log('🔍 Verificando token con backend...');
+            const response = await apiClient.get('/auth/me', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
+            console.log('✅ Usuario verificado:', response.data);
+
+            const userData = response.data.data?.user || response.data.user;
             setUser(userData);
 
-            // Sync con localStorage (opcional, solo como backup)
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('user', JSON.stringify(userData));
-            }
-
             return userData;
+        
         } catch (error) {
             if (error instanceof AxiosError) {
-                console.log('❌ No autenticado:', error.response?.data?.message);
+                console.error('❌ Error verificando auth:', error.response?.data?.message);
+                
+                // Si el token es inválido, limpiar localStorage
+                if (error.response?.status === 401) {
+                    if (typeof window !== 'undefined') {
+                        localStorage.removeItem('access_token');
+                        localStorage.removeItem('user');
+                    }
+                }
             }
-
+            
             setUser(null);
-
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('user');
-            }
-
             return null;
+            
         } finally {
             setLoading(false);
         }
@@ -55,7 +70,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // ✅ Login: actualiza el estado globalmente
     const login = (userData: IUser) => {
+        console.log('🔐 Login en contexto:', userData.userName);
         setUser(userData);
+        
+        // Guardar en localStorage
         if (typeof window !== 'undefined') {
             localStorage.setItem('user', JSON.stringify(userData));
         }
@@ -65,32 +83,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = async () => {
         try {
             await apiClient.post('/auth/logout');
-            console.log('✅ Logout exitoso');
+            console.log('✅ Logout exitoso en backend');
         } catch (error) {
-            console.error('❌ Error al cerrar sesión:', error);
+            console.error('❌ Error al cerrar sesión en backend:', error);
         } finally {
-            setUser(null);
-
+            // Limpiar localStorage
             if (typeof window !== 'undefined') {
+                localStorage.removeItem('access_token');
                 localStorage.removeItem('user');
             }
-
+            
+            setUser(null);
+            console.log('✅ Estado y localStorage limpiados');
             router.push('/login');
         }
     };
 
-    // 🔄 Refresh manual del usuario (útil después de actualizar perfil)
+    // 🔄 Refresh manual del usuario
     const refreshUser = async () => {
+        console.log('🔄 Refrescando usuario...');
         await checkAuth();
     };
-
+  
     const value = {
         user,
         loading,
         isAuthenticated: !!user,
         login,
         logout,
-        refreshUser,
+        refreshUser, // ✅ Agregar aquí
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
