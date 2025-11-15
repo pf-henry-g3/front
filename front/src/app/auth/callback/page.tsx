@@ -1,89 +1,106 @@
-﻿'use client';
+﻿// app/auth/callback/page.tsx
+'use client';
 
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { AxiosError } from 'axios';
+import { useAuth } from '@/src/context/AuthContext';
+import { authService } from '@/src/services/auth.service';
 
 export default function Auth0CallbackPage() {
-    const { getAccessTokenSilently, isAuthenticated, isLoading, user } = useAuth0();
+    const {
+        user: auth0User,
+        getAccessTokenSilently,
+        isAuthenticated,
+        isLoading
+    } = useAuth0();
+
+    const { login } = useAuth();
     const router = useRouter();
+
     const [error, setError] = useState<string | null>(null);
+    const [syncStatus, setSyncStatus] = useState<string>('Conectando con Auth0...');
 
     useEffect(() => {
         const syncUserWithBackend = async () => {
-            if (isLoading) return;
+            if (isLoading) {
+                console.log('⏳ Auth0 cargando...');
+                return;
+            }
 
             if (!isAuthenticated) {
+                console.log('❌ No autenticado con Auth0');
                 router.push('/login');
                 return;
             }
 
+            if (!auth0User) {
+                console.log('❌ No hay usuario de Auth0');
+                setError('No se pudo obtener el usuario de Auth0');
+                return;
+            }
+
             try {
-                const auth0Token = await getAccessTokenSilently({
-                    authorizationParams: {
-                        audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-                        scope: 'openid profile email',
-                    },
-                    cacheMode: 'off',
+                setSyncStatus('Obteniendo token de Auth0...');
+                console.log('🔑 Obteniendo token de Auth0...');
+
+                const auth0Token = await getAccessTokenSilently();
+                console.log('✅ Token de Auth0 obtenido');
+
+                setSyncStatus('Sincronizando con el backend...');
+                console.log('📤 Enviando al backend:', {
+                    token: auth0Token.substring(0, 20) + '...',
+                    user: auth0User
                 });
 
-                if (!auth0Token) {
-                    throw new Error('No se pudo obtener el token de Auth0');
-                }
+                const response = await authService.syncAuth0User(auth0Token, auth0User);
 
-                const base = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
-                if (!base) {
-                    throw new Error('URL del backend no configurada');
-                }
+                console.log('✅ Usuario sincronizado:', response.data.tranformedUser);
+                console.log('🍪 Cookie guardada automáticamente');
 
-                const response = await fetch(`${base}/auth/auth0/callback`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${auth0Token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ user })
-                });
+                login(response.data.tranformedUser);
 
-                if (!response.ok) {
-                    const body = await response.text().catch(() => '');
-                    let errorMessage = `Error sincronizando usuario (${response.status})`;
-                    try {
-                        const errorJson = JSON.parse(body);
-                        errorMessage = errorJson.message || errorMessage;
-                    } catch {
-                        errorMessage = body || errorMessage;
-                    }
-                    throw new Error(errorMessage);
-                }
+                setSyncStatus('¡Listo! Redirigiendo...');
 
-                const data = await response.json();
-
-                if (!data?.data?.access_token) {
-                    throw new Error('No se recibió el token del backend');
-                }
-
-                localStorage.setItem('access_token', data.data.access_token);
-                localStorage.setItem('user', JSON.stringify(data.data.userWithoutPassword));
-                window.dispatchEvent(new Event('auth-changed'));
-
-                router.push('/');
+                setTimeout(() => {
+                    router.push('/dashboard');
+                }, 500);
 
             } catch (err: any) {
-                setError(err.message || 'Error al sincronizar con el backend');
+                console.error('❌ Error en callback:', err);
+
+                if (err instanceof AxiosError) {
+                    console.error('📍 Detalles del error:', {
+                        status: err.response?.status,
+                        message: err.response?.data?.message,
+                        data: err.response?.data
+                    });
+                    setError(err.response?.data?.message || err.message);
+                } else {
+                    setError(err.message || 'Error desconocido');
+                }
             }
         };
 
         syncUserWithBackend();
-    }, [isAuthenticated, isLoading, getAccessTokenSilently, router]);
+    }, [isAuthenticated, isLoading, auth0User, getAccessTokenSilently, router, login]);
 
     if (error) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold text-red-600">Error</h1>
-                    <p>{error}</p>
-                    <button onClick={() => router.push('/login')} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <div className="text-center p-8 bg-red-50 rounded-lg shadow-md max-w-md">
+                    <div className="mb-4">
+                        <svg className="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h1 className="text-2xl font-bold text-red-600 mb-4">Error de Autenticación</h1>
+                    <p className="text-red-700 mb-6">{error}</p>
+                    <button
+                        onClick={() => router.push('/login')}
+                        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    >
                         Volver al login
                     </button>
                 </div>
@@ -92,10 +109,11 @@ export default function Auth0CallbackPage() {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
             <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-                <p className="mt-4">Sincronizando tu cuenta...</p>
+                <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto"></div>
+                <p className="mt-6 text-lg text-gray-700 font-medium">{syncStatus}</p>
+                <p className="mt-2 text-sm text-gray-500">Por favor espera un momento</p>
             </div>
         </div>
     );
