@@ -59,7 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return null;
 
         } finally {
-            setLoading(false);
+
+            // setLoading(false);
         }
     };
 
