@@ -14,44 +14,51 @@ interface IBandMember {
 }
 
 interface CreateBandDto {
-  name: string;
-  genres: string[];
-  bandImage: string;
+  bandName: string;
   bandDescription: string;
-  locality: string;
+  formationDate: string;
+  urlImage: string;
+  genres: string[];
   members: IBandMember[];
 }
 
 const validationSchema = Yup.object({
-  name: Yup.string()
+  bandName: Yup.string()
     .min(2, "El nombre debe tener al menos 2 caracteres")
     .max(100, "El nombre no puede exceder 100 caracteres")
     .required("El nombre de la banda es requerido"),
+
   genres: Yup.array()
     .of(Yup.string())
     .min(1, "Debes seleccionar al menos un género")
     .max(5, "No puedes seleccionar más de 5 géneros")
     .required("Los géneros son requeridos"),
-  bandImage: Yup.string()
+
+  urlImage: Yup.string()
     .url("Debe ser una URL válida")
     .required("La imagen es requerida"),
+
   bandDescription: Yup.string()
     .min(10, "La descripción debe tener al menos 10 caracteres")
     .max(1000, "La descripción no puede exceder 1000 caracteres")
     .required("La descripción es requerida"),
-  locality: Yup.string()
-    .min(2, "La localidad debe tener al menos 2 caracteres")
-    .required("La localidad es requerida"),
+
+  formationDate: Yup.date()
+  .typeError("Debe ser una fecha válida")
+  .max(new Date(), "La fecha no puede ser posterior a hoy")
+  .required("La fecha de formación es obligatoria"),
+
   members: Yup.array().of(
-    Yup.object({
+    Yup.object().shape({
+      isOpen: Yup.boolean().required(),
       userId: Yup.string().when("isOpen", {
         is: false,
-        then: Yup.string().required("Selecciona un usuario o marca como puesto libre"),
-        otherwise: Yup.string().notRequired()
-      }),
-      isOpen: Yup.boolean().required()
+        then: schema => schema.required("Selecciona un usuario o marca como puesto libre"),
+        otherwise: schema => schema.notRequired()
+      })
     })
   )
+
 });
 
 export default function BandForm() {
@@ -82,27 +89,28 @@ export default function BandForm() {
 
   const formik = useFormik<CreateBandDto>({
     initialValues: {
-      name: "",
+      bandName: "",
       genres: [],
-      bandImage: "",
+      urlImage: "",
       bandDescription: "",
-      locality: "",
+      formationDate: "",
       members: [{ userId: "", isOpen: false }]
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
+      console.log("ejecutado submit")
       try {
         setSubmitting(true);
 
         // Crear la banda
         const bandPayload = {
-          name: values.name,
+          bandName: values.bandName,
           bandDescription: values.bandDescription,
-          bandImage: values.bandImage,
-          category: values.genres.join(", "),
-          locality: values.locality
+          formationDate: values.formationDate,
+          genres: values.genres.join(", "),
+          bandImage: values.urlImage,
         };
-
+        console.log("Haciendo POST:", bandPayload);
         const bandRes = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/band`,
           bandPayload,
@@ -354,21 +362,21 @@ export default function BandForm() {
                   🎤 Nombre de la Banda *
                 </label>
                 <input
-                  id="name"
-                  name="name"
+                  id="bandName"
+                  name="bandName"
                   type="text"
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  value={formik.values.name}
+                  value={formik.values.bandName}
                   className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${
-                    formik.touched.name && formik.errors.name
+                    formik.touched.bandName && formik.errors.bandName
                       ? "border-red-500 focus:ring-red-500"
                       : "border-white/20 focus:ring-tur2 focus:border-tur2"
                   }`}
                   placeholder="Ej: Los Acordes Salvajes"
                 />
-                {formik.touched.name && formik.errors.name && (
-                  <p className="mt-2 text-sm text-red-400">{formik.errors.name}</p>
+                {formik.touched.bandName && formik.errors.bandName && (
+                  <p className="mt-2 text-sm text-red-400">{formik.errors.bandName}</p>
                 )}
               </div>
 
@@ -401,58 +409,34 @@ export default function BandForm() {
                 )}
               </div>
 
-              {/* Localidad */}
-              <div>
-                <label htmlFor="locality" className="block text-lg font-bold text-txt1 mb-2">
-                  📍 Localidad *
-                </label>
-                <input
-                  id="locality"
-                  name="locality"
-                  type="text"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  value={formik.values.locality}
-                  className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${
-                    formik.touched.locality && formik.errors.locality
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-white/20 focus:ring-tur2 focus:border-tur2"
-                  }`}
-                  placeholder="Ciudad, País"
-                />
-                {formik.touched.locality && formik.errors.locality && (
-                  <p className="mt-2 text-sm text-red-400">{formik.errors.locality}</p>
-                )}
-              </div>
-
               {/* Imagen */}
               <div>
                 <label htmlFor="bandImage" className="block text-lg font-bold text-txt1 mb-2">
                   🖼️ URL de Imagen *
                 </label>
                 <input
-                  id="bandImage"
-                  name="bandImage"
+                  id="urlImage"
+                  name="urlImage"
                   type="url"
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  value={formik.values.bandImage}
+                  value={formik.values.urlImage}
                   className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${
-                    formik.touched.bandImage && formik.errors.bandImage
+                    formik.touched.urlImage && formik.errors.urlImage
                       ? "border-red-500 focus:ring-red-500"
                       : "border-white/20 focus:ring-tur2 focus:border-tur2"
                   }`}
                   placeholder="https://ejemplo.com/imagen.jpg"
                 />
-                {formik.touched.bandImage && formik.errors.bandImage && (
-                  <p className="mt-2 text-sm text-red-400">{formik.errors.bandImage}</p>
+                {formik.touched.urlImage && formik.errors.urlImage && (
+                  <p className="mt-2 text-sm text-red-400">{formik.errors.urlImage}</p>
                 )}
 
-                {formik.values.bandImage && !formik.errors.bandImage && (
+                {formik.values.urlImage && !formik.errors.urlImage && (
                   <div className="mt-4">
                     <p className="text-sm text-txt2 mb-2">Vista previa:</p>
                     <img
-                      src={formik.values.bandImage}
+                      src={formik.values.urlImage}
                       alt="Preview"
                       className="w-full h-48 object-cover rounded-lg border-2 border-white/20"
                       onError={e => {
@@ -463,6 +447,30 @@ export default function BandForm() {
                   </div>
                 )}
               </div>
+
+              {/* Fecha de formación */}
+              <div>
+                <label htmlFor="formationDate" className="block text-lg font-bold text-txt1 mb-2">
+                  📅 Fecha de formación *
+                </label>
+
+                <input
+                  id="formationDate"
+                  name="formationDate"
+                  type="date"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.formationDate}
+                  className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 
+                    ${formik.touched.formationDate && formik.errors.formationDate ? "border-red-500" : "border-white/20"}
+                  `}
+                />
+
+                {formik.touched.formationDate && formik.errors.formationDate && (
+                  <p className="mt-2 text-sm text-red-400">{formik.errors.formationDate}</p>
+                )}
+              </div>
+
 
               {/* Miembros */}
               <div>
@@ -518,16 +526,7 @@ export default function BandForm() {
                             </ul>
                           )}
 
-                          {/* Validación */}
-                          {Array.isArray(formik.errors.members) &&
-                            formik.touched.members &&
-                            (formik.touched.members as any)[idx] &&
-                            (formik.errors.members as any)[idx] && (
-                              <p className="mt-2 text-sm text-red-400">
-                                {(formik.errors.members as any)[idx].userId ||
-                                  (formik.errors.members as any)[idx].isOpen}
-                              </p>
-                            )}
+                          
                         </div>
 
                         <button
@@ -546,6 +545,17 @@ export default function BandForm() {
                           X
                         </button>
                       </div>
+
+                      {/* Validación */}
+                      {Array.isArray(formik.errors.members) &&
+                      formik.touched.members &&
+                      (formik.touched.members as any)[idx] &&
+                      (formik.errors.members as any)[idx] && (
+                        <p className="mt-2 text-sm text-red-400">
+                          {(formik.errors.members as any)[idx].userId ||
+                          (formik.errors.members as any)[idx].isOpen}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
