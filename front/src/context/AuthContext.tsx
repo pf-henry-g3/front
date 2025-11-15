@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkAuth = async () => {
         try {
             const response = await apiClient.get('/auth/me');
-            console.log('response es 🎄: ', response);
+            console.log('🎄 Usuario authenticado, chequeado desde el back: ', response.data);
 
             const userData = response.data.data.user;
 
@@ -42,13 +42,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.removeItem('user');
             }
 
+            console.log('❌ Error completo: ', error);
+            localStorage.removeItem('user');
+            setUser(null)
+
+
             return null;
         } finally {
             setLoading(false);
         }
     };
 
-    // 🚀 Verificar auth al montar el componente
     useEffect(() => {
         checkAuth();
     }, []);
