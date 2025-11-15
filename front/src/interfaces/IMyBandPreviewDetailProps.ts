@@ -1,6 +1,5 @@
 export default interface IMyBandPreviewDetailProps {
   name: string,
-  description: string,
-  formationDate: string,
+  averageRating: string,
   bandImage: string,
 }
