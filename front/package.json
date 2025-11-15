@@ -9,11 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@auth0/nextjs-auth0": "^3",
     "@auth0/auth0-react": "^2.8.0",
     "axios": "^1.13.1",
     "dotenv": "^17.2.3",
     "formik": "^2.4.6",
-    "js-cookie": "^3.0.5",
     "next": "16.0.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
@@ -23,13 +23,12 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "postcss": "^8.4",
     "eslint": "^9",
     "eslint-config-next": "16.0.0",
-    "postcss": "^8.4",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
