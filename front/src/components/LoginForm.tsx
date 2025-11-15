@@ -7,7 +7,6 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { AxiosError } from "axios";
 import { authService } from "../services/auth.service";
 import { useAuth } from "@/src/context/AuthContext";
-import { cookieManager } from "../utils/cookies";
 
 interface LoginData {
   email: string;
@@ -52,55 +51,37 @@ export default function LoginForm() {
           password: values.password.trim(),
         };
 
-        console.log("Enviando credenciales al backend...", loginData);
+        console.log("Datos a enviar:", loginData);
 
         const response = await authService.signin(loginData);
-
-        console.log("📦 Respuesta del backend:", response);
-
         const user = response.data.tranformedUser;
-
-        if (!user) {
-          throw new Error('No se recibió el usuario del backend');
-        }
 
         console.log("✅ Login exitoso:", user);
         console.log("🍪 Cookie guardada automáticamente");
 
         login(user); // ✅ ACTUALIZAR EL CONTEXTO GLOBAL
-        console.log("✅ Usuario guardado en contexto");
-
-       
 
         resetForm();
 
         await Swal.fire({
           icon: "success",
           title: "¡Inicio de sesión exitoso!",
-          text: `Bienvenido de vuelta ${user.userName || user.name}`,
+          text: "Bienvenido de vuelta",
           confirmButtonColor: "#10B981",
           timer: 1200,
-          showConfirmButton: false,
         });
 
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1600);
+        router.push("/dashboard");
       } catch (error) {
         const axiosError = error as AxiosError<any>;
 
-        //console.error("Error de login:", axiosError);
-        console.error("❌ Error de login:", axiosError.response?.data || axiosError.message);
-
-        // Limpiar cookies en caso de error
-        cookieManager.clearAuth();
+        console.error("Error de login:", axiosError);
 
         if (axiosError.response?.status === 401) {
           await Swal.fire({
             icon: "error",
             title: "Credenciales incorrectas",
             text: "Email o contraseña incorrectos",
-            confirmButtonColor: "#EF4444",
           });
           return;
         }
@@ -109,8 +90,6 @@ export default function LoginForm() {
           await Swal.fire({
             icon: "error",
             title: "Usuario no encontrado",
-            text: "No existe una cuenta con ese email",
-            confirmButtonColor: "#EF4444",
           });
           return;
         }
@@ -118,8 +97,7 @@ export default function LoginForm() {
         await Swal.fire({
           icon: "error",
           title: "Error de conexión",
-          text: "No se pudo conectar con el servidor. Intenta nuevamente.",
-          confirmButtonColor: "#EF4444",
+          text: "Intenta nuevamente.",
         });
       } finally {
         setSubmitting(false);

@@ -20,8 +20,7 @@ export function Auth0ProviderWrapper({ children }: { children: React.ReactNode }
                 scope: 'openid profile email',
             }}
             onRedirectCallback={onRedirectCallback}
-            cacheLocation="memory"
-            useRefreshTokens={true}
+            cacheLocation="localstorage"
         >
             {children}
         </Auth0Provider>

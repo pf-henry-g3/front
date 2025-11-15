@@ -7,8 +7,6 @@ import { useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/src/context/AuthContext';
 import { authService } from '@/src/services/auth.service';
-import { cookieManager } from '@/src/utils/cookies';
-
 
 export default function Auth0CallbackPage() {
     const {
@@ -52,31 +50,18 @@ export default function Auth0CallbackPage() {
 
                 setSyncStatus('Sincronizando con el backend...');
                 console.log('📤 Enviando al backend:', {
-                    
+                    token: auth0Token.substring(0, 20) + '...',
+                    user: auth0User
                 });
 
                 const response = await authService.syncAuth0User(auth0Token, auth0User);
 
-               
-                console.log('📦 Respuesta completa:', response);
-                
+                console.log('✅ Usuario sincronizado:', response.data.tranformedUser);
+                console.log('🍪 Cookie guardada automáticamente');
 
-                const transformedUser = response.data.data.tranformedUser
-                   
-
-                console.log('👤 Usuario a guardar en contexto:', transformedUser);
-                
-                if (transformedUser) {
-                login(transformedUser);
-                console.log('✅ Usuario sincronizado y guardado en contexto');
-            } else {
-                    console.error('❌ NO hay usuario para guardar en el contexto');
-                    throw new Error('No se recibió el usuario del backend');
-                }
+                login(response.data.tranformedUser);
 
                 setSyncStatus('¡Listo! Redirigiendo...');
-
-               
 
                 setTimeout(() => {
                     router.push('/dashboard');
@@ -95,8 +80,6 @@ export default function Auth0CallbackPage() {
                 } else {
                     setError(err.message || 'Error desconocido');
                 }
-                //  IMPORTANTE: Limpiar cookies en caso de error
-                cookieManager.clearAuth();
             }
         };
 
