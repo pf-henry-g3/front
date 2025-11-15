@@ -7,6 +7,9 @@ import { apiClient } from '../lib/api-client';
 import { AxiosError } from 'axios';
 import IUser from '../interfaces/IUser';
 import AuthContextType from "../interfaces/IAuthContextType"
+import { cookieManager } from '../utils/cookies';
+
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -15,34 +18,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    // 🔄 Función para verificar autenticación con el backend
+    //  Función para verificar autenticación
     const checkAuth = async () => {
         try {
+            const token = cookieManager.getAccessToken();
+            
+            if (!token) {
+                console.log('⚠️ No hay token en cookies');
+                setUser(null);
+                setLoading(false);
+                return null;
+            }
+
+            // Intentar obtener usuario de cookies primero (más rápido)
+            const cachedUser = cookieManager.getUser();
+            if (cachedUser) {
+                setUser(cachedUser);
+                setLoading(false);
+                return cachedUser;
+            }
+           
+            console.log('🔍 No hay usuario en cache, verificando con backend...');
             const response = await apiClient.get('/auth/me');
-            console.log('response es 🎄: ', response);
+            console.log('✅ Usuario verificado con backend:', response.data);
 
             const userData = response.data.data.user;
 
             setUser(userData);
-
-            // Sync con localStorage (opcional, solo como backup)
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('user', JSON.stringify(userData));
-            }
+            cookieManager.setUser(userData); // Actualizar cache
+         
 
             return userData;
+        
         } catch (error) {
             if (error instanceof AxiosError) {
-                console.log('❌ No autenticado:', error.response?.data?.message);
+                console.log('❌ error verificado auth:', error.response?.data?.message);
             }
-
+            // Limpiar cookies si hay error de autenticación
+            cookieManager.clearAuth();
             setUser(null);
-
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('user');
-            }
-
             return null;
+            
+           
         } finally {
             setLoading(false);
         }
@@ -51,14 +68,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 🚀 Verificar auth al montar el componente
     useEffect(() => {
         checkAuth();
+        const handleAuthChange = () => {
+            console.log('🔔 Evento auth-changed recibido');
+            checkAuth();
+        };
+
+        window.addEventListener('auth-changed', handleAuthChange);
+        return () => {
+            window.removeEventListener('auth-changed', handleAuthChange);
+        };
     }, []);
 
     // ✅ Login: actualiza el estado globalmente
     const login = (userData: IUser) => {
+        console.log('🔐 Ejecutando login en contexto para:', userData.userName);
         setUser(userData);
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('user', JSON.stringify(userData));
-        }
+        cookieManager.setUser(userData);
+        
+        console.log('✅ Usuario guardado en estado y cookies');
     };
 
     // 🚪 Logout: limpia todo
@@ -69,16 +96,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error('❌ Error al cerrar sesión:', error);
         } finally {
+            cookieManager.clearAuth();
             setUser(null);
-
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('user');
-            }
-
+            console.log('✅ Cookies limpiadas y estado reseteado');
             router.push('/login');
+            
         }
     };
-
+  
     // 🔄 Refresh manual del usuario (útil después de actualizar perfil)
     const refreshUser = async () => {
         await checkAuth();
@@ -87,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const value = {
         user,
         loading,
-        isAuthenticated: !!user,
+        isAuthenticated: !!user && !!cookieManager.getAccessToken(),
         login,
         logout,
         refreshUser,
