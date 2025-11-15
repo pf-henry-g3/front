@@ -20,11 +20,7 @@ interface DetailViewProps {
 export default function DetailView({ selectedItem }: DetailViewProps) {
   if (!selectedItem) {
     return (
-<<<<<<< HEAD
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30 p-8 max-w-2xl mx-auto">
-=======
-      <div className="bg-white/95 pb-28 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30 p-8">
->>>>>>> 6142046d343e09671277b2c4d1dc6f7ea7b7fe4c
         <div className="text-center">
           <h2 className="text-3xl font-bold text-oscuro1 mb-4 drop-shadow-md">
             📊 Directorio Universal
