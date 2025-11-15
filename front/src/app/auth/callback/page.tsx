@@ -5,42 +5,61 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
-import { useAuth } from '@/src/hooks/useAuth';
+import { useAuth } from '@/src/context/AuthContext';
 import { authService } from '@/src/services/auth.service';
 
 export default function Auth0CallbackPage() {
-    const { getAccessTokenSilently, isAuthenticated, isLoading } = useAuth0();
-    const { user } = useAuth();
+    const {
+        user: auth0User,
+        getAccessTokenSilently,
+        isAuthenticated,
+        isLoading
+    } = useAuth0();
 
+    const { login } = useAuth();
     const router = useRouter();
+
     const [error, setError] = useState<string | null>(null);
     const [syncStatus, setSyncStatus] = useState<string>('Conectando con Auth0...');
 
     useEffect(() => {
         const syncUserWithBackend = async () => {
-
-            if (isLoading) return;
-
+            if (isLoading) {
+                console.log('⏳ Auth0 cargando...');
+                return;
+            }
 
             if (!isAuthenticated) {
-                console.log(isAuthenticated);
-
+                console.log('❌ No autenticado con Auth0');
                 router.push('/login');
+                return;
+            }
+
+            if (!auth0User) {
+                console.log('❌ No hay usuario de Auth0');
+                setError('No se pudo obtener el usuario de Auth0');
                 return;
             }
 
             try {
                 setSyncStatus('Obteniendo token de Auth0...');
+                console.log('🔑 Obteniendo token de Auth0...');
+
                 const auth0Token = await getAccessTokenSilently();
+                console.log('✅ Token de Auth0 obtenido');
 
                 setSyncStatus('Sincronizando con el backend...');
+                console.log('📤 Enviando al backend:', {
+                    token: auth0Token.substring(0, 20) + '...',
+                    user: auth0User
+                });
 
-                const response = await authService.syncAuth0User(auth0Token, user)
-
-                console.log('🎈 Complete response: ', response);
+                const response = await authService.syncAuth0User(auth0Token, auth0User);
 
                 console.log('✅ Usuario sincronizado:', response.data.tranformedUser);
-                console.log('🍪 Cookie guardada automáticamente por el navegador');
+                console.log('🍪 Cookie guardada automáticamente');
+
+                login(response.data.tranformedUser);
 
                 setSyncStatus('¡Listo! Redirigiendo...');
 
@@ -51,8 +70,12 @@ export default function Auth0CallbackPage() {
             } catch (err: any) {
                 console.error('❌ Error en callback:', err);
 
-                // Axios maneja errores de manera diferente
                 if (err instanceof AxiosError) {
+                    console.error('📍 Detalles del error:', {
+                        status: err.response?.status,
+                        message: err.response?.data?.message,
+                        data: err.response?.data
+                    });
                     setError(err.response?.data?.message || err.message);
                 } else {
                     setError(err.message || 'Error desconocido');
@@ -61,7 +84,7 @@ export default function Auth0CallbackPage() {
         };
 
         syncUserWithBackend();
-    }, [isAuthenticated, isLoading, getAccessTokenSilently, user, router]);
+    }, [isAuthenticated, isLoading, auth0User, getAccessTokenSilently, router, login]);
 
     if (error) {
         return (

@@ -19,6 +19,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkAuth = async () => {
         try {
             const response = await apiClient.get('/auth/me');
+            console.log('response es 🎄: ', response);
+
             const userData = response.data.data.user;
 
             setUser(userData);

@@ -1,5 +1,5 @@
-// services/auth.service.ts
-import { apiClient, apiClientWithToken } from "../lib/api-client";
+// src/services/auth.service.ts
+import { apiClient } from "../lib/api-client";
 import { LoginData } from "../interfaces/ILoginData";
 import { CreateUserDto } from "../interfaces/ICreateUserDto";
 
@@ -18,7 +18,6 @@ export const authService = {
         return response.data;
     },
 
-
     async loginWithGoogle(loginWithRedirect: LoginWithRedirectFn) {
         return loginWithRedirect({
             authorizationParams: {
@@ -31,10 +30,23 @@ export const authService = {
         });
     },
 
+    async syncAuth0User(auth0Token: string, auth0User: any) {
+        console.log('📤 Enviando al backend:', {
+            token: 'Bearer ' + auth0Token.substring(0, 20) + '...',
+            userData: auth0User
+        });
 
-    async syncAuth0User(auth0Token: string, userData: any) {
-        const client = apiClientWithToken(auth0Token);
-        const response = await client.post('/auth/auth0/callback', { user: userData });
+        const response = await apiClient.post(
+            '/auth/auth0/callback',
+            { user: auth0User }, // 👈 Body: datos del usuario
+            {
+                headers: {
+                    'Authorization': `Bearer ${auth0Token}` // 👈 Header: token de Auth0
+                }
+            }
+        );
+
+        console.log('✅ Respuesta del backend:', response.data);
         return response.data;
     },
 
