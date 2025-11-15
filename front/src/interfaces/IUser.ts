@@ -1,7 +1,7 @@
 export default interface IUser {
   id: string, // {PK}
   name: string,
-  birthDate: Date,
+  birthDate: string,
   aboutMe: string,
   userName: string,
   averageRating: number, //real
@@ -10,6 +10,7 @@ export default interface IUser {
   city: string,
   country: string,
   addres: string,
+  roles: { name: string }[],
   //latitude: float,
   //longitude: float,
   profilePicture: string,

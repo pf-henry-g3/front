@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/src/hooks/useAuth';
+import { useAuth } from '@/src/context/AuthContext'
 
 export default function DashboardHome() {
   const router = useRouter();

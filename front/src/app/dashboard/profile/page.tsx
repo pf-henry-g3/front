@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useAuth } from '@/src/hooks/useAuth';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/src/context/AuthContext'; // 👈 Usar contexto
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth(); // 👈 Obtener del contexto
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,18 +15,29 @@ export default function ProfilePage() {
     userName: '',
     email: '',
     urlImage: '',
-    roles: [],
+    birthDate: '',
+    city: '',
+    country: '',
+    aboutMe: ''
+    // roles: [],
   });
 
-  if (user && form.email === '') {
-    setForm({
-      name: user.name || '',
-      userName: user.userName || '',
-      email: user.email || '',
-      urlImage: user.urlImage || '',
-      roles: user.roles || [],
-    });
-  }
+  // ✅ Actualizar form cuando user cambie
+  useEffect(() => {
+    if (user) {
+      setForm({
+        name: user.name || '',
+        userName: user.userName || '',
+        email: user.email || '',
+        urlImage: user.profilePicture || '',
+        birthDate: user.birthDate || '',
+        city: user.city || '',
+        country: user.country || '',
+        aboutMe: user.aboutMe || ''
+        // roles: user.roles || [],
+      });
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -72,12 +83,19 @@ export default function ProfilePage() {
           name: form.name,
           userName: form.userName,
           urlImage: form.urlImage,
+          birthDate: form.birthDate,
+          city: form.city,
+          country: form.country,
+          aboutMe: form.aboutMe,
         }),
       });
 
       if (!res.ok) throw new Error('Error actualizando el perfil');
 
       setOk('Perfil actualizado');
+
+      await refreshUser(); // ✅ REFRESCAR EL USUARIO EN EL CONTEXTO
+
     } catch (err: any) {
       setError(err.message || 'Error actualizando el perfil');
     } finally {
@@ -163,7 +181,7 @@ export default function ProfilePage() {
               />
             </div>
 
-            {Array.isArray(form.roles) && form.roles.length > 0 && (
+            {/* {Array.isArray(form.roles) && form.roles.length > 0 && (
               <div className="md:col-span-2">
                 <label className="text-sm font-medium text-gray-800 mb-1 block">Roles</label>
                 <div className="flex flex-wrap gap-2">
@@ -174,7 +192,7 @@ export default function ProfilePage() {
                   ))}
                 </div>
               </div>
-            )}
+            )} */}
 
             <div className="md:col-span-2 flex gap-3 items-center">
               <button

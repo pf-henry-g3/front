@@ -2,15 +2,15 @@
 "use client"
 
 interface ProductCardProps {
-    id: string;
-    name: string;
-    type: "band" | "user" | "vacancy";
-    description?: string;
-    imageUrl?: string;
-    formationYear?: number;
-    city?: string;
-    country?: string;
-    isOpen?: boolean;
+  id: string;
+  name: string;
+  type: "band" | "user" | "vacancy";
+  description?: string;
+  imageUrl?: string;
+  formationYear?: number;
+  city?: string;
+  country?: string;
+  isOpen?: boolean;
 }
 
 interface DetailViewProps {
@@ -20,11 +20,7 @@ interface DetailViewProps {
 export default function DetailView({ selectedItem }: DetailViewProps) {
   if (!selectedItem) {
     return (
-<<<<<<< HEAD
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30 p-8 max-w-2xl mx-auto">
-=======
-      <div className="bg-white/95 pb-28 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30 p-8">
->>>>>>> 6142046d343e09671277b2c4d1dc6f7ea7b7fe4c
         <div className="text-center">
           <h2 className="text-3xl font-bold text-oscuro1 mb-4 drop-shadow-md">
             📊 Directorio Universal
@@ -32,7 +28,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
           <p className="text-oscuro2 mb-8 text-lg font-medium">
             Explora bandas, usuarios y vacantes disponibles en nuestra plataforma musical.
           </p>
-          
+
           <div className="py-16">
             <div className="text-8xl mb-6 animate-pulse">👈</div>
             <div className="bg-tur1/20 rounded-xl p-6 border border-tur3/20">
@@ -114,14 +110,14 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                 </p>
               </div>
             )}
-            
+
             {/* Descripción */}
             <div className="border-t border-tur3/30 pt-4">
               <h3 className="font-bold text-oscuro1 mb-3 text-center text-lg">
                 {selectedItem.type === 'band' ? 'Descripción de la banda:' :
-                 selectedItem.type === 'user' ? 'Sobre este músico:' :
-                 selectedItem.type === 'vacancy' ? 'Descripción de la vacante:' :
-                 'Descripción:'}
+                  selectedItem.type === 'user' ? 'Sobre este músico:' :
+                    selectedItem.type === 'vacancy' ? 'Descripción de la vacante:' :
+                      'Descripción:'}
               </h3>
               <div className="bg-white/85 backdrop-blur-sm p-5 rounded-xl max-h-48 overflow-y-auto border-2 border-tur3/30 shadow-sm">
                 <p className="text-oscuro1 text-base leading-relaxed text-justify font-medium">
