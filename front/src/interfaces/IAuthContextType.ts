@@ -2,9 +2,10 @@ import IUser from "./IUser"
 
 export default interface AuthContextType {
     user: IUser | null;
+    token: string | null;
     loading: boolean;
     isAuthenticated: boolean;
     login: (user: IUser) => void;
-    logout: () => Promise<void>;
-    refreshUser: () => Promise<void>;
+    logout: () => void;
+    refreshUser: () => void;
 }

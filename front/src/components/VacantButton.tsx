@@ -1,11 +1,12 @@
 'use client';
 
-import { useAuth0 } from '@auth0/auth0-react';
+
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function VacantButton() {
-  const { isAuthenticated: isAuth0Authenticated, isLoading } = useAuth0();
+  const { isAuthenticated: Authenticated, loading } = useAuth();
   const router = useRouter();
   const [hasLocalToken, setHasLocalToken] = useState(false);
 
@@ -30,12 +31,12 @@ export default function VacantButton() {
   }, []);
 
   // No mostrar nada mientras carga
-  if (isLoading) {
+  if (loading) {
     return null;
   }
 
   // ✅ Verificar AMBOS tipos de autenticación
-  const isAuthenticated = isAuth0Authenticated || hasLocalToken;
+  const isAuthenticated = Authenticated || hasLocalToken;
 
   // Solo mostrar si el usuario está autenticado (cualquier método)
   if (!isAuthenticated) {
