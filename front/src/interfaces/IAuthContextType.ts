@@ -5,7 +5,8 @@ export default interface AuthContextType {
     token: string | null;
     loading: boolean;
     isAuthenticated: boolean;
-    login: (user: IUser) => void;
-    logout: () => void;
-    refreshUser: () => void;
+    login: (user: IUser, token: string) => void;
+    logout: () => Promise<void>;
+    refreshUser: () => Promise<void>;
+    getToken?: () => string | null;
 }

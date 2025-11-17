@@ -1,5 +1,4 @@
-﻿// app/auth/callback/page.tsx
-'use client';
+﻿'use client';
 
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
@@ -25,41 +24,54 @@ export default function Auth0CallbackPage() {
     useEffect(() => {
         const syncUserWithBackend = async () => {
             if (isLoading) {
-                console.log('⏳ Auth0 cargando...');
+                console.log('⏳ Auth0Callback - Auth0 aún cargando...');
                 return;
             }
 
             if (!isAuthenticated) {
-                console.log('❌ No autenticado con Auth0');
+                console.log('❌ Auth0Callback - Usuario no autenticado en Auth0');
                 router.push('/login');
                 return;
             }
 
             if (!auth0User) {
-                console.log('❌ No hay usuario de Auth0');
-                setError('No se pudo obtener el usuario de Auth0');
+                console.log('❌ Auth0Callback - No se pudo obtener usuario de Auth0');
+                setError('No se pudo obtener la información del usuario');
                 return;
             }
 
             try {
                 setSyncStatus('Obteniendo token de Auth0...');
-                console.log('🔑 Obteniendo token de Auth0...');
+                console.log('🔑 Auth0Callback - Solicitando token de Auth0...');
 
                 const auth0Token = await getAccessTokenSilently();
-                console.log('✅ Token de Auth0 obtenido');
+                console.log('✅ Auth0Callback - Token de Auth0 obtenido');
 
                 setSyncStatus('Sincronizando con el backend...');
-                console.log('📤 Enviando al backend:', {
-                    token: auth0Token.substring(0, 20) + '...',
-                    user: auth0User
-                });
+                console.log('📤 Auth0Callback - Enviando datos al backend...');
 
+                // ✅ authService.syncAuth0User ahora guarda automáticamente en COOKIES
                 const response = await authService.syncAuth0User(auth0Token, auth0User);
 
-                console.log('✅ Usuario sincronizado:', response.data.tranformedUser);
-                console.log('🍪 Cookie guardada automáticamente');
+                console.log('✅ Auth0Callback - Usuario sincronizado:', response.data.data.tranformedUser);
 
-                login(response.data.tranformedUser);
+                // ✅ IMPORTANTE: Obtener el token que authService guardó en las COOKIES
+                const cookies = document.cookie.split(';');
+                const tokenCookie = cookies.find(cookie => 
+                    cookie.trim().startsWith('access_token=')
+                );
+                
+                let finalToken = auth0Token; // fallback
+                if (tokenCookie) {
+                    finalToken = decodeURIComponent(tokenCookie.split('=')[1].trim());
+                    console.log('✅ Auth0Callback - Token obtenido de COOKIES:', finalToken.substring(0, 20) + '...');
+                } else if (response.data?.data?.access_token) {
+                    finalToken = response.data.data.access_token;
+                    console.log('✅ Auth0Callback - Token obtenido del backend');
+                }
+
+                // ✅ Llamar a login para actualizar el contexto de React
+                login(response.data.data.tranformedUser, finalToken);
 
                 setSyncStatus('¡Listo! Redirigiendo...');
 
@@ -68,17 +80,16 @@ export default function Auth0CallbackPage() {
                 }, 500);
 
             } catch (err: any) {
-                console.error('❌ Error en callback:', err);
-
+                console.error('❌ Auth0Callback - Error en el proceso:', err);
+                
                 if (err instanceof AxiosError) {
                     console.error('📍 Detalles del error:', {
                         status: err.response?.status,
-                        message: err.response?.data?.message,
-                        data: err.response?.data
+                        message: err.response?.data?.message
                     });
                     setError(err.response?.data?.message || err.message);
                 } else {
-                    setError(err.message || 'Error desconocido');
+                    setError(err.message || 'Error desconocido durante la autenticación');
                 }
             }
         };

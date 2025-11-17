@@ -1,26 +1,30 @@
-import { apiClient, apiClientWithToken } from "../lib/api-client";
-
+import { apiClient } from "../lib/api-client";
 
 export const authService = {
     // Login tradicional (email/password)
     signin: async (credentials: { email: string; password: string }) => {
         try {
+            console.log('📤 auth.service - Iniciando login tradicional...');
+            
             const response = await apiClient.post('/auth/signin', credentials);
 
-            // Guardar token y usuario en localStorage
+            // Guardar token si el backend lo devuelve
             if (response.data?.data?.access_token) {
-                localStorage.setItem('access_token', response.data.data.access_token);
+                const token = response.data.data.access_token;
+                localStorage.setItem('access_token', token);
+                console.log('💾 auth.service - Token guardado en localStorage');
             }
 
             if (response.data?.data?.tranformedUser) {
                 localStorage.setItem('user', JSON.stringify(response.data.data.tranformedUser));
+                console.log('👤 auth.service - Usuario guardado en localStorage');
             }
 
-            console.log('✅ Login exitoso');
-            return response.data; // ✅ Retornar response.data completo
+            console.log('✅ auth.service - Login tradicional exitoso');
+            return response;
 
         } catch (error: any) {
-            console.error('❌ Error en signin:', error.message);
+            console.error('❌ auth.service - Error en login tradicional:', error.message);
             throw error;
         }
     },
@@ -28,42 +32,41 @@ export const authService = {
     // Sincronizar usuario de Auth0 con backend
     syncAuth0User: async (auth0Token: string, auth0User: any) => {
         try {
-            const client = apiClientWithToken(auth0Token);
+            console.log('📤 auth.service - Sincronizando usuario de Auth0...');
 
-            console.log('📤 Enviando al backend:', {
-                token: `Bearer ${auth0Token}`,
-                userData: auth0User
-            });
-
-            const response = await client.post('/auth/auth0/callback', {
+            const response = await apiClient.post('/auth/auth0/callback', {
                 token: auth0Token,
                 user: auth0User
             });
 
-            console.log('✅ Respuesta del backend:', response.data);
+            console.log('✅ auth.service - Sincronización exitosa:', response.data);
 
-            // ✅ Guardar token del BACKEND en localStorage
+            // Guardar el token que devuelve el BACKEND
             if (response.data?.data?.access_token) {
-                localStorage.setItem('access_token', response.data.data.access_token);
-                console.log('🔑 Token guardado en localStorage');
+                const backendToken = response.data.data.access_token;
+                localStorage.setItem('access_token', backendToken);
+                console.log('💾 auth.service - Token del backend guardado:', backendToken.substring(0, 20) + '...');
+            } else {
+                console.log('⚠️ auth.service - Backend no devolvió token, usando token de Auth0');
+                localStorage.setItem('access_token', auth0Token);
             }
 
             if (response.data?.data?.tranformedUser) {
                 localStorage.setItem('user', JSON.stringify(response.data.data.tranformedUser));
-                console.log('👤 Usuario guardado en localStorage');
+                console.log('👤 auth.service - Información de usuario guardada');
             }
 
-            // ✅ Retornar el objeto completo response.data
-            return response.data; // { success, message, data: { tranformedUser, login } }
+            return response;
 
         } catch (error: any) {
-            console.error('❌ Error sincronizando con backend:', error.message);
+            console.error('❌ auth.service - Error en sincronización Auth0:', error.message);
             throw error;
         }
     },
 
     // Login con Google
     loginWithGoogle: async (loginWithRedirect: any) => {
+        console.log('🔐 auth.service - Redirigiendo a Auth0 para login con Google...');
         await loginWithRedirect({
             authorizationParams: {
                 connection: 'google-oauth2',
@@ -75,20 +78,17 @@ export const authService = {
     // Logout
     logout: async () => {
         try {
-            const token = localStorage.getItem('access_token');
-            
-            if (token) {
-                await apiClient.post('/auth/logout', {}, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-            }
+            console.log('🚪 auth.service - Ejecutando logout...');
+            await apiClient.post('/auth/logout');
+            console.log('✅ auth.service - Logout en backend exitoso');
         } catch (error: any) {
-            console.error('❌ Error en logout:', error.message);
+            console.error('❌ auth.service - Error en logout:', error.message);
         } finally {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('user');
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('user');
+                console.log('🗑️ auth.service - localStorage limpiado');
+            }
         }
     }
 };
