@@ -9,7 +9,7 @@ export default function AuthButtons() {
     const { user, loading, logout, isAuthenticated } = useAuth();
 
     const isAdmin = useMemo(() => {
-        return user?.roles?.some(r => r.name === "admin") ?? false;
+        return user?.roles?.some(r => r.name === "Admin" || r.name === "SuperAdmin") ?? false;
     }, [user]);
 
     const handleLogout = async () => {
@@ -49,7 +49,7 @@ export default function AuthButtons() {
                 <>
                     <button
                         className="py-1.5 rounded-md px-4 text-tur3 text-lg font-sans border border-fondo1 transition duration-400 hover:bg-tur3 hover:border-verde hover:text-azul hover:-translate-y-0.5 hover:cursor-pointer"
-                        onClick={() => router.push("/dashboard")}
+                        onClick={() => router.push("/dashboard/profile")}
                     >
                         Mi perfil
                     </button>

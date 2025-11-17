@@ -56,7 +56,7 @@ function ReviewsSection({ refreshToken }: { refreshToken: number }) {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      const res = await axios.get(`${apiBase}/review/admin/all?page=1&limit=1000`, {
+      const res = await axios.get(`${apiBase}/admin/entities/reviews?page=1&limit=1000`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -542,7 +542,7 @@ function ToolsSection({ refreshToken }: { refreshToken: number }) {
         }
 
         const response = await axios.post(
-          `${apiBase}/user/admin/send-mass-email`,
+          `${apiBase}/admin/send-mass-email`,
           {
             subject: emailSubject,
             body: emailBody,
@@ -701,8 +701,8 @@ function PublicationsSection({ refreshToken }: { refreshToken: number }) {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      const endpoint = pubType === 'band' ? 'band' : 'vacancy';
-      const res = await axios.get(`${apiBase}/${endpoint}?page=1&limit=1000`, {
+      const entityType = pubType === 'band' ? 'bands' : 'vacancies';
+      const res = await axios.get(`${apiBase}/admin/entities/${entityType}?page=1&limit=1000`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -771,15 +771,10 @@ function PublicationsSection({ refreshToken }: { refreshToken: number }) {
         const token = localStorage.getItem('access_token');
         if (!token) return;
 
-        if (pub.type === 'vacancy') {
-          await axios.delete(`${apiBase}/vacancy/${pub.id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-        } else {
-          await axios.delete(`${apiBase}/band/${pub.id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-        }
+        const entityType = pub.type === 'vacancy' ? 'vacancies' : 'bands';
+        await axios.delete(`${apiBase}/admin/soft-delete/${entityType}/${pub.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
         Swal.fire('¡Eliminado!', `La ${pub.type === 'band' ? 'banda' : 'vacante'} ha sido eliminada.`, 'success');
         loadPublications();
@@ -1065,7 +1060,9 @@ export default function AdminMetricsPage() {
     email?: string;
     country?: string;
     roles?: { name: string }[];
+    isBanned?: boolean;
   };
+  const [currentUserRoles, setCurrentUserRoles] = useState<string[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [refreshToken, setRefreshToken] = useState<number>(0);
   const [query, setQuery] = useState<string>('');
@@ -1080,13 +1077,24 @@ export default function AdminMetricsPage() {
         setAuthorized(false);
         setError('No autorizado - Inicia sesión');
         setLoading(false);
+        router.push('/login');
         return;
       }
 
+      const base = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
+      if (!base) {
+        setAuthorized(false);
+        setError('URL del backend no configurada');
+        setLoading(false);
+        return;
+      }
+
+      // Primero intentar verificar con el token del JWT
       const payload = decodeJwt(token);
       let roles: string[] = Array.isArray(payload?.roles) ? payload.roles : [];
       let isAdmin = roles.includes('Admin') || roles.includes('SuperAdmin');
-
+      
+      // Si no es admin según el JWT, verificar en localStorage
       if (!isAdmin) {
         try {
           const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
@@ -1101,39 +1109,85 @@ export default function AdminMetricsPage() {
         }
       }
 
-      if (!isAdmin && token) {
+      // Si aún no es admin, verificar con el backend usando /auth/me
+      if (!isAdmin) {
         try {
-          const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
-          const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-          if (userStr) {
-            const user = JSON.parse(userStr);
-            const userId = user?.id;
-            if (userId) {
-              const response = await axios.get(`${base}/user/${userId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-              const userData = response.data?.data || response.data;
-              const backendRoles = userData?.roles?.map((r: any) => r.name) || [];
-              roles = backendRoles;
-              isAdmin = backendRoles.includes('Admin') || backendRoles.includes('SuperAdmin');
-              
-              if (userData) {
-                localStorage.setItem('user', JSON.stringify(userData));
-              }
-            }
+          const response = await axios.get(`${base}/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          // El endpoint /auth/me devuelve { data: { user: {...} } }
+          const userData = response.data?.data?.user || response.data?.user || response.data?.data || response.data;
+          const backendRoles = userData?.roles?.map((r: any) => r.name) || [];
+          roles = backendRoles;
+          isAdmin = backendRoles.includes('Admin') || backendRoles.includes('SuperAdmin');
+          
+          if (userData) {
+            localStorage.setItem('user', JSON.stringify(userData));
           }
         } catch (err: any) {
-          // ignore
+          // Si es un error de red, intentar usar datos de localStorage
+          if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
+            // Intentar cargar desde localStorage como fallback
+            try {
+              const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+              if (userStr) {
+                const user = JSON.parse(userStr);
+                const userRoles = user?.roles?.map((r: any) => r.name) || [];
+                const isAdminLocal = userRoles.includes('Admin') || userRoles.includes('SuperAdmin');
+                
+                if (isAdminLocal) {
+                  // Usar datos locales si el usuario es admin
+                  setCurrentUserRoles(userRoles);
+                  setAuthorized(true);
+                  // Continuar con la carga de datos (puede fallar pero al menos permite ver la UI)
+                } else {
+                  setAuthorized(false);
+                  setError('Error de conexión: No se pudo verificar tu sesión. Verifica que el backend esté corriendo.');
+                  setLoading(false);
+                  return;
+                }
+              } else {
+                setAuthorized(false);
+                setError('Error de conexión: No se pudo verificar tu sesión. Verifica que el backend esté corriendo.');
+                setLoading(false);
+                return;
+              }
+            } catch (e) {
+              setAuthorized(false);
+              setError('Error de conexión: No se pudo verificar tu sesión. Verifica que el backend esté corriendo.');
+              setLoading(false);
+              return;
+            }
+          }
+          
+          // Si es 401, el token es inválido - redirigir al login
+          if (err.response?.status === 401) {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user');
+            setAuthorized(false);
+            setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+            setLoading(false);
+            router.push('/login');
+            return;
+          }
+          
+          // Otro error - no es admin
+          setAuthorized(false);
+          setError('No autorizado - Tu cuenta no tiene permisos de administrador.');
+          setLoading(false);
+          return;
         }
       }
 
       if (!isAdmin) {
         setAuthorized(false);
-        setError('No autorizado - Tu cuenta no tiene permisos de administrador. Si acabas de ser promovido a admin, cierra sesión y vuelve a iniciar sesión para actualizar tu token.');
+        setError('No autorizado - Tu cuenta no tiene permisos de administrador.');
         setLoading(false);
         return;
       }
 
+      setCurrentUserRoles(roles);
       setAuthorized(true);
 
       const load = async () => {
@@ -1152,9 +1206,9 @@ export default function AdminMetricsPage() {
         }
         const headers = { Authorization: `Bearer ${token}` };
         const [u, b, v] = await Promise.all([
-          axios.get(`${base}/user`, { headers }),
-          axios.get(`${base}/band`, { headers }),
-          axios.get(`${base}/vacancy`, { headers }),
+          axios.get(`${base}/admin/entities/users?page=1&limit=10000`, { headers }),
+          axios.get(`${base}/admin/entities/bands?page=1&limit=10000`, { headers }),
+          axios.get(`${base}/admin/entities/vacancies?page=1&limit=10000`, { headers }),
         ]);
         const uData = Array.isArray(u.data?.data) ? u.data.data : Array.isArray(u.data) ? u.data : [];
         const bData = Array.isArray(b.data?.data) ? b.data.data : Array.isArray(b.data) ? b.data : [];
@@ -1172,6 +1226,7 @@ export default function AdminMetricsPage() {
             email: x.email,
             country: x.country,
             roles: Array.isArray(x.roles) ? x.roles : [],
+            isBanned: x.isBanned || false,
           })),
         );
       } catch (e: any) {
@@ -1214,36 +1269,50 @@ export default function AdminMetricsPage() {
     if (!token) {
       setError('No hay token de autenticación');
       setLoading(false);
+      router.push('/login');
+      return;
+    }
+
+    const base = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
+    if (!base) {
+      setError('URL del backend no configurada');
+      setLoading(false);
       return;
     }
 
     try {
-      const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
-      const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        const userId = user?.id;
-        if (userId) {
-          const response = await axios.get(`${base}/user/${userId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          const userData = response.data?.data || response.data;
-          const backendRoles = userData?.roles?.map((r: any) => r.name) || [];
-          const isAdmin = backendRoles.includes('Admin') || backendRoles.includes('SuperAdmin');
-          
-          if (userData) {
-            localStorage.setItem('user', JSON.stringify(userData));
-          }
-          
-          if (isAdmin) {
-            window.location.reload();
-          } else {
-            setError('Tu cuenta aún no tiene permisos de administrador. Verifica en la base de datos que tu usuario tenga el rol "Admin".');
-          }
-        }
+      const response = await axios.get(`${base}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // El endpoint /auth/me devuelve { data: { user: {...} } }
+      const userData = response.data?.data?.user || response.data?.user || response.data?.data || response.data;
+      const backendRoles = userData?.roles?.map((r: any) => r.name) || [];
+      const isAdmin = backendRoles.includes('Admin') || backendRoles.includes('SuperAdmin');
+      
+      if (userData) {
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
+      
+      if (isAdmin) {
+        setCurrentUserRoles(backendRoles);
+        setAuthorized(true);
+        // Recargar los datos del dashboard
+        setRefreshToken((x) => x + 1);
+      } else {
+        setError('Tu cuenta aún no tiene permisos de administrador. Verifica en la base de datos que tu usuario tenga el rol "Admin" o "SuperAdmin".');
       }
     } catch (err: any) {
-      setError(`Error al recargar datos: ${err.response?.data?.message || err.message}`);
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
+        setError('Error de conexión: No se pudo conectar al backend. Verifica que el servidor esté corriendo en ' + base);
+      } else if (err.response?.status === 401) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        router.push('/login');
+      } else {
+        setError(`Error al recargar datos: ${err.response?.data?.message || err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -1382,13 +1451,14 @@ export default function AdminMetricsPage() {
                 <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">País</th>
                 <th className="px-4 py-3">Roles</th>
+                <th className="px-4 py-3">Estado</th>
                 <th className="px-4 py-3 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {pageRows.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
                     No hay usuarios que coincidan con la búsqueda
                   </td>
                 </tr>
@@ -1416,52 +1486,92 @@ export default function AdminMetricsPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
+                      {u.isBanned ? (
+                        <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 border border-red-300">
+                          Baneado
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 border border-green-300">
+                          Activo
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          className="rounded-md border border-green-300 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 hover:bg-green-100"
-                          onClick={async () => {
-                            try {
-                              const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-                              if (!token) {
-                                alert('No hay token de autenticación');
-                                return;
+                        {currentUserRoles.includes('SuperAdmin') && !u.roles?.some(r => r.name === 'Admin' || r.name === 'SuperAdmin') && (
+                          <button
+                            className="rounded-md border border-green-300 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 hover:bg-green-100"
+                            onClick={async () => {
+                              if (!confirm('¿Hacer Admin a este usuario?')) return;
+                              try {
+                                const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+                                if (!token) {
+                                  alert('No hay token de autenticación');
+                                  return;
+                                }
+                                const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
+                                await axios.patch(`${base}/admin/${u.id}`, {}, {
+                                  headers: { Authorization: `Bearer ${token}` }
+                                });
+                                setRefreshToken((x) => x + 1);
+                              } catch (e: any) {
+                                const errorMsg = e.response?.data?.message || e.message || 'No se pudo asignar Admin';
+                                alert(`Error: ${errorMsg}`);
                               }
-                              const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
-                              await axios.patch(`${base}/user/${u.id}`, { newRoles: ['Admin'] }, {
-                                headers: { Authorization: `Bearer ${token}` }
-                              });
-                              setRefreshToken((x) => x + 1);
-                            } catch (e) {
-                              console.error('Error asignando Admin:', e);
-                              alert('No se pudo asignar Admin');
-                            }
-                          }}
-                        >
-                          Hacer Admin
-                        </button>
-                        <button
-                          className="rounded-md border border-red-300 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
-                          onClick={async () => {
-                            if (!confirm('¿Banear (eliminación lógica) a este usuario?')) return;
-                            try {
-                              const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-                              if (!token) {
-                                alert('No hay token de autenticación');
-                                return;
+                            }}
+                          >
+                            Hacer Admin
+                          </button>
+                        )}
+                        {u.isBanned ? (
+                          <button
+                            className="rounded-md border border-blue-300 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+                            onClick={async () => {
+                              if (!confirm('¿Desbanear a este usuario?')) return;
+                              try {
+                                const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+                                if (!token) {
+                                  alert('No hay token de autenticación');
+                                  return;
+                                }
+                                const base = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
+                                await axios.patch(`${base}/admin/unban/${u.id}`, {}, {
+                                  headers: { Authorization: `Bearer ${token}` }
+                                });
+                                setRefreshToken((x) => x + 1);
+                              } catch (e: any) {
+                                const errorMsg = e.response?.data?.message || e.message || 'No se pudo desbanear al usuario';
+                                alert(`Error: ${errorMsg}`);
                               }
-                              const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
-                              await axios.delete(`${base}/user/${u.id}`, {
-                                headers: { Authorization: `Bearer ${token}` }
-                              });
-                              setRefreshToken((x) => x + 1);
-                            } catch (e) {
-                              console.error('Error baneando usuario:', e);
-                              alert('No se pudo banear al usuario');
-                            }
-                          }}
-                        >
-                          Banear
-                        </button>
+                            }}
+                          >
+                            Desbanear
+                          </button>
+                        ) : (
+                          <button
+                            className="rounded-md border border-red-300 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+                            onClick={async () => {
+                              if (!confirm('¿Banear a este usuario? El usuario no podrá iniciar sesión hasta que sea desbaneado.')) return;
+                              try {
+                                const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+                                if (!token) {
+                                  alert('No hay token de autenticación');
+                                  return;
+                                }
+                                const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
+                                await axios.patch(`${base}/admin/ban/${u.id}`, { reason: 'Baneado por administrador' }, {
+                                  headers: { Authorization: `Bearer ${token}` }
+                                });
+                                setRefreshToken((x) => x + 1);
+                              } catch (e: any) {
+                                const errorMsg = e.response?.data?.message || e.message || 'No se pudo banear al usuario';
+                                alert(`Error: ${errorMsg}`);
+                              }
+                            }}
+                          >
+                            Banear
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -59,6 +59,7 @@ export default function LoginForm() {
 
         console.log("✅ LoginForm - Login exitoso:", user.userName);
 
+<<<<<<< HEAD
         // ✅ Obtener token de las COOKIES (que authService ya guardó)
         const cookies = document.cookie.split(';');
         const tokenCookie = cookies.find(cookie => 
@@ -75,6 +76,26 @@ export default function LoginForm() {
 
         // ✅ Actualizar el contexto de React
         login(user, token);
+=======
+        // Verificar que el token se guardó correctamente
+        const token = localStorage.getItem('access_token');
+        const savedUser = localStorage.getItem('user');
+        console.log("🔑 Token guardado:", token ? 'Sí' : 'NO');
+        console.log("👤 Usuario guardado:", savedUser ? 'Sí' : 'NO');
+
+        if (!token) {
+          console.error("❌ ERROR: El token no se guardó correctamente");
+          await Swal.fire({
+            icon: "error",
+            title: "Error al guardar sesión",
+            text: "No se pudo guardar el token. Por favor, intenta nuevamente.",
+            confirmButtonColor: "#10B981",
+          });
+          return;
+        }
+
+        login(user); // ✅ ACTUALIZAR EL CONTEXTO GLOBAL
+>>>>>>> bab878ea921e7de09f46d05cefe60b1637cc272e
 
         resetForm();
 
@@ -86,8 +107,13 @@ export default function LoginForm() {
           timer: 1200,
         });
 
+<<<<<<< HEAD
         router.push("/dashboard");
 
+=======
+        // Usar replace en lugar de push para evitar que pueda volver atrás
+        router.replace("/dashboard");
+>>>>>>> bab878ea921e7de09f46d05cefe60b1637cc272e
       } catch (error) {
         const axiosError = error as AxiosError<any>;
 
@@ -103,21 +129,70 @@ export default function LoginForm() {
           return;
         }
 
+        if (axiosError.response?.status === 400) {
+          const errorMessage = axiosError.response?.data?.message || 'Error desconocido';
+          
+          // Mensaje específico si el usuario usa Auth0
+          if (errorMessage.includes('autenticación externa') || errorMessage.includes('Google')) {
+            await Swal.fire({
+              icon: "info",
+              title: "Usuario creado con Google",
+              text: "Este usuario fue creado con Google. Por favor, usa el botón 'Continuar con Google' para iniciar sesión.",
+              confirmButtonColor: "#10B981",
+            });
+            return;
+          }
+          
+          await Swal.fire({
+            icon: "error",
+            title: "Error al iniciar sesión",
+            text: errorMessage,
+          });
+          return;
+        }
+
         if (axiosError.response?.status === 404) {
           await Swal.fire({
             icon: "error",
             title: "Usuario no encontrado",
+<<<<<<< HEAD
             text: "No existe una cuenta con este email",
             confirmButtonColor: "#EF4444",
+=======
+            text: "El usuario no existe. Por favor, regístrate primero.",
+          });
+          return;
+        }
+
+        // Detectar Network Error (backend no disponible)
+        const errorMessage = axiosError.message || axiosError.response?.data?.message || "Error desconocido";
+        if (errorMessage.includes('conexión') || errorMessage.includes('Network Error') || axiosError.code === 'ERR_NETWORK') {
+          const baseURL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'no configurada';
+          await Swal.fire({
+            icon: "error",
+            title: "Error de conexión",
+            html: `No se pudo conectar al servidor.<br><br>
+                  <strong>URL configurada:</strong> ${baseURL}<br><br>
+                  Verifica que:<br>
+                  • El backend esté corriendo<br>
+                  • La URL sea correcta<br>
+                  • No haya problemas de CORS`,
+            confirmButtonColor: "#10B981",
+>>>>>>> bab878ea921e7de09f46d05cefe60b1637cc272e
           });
           return;
         }
 
         await Swal.fire({
           icon: "error",
+<<<<<<< HEAD
           title: "Error de conexión",
           text: "No se pudo conectar con el servidor. Intenta nuevamente.",
           confirmButtonColor: "#EF4444",
+=======
+          title: "Error al iniciar sesión",
+          text: errorMessage,
+>>>>>>> bab878ea921e7de09f46d05cefe60b1637cc272e
         });
 
       } finally {

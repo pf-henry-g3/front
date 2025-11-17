@@ -10,21 +10,51 @@ export const authService = {
 
             // Guardar token si el backend lo devuelve
             if (response.data?.data?.access_token) {
+<<<<<<< HEAD
                 const token = response.data.data.access_token;
                 localStorage.setItem('access_token', token);
                 console.log('💾 auth.service - Token guardado en localStorage');
+=======
+                localStorage.setItem('access_token', response.data.data.access_token);
+                console.log('🔑 Token guardado en localStorage:', response.data.data.access_token.substring(0, 20) + '...');
+            } else {
+                console.error('❌ ERROR: No se recibió access_token en la respuesta');
+                console.log('Respuesta completa:', JSON.stringify(response.data, null, 2));
+>>>>>>> bab878ea921e7de09f46d05cefe60b1637cc272e
             }
 
             if (response.data?.data?.tranformedUser) {
                 localStorage.setItem('user', JSON.stringify(response.data.data.tranformedUser));
+<<<<<<< HEAD
                 console.log('👤 auth.service - Usuario guardado en localStorage');
+=======
+                console.log('👤 Usuario guardado en localStorage');
+            } else {
+                console.warn('⚠️ No se recibió tranformedUser en la respuesta');
+            }
+
+            // Verificar que se guardó correctamente
+            const savedToken = localStorage.getItem('access_token');
+            if (!savedToken) {
+                console.error('❌ ERROR CRÍTICO: El token no se guardó en localStorage');
+>>>>>>> bab878ea921e7de09f46d05cefe60b1637cc272e
             }
 
             console.log('✅ auth.service - Login tradicional exitoso');
             return response;
 
         } catch (error: any) {
+<<<<<<< HEAD
             console.error('❌ auth.service - Error en login tradicional:', error.message);
+=======
+            // Mejorar el mensaje de error para Network Errors
+            if (error.message?.includes('conexión') || error.message?.includes('Network Error')) {
+                const baseURL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'no configurada';
+                console.error('❌ Error de conexión en signin:', error.message);
+                throw new Error(`No se pudo conectar al servidor. Verifica que el backend esté corriendo en ${baseURL}`);
+            }
+            console.error('❌ Error en signin:', error.message);
+>>>>>>> bab878ea921e7de09f46d05cefe60b1637cc272e
             throw error;
         }
     },

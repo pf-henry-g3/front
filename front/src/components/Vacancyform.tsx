@@ -1,10 +1,24 @@
 "use client"
+import axios from "axios";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
-import { useAuth } from "../context/AuthContext";
-import { useEffect, useState } from "react";
+
+export interface CreatevacancyDto {
+    name: string;
+    vacancyDescription: string;
+    vacancyType: string;
+    urlImage: string;
+    genres: string[];
+}
+
+// ✅ Interface para los géneros del backend
+interface Genre {
+    id: string;
+    name: string;
+}
 
 const validationSchema = Yup.object({
     name: Yup.string()
@@ -13,6 +27,7 @@ const validationSchema = Yup.object({
         .required("El nombre de la vacante es requerido"),
     
     vacancyType: Yup.string()
+        .max(50, "El tipo no puede exceder 50 caracteres")
         .required("El tipo de vacante es requerido"),
     
     vacancyDescription: Yup.string()
@@ -23,168 +38,328 @@ const validationSchema = Yup.object({
     urlImage: Yup.string()
         .url("Debe ser una URL válida")
         .required("La imagen es requerida"),
+    
+    genres: Yup.array()
+        .of(Yup.string())
+        .min(1, "Debes seleccionar al menos un género")
+        .max(5, "No puedes seleccionar más de 5 géneros")
+        .required("Los géneros son requeridos")
 });
 
 export default function VacancyForm() {
-    const { isAuthenticated, token, user, logout, loading } = useAuth();
     const router = useRouter();
-    const [isClient, setIsClient] = useState(false);
+    const [availableGenres, setAvailableGenres] = useState<Genre[]>([]);
+    const [loadingGenres, setLoadingGenres] = useState(true);
 
+    // ✅ Cargar géneros desde el backend con manejo de error 401
     useEffect(() => {
-        setIsClient(true);
-        console.log("📋 VacancyForm - Inicializado", {
-            isAuthenticated,
-            user: user?.userName,
-            token: token ? "✅" : "❌",
-            loading
-        });
-    }, [isAuthenticated, user, token, loading]);
+        const fetchGenres = async () => {
+            try {
+                const token = localStorage.getItem('access_token');
+                
+                // ✅ Verificar que hay token antes de hacer la petición
+                if (!token) {
+                    console.warn('⚠️ No hay token disponible');
+                    await Swal.fire({
+                        icon: "warning",
+                        title: "Sesión requerida",
+                        text: "Debes iniciar sesión para crear vacantes",
+                        confirmButtonColor: "#F59E0B"
+                    });
+                    router.push('/login');
+                    return;
+                }
 
-    // Redirigir si no está autenticado
-    useEffect(() => {
-        if (isClient && !loading && !isAuthenticated) {
-            console.log("❌ VacancyForm - Usuario no autenticado, redirigiendo...");
-            Swal.fire({
-                icon: "warning",
-                title: "Acceso requerido",
-                text: "Debes iniciar sesión para crear una vacante",
-                confirmButtonColor: "#3B82F6"
-            }).then(() => {
-                router.push('/login');
-            });
-        }
-    }, [isAuthenticated, loading, isClient, router]);
+                console.log('🔑 Token encontrado, cargando géneros...');
+                
+                const response = await axios.get(
+                    `${process.env.NEXT_PUBLIC_API_URL}/genre`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                // Ajustar según la estructura de respuesta de tu backend
+                const genres = response.data?.data || response.data;
+                setAvailableGenres(genres);
+                console.log('✅ Géneros cargados:', genres.length, 'géneros');
+                
+            } catch (error: any) {
+                console.error('❌ Error cargando géneros:', error);
+                console.error('❌ Status:', error.response?.status);
+                console.error('❌ Message:', error.response?.data?.message);
+                
+                // ✅ Manejo específico del error 401
+                if (error.response?.status === 401) {
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Sesión expirada",
+                        text: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
+                        confirmButtonColor: "#EF4444"
+                    });
+                    
+                    // Limpiar localStorage y redirigir
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('user');
+                    window.dispatchEvent(new Event('auth-changed'));
+                    window.dispatchEvent(new Event('storage'));
+                    router.push('/login');
+                    
+                } else if (error.response?.status === 403) {
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Acceso denegado",
+                        text: "No tienes permisos para acceder a esta información",
+                        confirmButtonColor: "#EF4444"
+                    });
+                    router.push('/home');
+                    
+                } else {
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Error al cargar géneros",
+                        text: "No se pudieron cargar los géneros musicales. Por favor, intenta nuevamente.",
+                        confirmButtonColor: "#EF4444",
+                        showCancelButton: true,
+                        cancelButtonText: "Volver",
+                        confirmButtonText: "Reintentar"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload();
+                        } else {
+                            router.push('/home');
+                        }
+                    });
+                }
+            } finally {
+                setLoadingGenres(false);
+            }
+        };
 
-    const formik = useFormik({
+        fetchGenres();
+    }, [router]);
+
+    const formik = useFormik<CreatevacancyDto>({
         initialValues: {
             name: "",
             vacancyDescription: "",
             vacancyType: "",
             urlImage: "",
+            genres: [],
         },
         validationSchema,
         onSubmit: async (values, { setSubmitting, resetForm }) => {
-            console.log("🎯 VacancyForm - Iniciando envío del formulario");
+            const { name, vacancyDescription, vacancyType, urlImage, genres } = values;
             
-            if (!token) {
-                console.log("❌ VacancyForm - No hay token disponible");
-                await Swal.fire({
+            if (!name || !vacancyDescription || !vacancyType || !urlImage || genres.length === 0) {
+                return Swal.fire({
                     icon: "error",
-                    title: "Sesión expirada",
-                    text: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
-                    confirmButtonColor: "#EF4444"
+                    title: "Faltan datos",
+                    text: "Por favor completa todos los campos obligatorios"
                 });
-                router.push('/login');
-                return;
             }
 
             try {
                 setSubmitting(true);
+                
+                const token = localStorage.getItem('access_token');
+                
+                console.log('🔑 Token disponible:', token ? 'SÍ' : 'NO');
+                
+                if (!token) {
+                    await Swal.fire({
+                        icon: "error",
+                        title: "No autorizado",
+                        text: "Debes iniciar sesión para crear una vacante",
+                        confirmButtonColor: "#EF4444"
+                    });
+                    router.push('/login');
+                    return;
+                }
+
+                // ✅ CAMBIO PRINCIPAL: Convertir IDs a nombres
+                const genreNames = values.genres.map(genreId => {
+                    const genre = availableGenres.find(g => g.id === genreId);
+                    return genre?.name || '';
+                }).filter(name => name !== '');
                 
                 const vacancyData = {
                     name: values.name,
                     vacancyDescription: values.vacancyDescription,
                     vacancyType: values.vacancyType,
                     urlImage: values.urlImage,
+                    genres: 'genresNames', // ✅ Ya son IDs
                 };
-
-                console.log("📤 VacancyForm - Enviando datos:", vacancyData);
-                console.log("🔑 VacancyForm - Usando token:", token.substring(0, 20) + '...');
-
-                const response = await fetch(
+                
+                console.log('📤 Datos a enviar:', vacancyData);
+                console.log('📡 URL:', `${process.env.NEXT_PUBLIC_API_URL}/vacancy`);
+                
+                const response = await axios.post(
                     `${process.env.NEXT_PUBLIC_API_URL}/vacancy`,
+                    vacancyData,
                     {
-                        method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(vacancyData)
+                        }
                     }
                 );
-
-                console.log("📨 VacancyForm - Respuesta recibida, status:", response.status);
-
-                if (response.ok) {
-                    const responseData = await response.json();
-                    console.log("✅ VacancyForm - Vacante creada exitosamente:", responseData);
-                    
-                    resetForm();
+                
+                console.log('✅ Respuesta exitosa:', response.status);
+                
+                if (response.status === 200 || response.status === 201) {
+                    resetForm({
+                        values: {
+                            name: "",
+                            vacancyDescription: "",
+                            vacancyType: "",
+                            urlImage: "",
+                            genres: [],
+                        },
+                        errors: {},
+                        touched: {}
+                    });
                     
                     await Swal.fire({
                         icon: "success",
                         title: "¡Vacante creada!",
                         text: "La vacante se ha publicado exitosamente",
+                        confirmButtonText: "Continuar",
                         confirmButtonColor: "#10B981",
                         timer: 2000
                     });
-                    
+
                     router.push('/home');
-                } else {
-                    const errorData = await response.json();
-                    console.log("❌ VacancyForm - Error del servidor:", errorData);
+                }
+                
+            } catch (error) {
+                const axiosError = error as any;
+                console.error('❌ Error completo:', axiosError);
+                console.error('❌ Status:', axiosError.response?.status);
+                console.error('❌ Data:', axiosError.response?.data);
+                
+                if (axiosError.response?.status === 400) {
+                    const errorData = axiosError.response.data;
                     
-                    if (response.status === 401) {
+                    if (errorData.message && Array.isArray(errorData.message)) {
                         await Swal.fire({
                             icon: "error",
-                            title: "Sesión expirada",
-                            text: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
-                            confirmButtonColor: "#EF4444"
-                        });
-                        await logout();
-                        router.push('/login');
-                    } else if (response.status === 400) {
-                        await Swal.fire({
-                            icon: "error",
-                            title: "Error de validación",
-                            text: errorData.message || "Verifica los datos ingresados",
-                            confirmButtonColor: "#EF4444"
-                        });
-                    } else if (response.status === 403) {
-                        await Swal.fire({
-                            icon: "error",
-                            title: "Acceso denegado",
-                            text: "No tienes permisos para crear vacantes",
+                            title: "Errores de validación",
+                            html: `<div class="text-left">${errorData.message.map((msg: string) => `• ${msg}`).join('<br>')}</div>`,
                             confirmButtonColor: "#EF4444"
                         });
                     } else {
                         await Swal.fire({
                             icon: "error",
-                            title: "Error del servidor",
-                            text: errorData.message || "Hubo un error al crear la vacante",
+                            title: "Error de validación",
+                            text: errorData.message || "Datos inválidos. Verifica que todos los campos estén correctos.",
                             confirmButtonColor: "#EF4444"
                         });
                     }
+                } else if (axiosError.response?.status === 401) {
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Sesión expirada",
+                        text: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
+                        confirmButtonColor: "#EF4444"
+                    });
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('user');
+                    window.dispatchEvent(new Event('auth-changed'));
+                    window.dispatchEvent(new Event('storage'));
+                    router.push('/login');
+                } else if (axiosError.response?.status === 403) {
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Acceso denegado",
+                        text: "No tienes permisos para crear vacantes",
+                        confirmButtonColor: "#EF4444"
+                    });
+                } else {
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Error de conexión",
+                        text: axiosError.response?.data?.message || "Hubo un error al crear la vacante. Inténtalo de nuevo más tarde.",
+                        confirmButtonColor: "#EF4444"
+                    });
                 }
-            } catch (error: any) {
-                console.error("❌ VacancyForm - Error de conexión:", error);
-                await Swal.fire({
-                    icon: "error",
-                    title: "Error de conexión",
-                    text: "No se pudo conectar con el servidor. Verifica tu conexión.",
-                    confirmButtonColor: "#EF4444"
-                });
+                
             } finally {
                 setSubmitting(false);
             }
         }
     });
 
-    // Mostrar loading
-    if (loading || !isClient) {
+    // ✅ Función para manejar selección de géneros
+    const handleGenreToggle = (genreId: string) => {
+        const currentGenres = formik.values.genres;
+        
+        if (currentGenres.includes(genreId)) {
+            // Remover género
+            formik.setFieldValue('genres', currentGenres.filter(id => id !== genreId));
+        } else {
+            // Agregar género (máximo 5)
+            if (currentGenres.length < 5) {
+                formik.setFieldValue('genres', [...currentGenres, genreId]);
+            } else {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Límite alcanzado",
+                    text: "Solo puedes seleccionar hasta 5 géneros",
+                    confirmButtonColor: "#F59E0B",
+                    timer: 2000
+                });
+            }
+        }
+    };
+
+    // ✅ Loading state mientras cargan los géneros
+    if (loadingGenres) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="min-h-screen bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 flex items-center justify-center">
+                <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-tur1 mx-auto mb-4"></div>
+                    <p className="text-txt1 font-semibold text-lg">🎵 Cargando formulario...</p>
+                    <p className="text-txt2 text-sm mt-2">Obteniendo géneros musicales...</p>
+                    <p className="text-txt2 text-xs mt-4 opacity-70">
+                        Si tarda mucho, verifica tu conexión
+                    </p>
+                </div>
             </div>
         );
     }
 
-    // No mostrar formulario si no está autenticado
-    if (!isAuthenticated) {
+    // ✅ Estado cuando no hay géneros disponibles
+    if (!loadingGenres && availableGenres.length === 0) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="text-center">
-                    <p className="text-gray-600">Redirigiendo al login...</p>
+            <div className="min-h-screen bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 flex items-center justify-center px-4">
+                <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-md">
+                    <div className="text-6xl mb-4">⚠️</div>
+                    <h3 className="text-txt1 font-bold text-xl mb-2">
+                        No se pudieron cargar los géneros
+                    </h3>
+                    <p className="text-txt2 text-sm mb-6">
+                        Es necesario cargar los géneros para crear una vacante
+                    </p>
+                    
+                    <div className="flex gap-3 justify-center flex-wrap">
+                        <button
+                            onClick={() => router.push('/home')}
+                            className="px-6 py-3 bg-white/20 hover:bg-white/30 text-txt1 font-bold rounded-xl border-2 border-white/20 hover:border-white/40 transition-all duration-300"
+                        >
+                            ← Volver al inicio
+                        </button>
+                        
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-6 py-3 bg-gradient-to-r from-tur2 to-tur1 text-azul font-bold rounded-xl hover:from-tur1 hover:to-tur2 transition-all duration-300"
+                        >
+                            🔄 Reintentar
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -193,41 +368,90 @@ export default function VacancyForm() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 py-12 px-4 sm:px-6 lg:px-8">
             <div className="container mx-auto max-w-[1400px]">
+                {/* Header */}
                 <div className="text-center mb-8">
                     <h2 className="text-4xl font-bold text-txt1 mb-2">
-                        Crear Nueva Vacante
+                         Crear Nueva Vacante
                     </h2>
                     <p className="text-txt2 text-lg">
                         Encuentra al músico perfecto para tu proyecto
                     </p>
                 </div>
 
-                {/* Información de sesión */}
-                <div className="mb-6 p-4 bg-green-100 border border-green-400 rounded-lg">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <p className="text-green-800 font-medium">
-                                Conectado como: <span className="font-bold">{user?.userName}</span>
-                            </p>
-                            <p className="text-green-600 text-sm">
-                                Estado: Autenticado ✅
-                            </p>
-                        </div>
-                        <button
-                            onClick={logout}
-                            className="px-4 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors"
-                        >
-                            Cerrar Sesión
-                        </button>
-                    </div>
-                </div>
-
                 <form onSubmit={formik.handleSubmit} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl p-6 md:p-8 lg:p-10">
                     <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 lg:gap-8">
-                        <div className="xl:col-span-4 space-y-6">
+                        
+                      
+
+                        {/* Columna Izquierda: Géneros */}
+                        <div className="xl:col-span-1">
+                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 lg:p-6 xl:sticky xl:top-6">
+                                <label className="block text-xl font-bold text-txt1 mb-4 flex items-center gap-2">
+                                     Géneros Musicales *
+                                    <span className="text-sm font-normal text-txt2">
+                                        ({formik.values.genres.length}/5)
+                                    </span>
+                                </label>
+                                <p className="text-sm text-txt2 mb-4">
+                                    Selecciona de 1 a 5 géneros
+                                </p>
+                                
+                                {/* ✅ Géneros con checkboxes */}
+                                <div className="grid grid-cols-1 gap-3">
+                                    {availableGenres.map((genre) => {
+                                        const isSelected = formik.values.genres.includes(genre.id);
+                                        
+                                        return (
+                                            <label
+                                                key={genre.id}
+                                                className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-300 border-2 ${
+                                                    isSelected
+                                                        ? 'bg-gradient-to-r from-tur2/30 to-tur1/30 border-tur1 shadow-md'
+                                                        : 'bg-white/5 hover:bg-white/10 border-transparent hover:border-tur2/50'
+                                                }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => handleGenreToggle(genre.id)}
+                                                    className="w-5 h-5 rounded border-2 border-txt2/50 text-tur1 focus:ring-2 focus:ring-tur1 focus:ring-offset-0 bg-white/10 cursor-pointer transition-all"
+                                                />
+                                                <span className={`ml-3 font-medium ${isSelected ? 'text-tur1' : 'text-txt1'}`}>
+                                                    {genre.name}
+                                                </span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                                
+                                {formik.touched.genres && formik.errors.genres && (
+                                    <p className="mt-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                                        ⚠️ {formik.errors.genres}
+                                    </p>
+                                )}
+
+                                {/* Contador de géneros */}
+                                <div className="mt-4 p-3 bg-tur1/20 border border-tur1/30 rounded-lg text-center">
+                                    <p className="text-txt1 font-semibold">
+                                        {formik.values.genres.length} / 5 géneros seleccionados
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+            
+
+
+
+                        {/* Columna Derecha: Resto del formulario */}
+                        <div className="xl:col-span-3 space-y-6">
+                            
+                            {/* Campo Name */}
                             <div>
                                 <label htmlFor="name" className="block text-lg font-bold text-txt1 mb-2 flex items-center gap-2">
-                                    Nombre de la Vacante *
+                                     Nombre de la Vacante *
                                 </label>
                                 <input
                                     id="name"
@@ -248,6 +472,7 @@ export default function VacancyForm() {
                                 )}
                             </div>
 
+                            {/* Campo Tipo de Vacante */}
                             <div>
                                 <label htmlFor="vacancyType" className="block text-lg font-bold text-txt1 mb-2 flex items-center gap-2">
                                     Tipo de Vacante *
@@ -286,9 +511,10 @@ export default function VacancyForm() {
                                 )}
                             </div>
 
+                            {/* Campo Description */}
                             <div>
                                 <label htmlFor="vacancyDescription" className="block text-lg font-bold text-txt1 mb-2 flex items-center gap-2">
-                                    Descripción *
+                                     Descripción *
                                 </label>
                                 <textarea
                                     id="vacancyDescription"
@@ -309,6 +535,7 @@ export default function VacancyForm() {
                                 )}
                             </div>
 
+                            {/* Campo URL Image */}
                             <div>
                                 <label htmlFor="urlImage" className="block text-lg font-bold text-txt1 mb-2 flex items-center gap-2">
                                     URL de Imagen *
@@ -330,13 +557,29 @@ export default function VacancyForm() {
                                 {formik.touched.urlImage && formik.errors.urlImage && (
                                     <p className="mt-2 text-sm text-red-400">{formik.errors.urlImage}</p>
                                 )}
+                                
+                                {/* Preview de imagen */}
+                                {/* {formik.values.urlImage && !formik.errors.urlImage && (
+                                    <div className="mt-4">
+                                        <p className="text-sm text-txt2 mb-2">Vista previa:</p>
+                                        <img 
+                                            src={formik.values.urlImage} 
+                                            alt="Preview" 
+                                            className="w-full h-48 object-cover rounded-lg border-2 border-white/20"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Imagen+no+disponible';
+                                            }}
+                                        />
+                                    </div>
+                                )} */}
                             </div>
 
+                            {/* Botón Submit */}
                             <button
                                 type="submit"
-                                disabled={formik.isSubmitting}
+                                disabled={formik.isSubmitting || !formik.isValid}
                                 className={`w-full py-4 px-6 rounded-lg text-lg font-bold transition-all duration-300 transform ${
-                                    formik.isSubmitting
+                                    formik.isSubmitting || !formik.isValid
                                         ? "bg-gray-400 cursor-not-allowed opacity-50"
                                         : "bg-gradient-to-r from-tur1 to-tur2 text-azul hover:from-tur2 hover:to-tur3 hover:shadow-xl hover:scale-105"
                                 }`}
@@ -357,6 +600,37 @@ export default function VacancyForm() {
                     </div>
                 </form>
             </div>
+
+            
         </div>
     );
 }
+
+{/* ✅ Estilos mejorados para checkboxes */}
+            <style jsx>{`
+                input[type="checkbox"] {
+                    appearance: none;
+                    -webkit-appearance: none;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                }
+                
+                input[type="checkbox"]:checked {
+                    background-color: rgba(79, 209, 197, 0.3);
+                    border-color: #4FD1C5;
+                }
+                
+                input[type="checkbox"]:checked::before {
+                    content: "✓";
+                    color: #4FD1C5;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+                
+                input[type="checkbox"]:hover {
+                    border-color: #4FD1C5;
+                    background-color: rgba(79, 209, 197, 0.1);
+                }
+            `}</style>
