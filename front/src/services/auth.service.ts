@@ -10,16 +10,35 @@ export const authService = {
             // Guardar token y usuario en localStorage
             if (response.data?.data?.access_token) {
                 localStorage.setItem('access_token', response.data.data.access_token);
+                console.log('🔑 Token guardado en localStorage:', response.data.data.access_token.substring(0, 20) + '...');
+            } else {
+                console.error('❌ ERROR: No se recibió access_token en la respuesta');
+                console.log('Respuesta completa:', JSON.stringify(response.data, null, 2));
             }
 
             if (response.data?.data?.tranformedUser) {
                 localStorage.setItem('user', JSON.stringify(response.data.data.tranformedUser));
+                console.log('👤 Usuario guardado en localStorage');
+            } else {
+                console.warn('⚠️ No se recibió tranformedUser en la respuesta');
+            }
+
+            // Verificar que se guardó correctamente
+            const savedToken = localStorage.getItem('access_token');
+            if (!savedToken) {
+                console.error('❌ ERROR CRÍTICO: El token no se guardó en localStorage');
             }
 
             console.log('✅ Login exitoso');
             return response.data; // ✅ Retornar response.data completo
 
         } catch (error: any) {
+            // Mejorar el mensaje de error para Network Errors
+            if (error.message?.includes('conexión') || error.message?.includes('Network Error')) {
+                const baseURL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'no configurada';
+                console.error('❌ Error de conexión en signin:', error.message);
+                throw new Error(`No se pudo conectar al servidor. Verifica que el backend esté corriendo en ${baseURL}`);
+            }
             console.error('❌ Error en signin:', error.message);
             throw error;
         }

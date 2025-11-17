@@ -33,9 +33,17 @@ export default function NavBar () {
 
                 </Link>
 
-                <DonationButton/>
+                {/*BOTON PROVISIONAL, borrar luego*/}
+
+                <Link href="/mybands ">
+
+                <div className="flex items-center justify-center"> <span className="text-sm bg-azul py-1.5 px-4 rounded-md text-text2 font-sans shadow-xl transition duration-300 hover:bg-verde hover:text-txt1 hover:cursor-pointer flex items-center gap-2">Mis Bandas</span></div>
+
+                </Link>
 
                 <VacantButton/>
+
+                <DonationButton/>
 
             </span>
 
