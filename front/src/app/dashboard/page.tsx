@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/context/AuthContext'
+import { useEffect } from 'react';
 
 export default function DashboardHome() {
   const router = useRouter();
@@ -12,6 +13,15 @@ export default function DashboardHome() {
     user?.roles?.some(
       role => role.name === 'Admin' || role.name === 'SuperAdmin'
     ) || false;
+
+  // Redirigir automáticamente a admin si es SuperAdmin o Admin
+  useEffect(() => {
+    if (!loading && user && isAdmin) {
+      router.replace('/dashboard/admin');
+    } else if (!loading && user && !isAdmin) {
+      router.replace('/dashboard/profile');
+    }
+  }, [user, loading, isAdmin, router]);
 
   // Mostrar loading mientras verifica autenticación
   if (loading) {
