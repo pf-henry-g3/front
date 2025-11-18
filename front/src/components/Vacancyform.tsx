@@ -5,20 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
-
-export interface CreateVacancyDto {
-    name: string;
-    vacancyDescription: string;
-    vacancyType: string;
-    urlImage: string;
-    genres: string[];
-}
-
-//✅ Interface para los géneros del backend
-interface Genre {
-    id: string;
-    name: string;
-}
+import Genre from "../interfaces/IGenre";
+import { CreatevacancyDto } from "../interfaces/ICreateVacancyDto";
 
 const validationSchema = Yup.object({
     name: Yup.string()
@@ -146,7 +134,7 @@ export default function VacancyForm() {
         fetchGenres();
     }, [router]);
 
-    const formik = useFormik<CreateVacancyDto>({
+    const formik = useFormik<CreatevacancyDto>({
         initialValues: {
             name: "",
             vacancyDescription: "",
@@ -400,8 +388,8 @@ export default function VacancyForm() {
                                             <label
                                                 key={genre.id}
                                                 className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-300 border-2 ${isSelected
-                                                        ? 'bg-gradient-to-r from-tur2/30 to-tur1/30 border-tur1 shadow-md'
-                                                        : 'bg-white/5 hover:bg-white/10 border-transparent hover:border-tur2/50'
+                                                    ? 'bg-gradient-to-r from-tur2/30 to-tur1/30 border-tur1 shadow-md'
+                                                    : 'bg-white/5 hover:bg-white/10 border-transparent hover:border-tur2/50'
                                                     }`}
                                             >
                                                 <input
@@ -449,8 +437,8 @@ export default function VacancyForm() {
                                     onBlur={formik.handleBlur}
                                     value={formik.values.name}
                                     className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${formik.touched.name && formik.errors.name
-                                            ? "border-red-500 focus:ring-red-500"
-                                            : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-white/20 focus:ring-tur2 focus:border-tur2"
                                         }`}
                                     placeholder="Ej: Guitarrista para banda de rock"
                                 />
@@ -471,8 +459,8 @@ export default function VacancyForm() {
                                     onBlur={formik.handleBlur}
                                     value={formik.values.vacancyType}
                                     className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 focus:outline-none focus:ring-2 transition duration-300 ${formik.touched.vacancyType && formik.errors.vacancyType
-                                            ? "border-red-500 focus:ring-red-500"
-                                            : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-white/20 focus:ring-tur2 focus:border-tur2"
                                         }`}
                                 >
                                     <option value="" disabled className="bg-oscuro1 text-txt2">
@@ -510,8 +498,8 @@ export default function VacancyForm() {
                                     onBlur={formik.handleBlur}
                                     value={formik.values.vacancyDescription}
                                     className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 resize-none ${formik.touched.vacancyDescription && formik.errors.vacancyDescription
-                                            ? "border-red-500 focus:ring-red-500"
-                                            : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-white/20 focus:ring-tur2 focus:border-tur2"
                                         }`}
                                     placeholder="Describe los requisitos, experiencia requerida, detalles del proyecto..."
                                 />
@@ -533,8 +521,8 @@ export default function VacancyForm() {
                                     onBlur={formik.handleBlur}
                                     value={formik.values.urlImage}
                                     className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${formik.touched.urlImage && formik.errors.urlImage
-                                            ? "border-red-500 focus:ring-red-500"
-                                            : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-white/20 focus:ring-tur2 focus:border-tur2"
                                         }`}
                                     placeholder="https://ejemplo.com/imagen.jpg (opcional)"
                                 />
@@ -563,8 +551,8 @@ export default function VacancyForm() {
                                 type="submit"
                                 disabled={formik.isSubmitting || !formik.isValid}
                                 className={`w-full py-4 px-6 rounded-lg text-lg font-bold transition-all duration-300 transform ${formik.isSubmitting || !formik.isValid
-                                        ? "bg-gray-400 cursor-not-allowed opacity-50"
-                                        : "bg-gradient-to-r from-tur1 to-tur2 text-azul hover:from-tur2 hover:to-tur3 hover:shadow-xl hover:scale-105"
+                                    ? "bg-gray-400 cursor-not-allowed opacity-50"
+                                    : "bg-gradient-to-r from-tur1 to-tur2 text-azul hover:from-tur2 hover:to-tur3 hover:shadow-xl hover:scale-105"
                                     }`}
                             >
                                 {formik.isSubmitting ? (
