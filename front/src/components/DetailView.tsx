@@ -2,6 +2,7 @@
 "use client"
 import React, { use, useState } from "react";
 import ReviewsView from "./ReviewsView";
+import ReviewForm from "./ReviewForm";
 
 interface ProductCardProps {
   id: string;
@@ -168,7 +169,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                 } 
                 </div>
                 <ReviewsView isOpen={isReviewsOpen}>
-                  <p>Formulario para subir Reviews de este usuario </p>
+                  <ReviewForm receptorUserName={selectedItem.name}/>
                   <p>Ver Reviews del usuario</p>
                 </ReviewsView>
                 </div>
