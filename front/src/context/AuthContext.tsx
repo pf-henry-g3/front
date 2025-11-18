@@ -139,12 +139,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
                 setUser(null);
             }
-<<<<<<< HEAD
-
-            setUser(null);
-=======
-
->>>>>>> origin/main
             return null;
 
         } finally {
