@@ -11,6 +11,7 @@ interface ProductCardProps {
   city?: string;
   country?: string;
   isOpen?: boolean;
+  averageRating?: number; 
 }
 
 interface DetailViewProps {
@@ -76,6 +77,13 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
     return null;
   };
 
+  const getTypeRating = () => {
+    if (selectedItem.type === 'user' && selectedItem.averageRating) {
+      return `${selectedItem.averageRating}`;
+    }
+    return null;
+  };
+
   return (
     <div className="flex flex-col w-full max-w-2xl p-6 shadow-xl bg-white/95 backdrop-blur-sm rounded-2xl border border-tur3/30 mx-auto">
       {/* ✅ Imagen más grande */}
@@ -89,7 +97,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
 
       {/* Información del elemento */}
       <div className="flex-1">
-        <div className="bg-tur1/20 rounded-xl shadow-lg p-5 border border-tur3/30">
+        <div className="bg-tur1/20 rounded-xl shadow-lg pt-5 px-5 border border-tur3/30">
           {/* Encabezado con tipo e icono */}
           <div className="text-center mb-4">
             <div className="text-5xl mb-3">{getTypeIcon()}</div>
@@ -124,6 +132,18 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                   {selectedItem.description || "No hay descripción disponible"}
                 </p>
               </div>
+
+              {/* Reviews */}
+              { selectedItem.type !== 'user' ? (
+                <div className="pb-4"></div>
+              ) : getTypeRating() && (
+                <div className="py-2 flex flex-row justify-between gap-8">
+                <p className=" text-tur2 text-shadow-sm text-3xl max-w-16 font-semibold">
+                  {getTypeRating()}
+                </p>
+                <button className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-32 shadow-xs cursor-pointer bg-tur1/70">Ver reseñas</button>
+                </div>
+              )}
             </div>
           </div>
         </div>

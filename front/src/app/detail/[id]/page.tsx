@@ -16,6 +16,7 @@ interface DetailItem {
     city?: string;
     country?: string;
     isOpen?: boolean;
+    averageRating?: number;
 }
 
 export default function DetailPage() {
@@ -88,7 +89,8 @@ export default function DetailPage() {
                     formationYear: data.formationDate ? new Date(data.formationDate).getFullYear() : undefined,
                     city: data.city,
                     country: data.country,
-                    isOpen: data.isOpen
+                    isOpen: data.isOpen,
+                    averageRating: data.averageRating
                 });
 
                 console.log('✅ Datos cargados exitosamente');
@@ -153,7 +155,7 @@ export default function DetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-azul py-20 px-4">
+        <div className="min-h-screen py-20 px-4">
             <div className="max-w-4xl mx-auto">
                 <button
                     onClick={() => router.back()}
