@@ -35,8 +35,8 @@ const validationSchema = Yup.object({
     .required("Los géneros son requeridos"),
 
   urlImage: Yup.string()
-    .url("Debe ser una URL válida")
-    .required("La imagen es requerida"),
+    .url("Debe ser una URL válida"),
+  // .required("La imagen es requerida"),
 
   bandDescription: Yup.string()
     .min(10, "La descripción debe tener al menos 10 caracteres")
@@ -44,9 +44,9 @@ const validationSchema = Yup.object({
     .required("La descripción es requerida"),
 
   formationDate: Yup.date()
-  .typeError("Debe ser una fecha válida")
-  .max(new Date(), "La fecha no puede ser posterior a hoy")
-  .required("La fecha de formación es obligatoria"),
+    .typeError("Debe ser una fecha válida")
+    .max(new Date(), "La fecha no puede ser posterior a hoy")
+    .required("La fecha de formación es obligatoria"),
 
   members: Yup.array().of(
     Yup.object().shape({
@@ -99,7 +99,26 @@ export default function BandForm() {
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       console.log("ejecutado submit")
+
+
       try {
+        const token = localStorage.getItem('access_token');
+
+        // ✅ Verificar que hay token antes de hacer la petición
+        if (!token) {
+          console.warn('⚠️ No hay token disponible');
+          await Swal.fire({
+            icon: "warning",
+            title: "Sesión requerida",
+            text: "Debes iniciar sesión para crear vacantes",
+            confirmButtonColor: "#F59E0B"
+          });
+          router.push('/login');
+          return;
+        }
+
+        console.log('🔑 Token encontrado, cargando géneros...');
+
         setSubmitting(true);
 
         // Crear la banda
@@ -114,7 +133,12 @@ export default function BandForm() {
         const bandRes = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/band`,
           bandPayload,
-          { headers: { "Content-Type": "application/json" } }
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
         );
 
         if (bandRes.status === 200 || bandRes.status === 201) {
@@ -127,7 +151,12 @@ export default function BandForm() {
                 await axios.post(
                   `${process.env.NEXT_PUBLIC_BACKEND_URL}/band/addMember/${bandId}`,
                   { userId: member.userId },
-                  { headers: { "Content-Type": "application/json" } }
+                  {
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      "Content-Type": "application/json"
+                    }
+                  }
                 );
               } catch (err) {
                 console.error("Error al agregar miembro:", err);
@@ -191,9 +220,9 @@ export default function BandForm() {
     const t = term?.trim().toLowerCase();
     if (!t || t.length === 0) return [];
     return users.filter(u =>
-      (u.name?.toLowerCase().includes(t) ||
-        u.userName?.toLowerCase().includes(t) ||
-        u.email?.toLowerCase().includes(t))
+    (u.name?.toLowerCase().includes(t) ||
+      u.userName?.toLowerCase().includes(t) ||
+      u.email?.toLowerCase().includes(t))
     );
   };
 
@@ -308,11 +337,10 @@ export default function BandForm() {
                   ].map(genre => (
                     <label
                       key={genre}
-                      className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-300 ${
-                        formik.values.genres.includes(genre)
-                          ? "bg-tur2 text-azul shadow-md transform scale-105"
-                          : "bg-white/5 hover:bg-white/10 text-txt1"
-                      }`}
+                      className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-300 ${formik.values.genres.includes(genre)
+                        ? "bg-tur2 text-azul shadow-md transform scale-105"
+                        : "bg-white/5 hover:bg-white/10 text-txt1"
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -368,11 +396,10 @@ export default function BandForm() {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.bandName}
-                  className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${
-                    formik.touched.bandName && formik.errors.bandName
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-white/20 focus:ring-tur2 focus:border-tur2"
-                  }`}
+                  className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${formik.touched.bandName && formik.errors.bandName
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                    }`}
                   placeholder="Ej: Los Acordes Salvajes"
                 />
                 {formik.touched.bandName && formik.errors.bandName && (
@@ -395,11 +422,10 @@ export default function BandForm() {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.bandDescription}
-                  className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 resize-none ${
-                    formik.touched.bandDescription && formik.errors.bandDescription
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-white/20 focus:ring-tur2 focus:border-tur2"
-                  }`}
+                  className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 resize-none ${formik.touched.bandDescription && formik.errors.bandDescription
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                    }`}
                   placeholder="Describe la banda, estilo, trayectoria, etc."
                 />
                 {formik.touched.bandDescription && formik.errors.bandDescription && (
@@ -421,11 +447,10 @@ export default function BandForm() {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.urlImage}
-                  className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${
-                    formik.touched.urlImage && formik.errors.urlImage
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-white/20 focus:ring-tur2 focus:border-tur2"
-                  }`}
+                  className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${formik.touched.urlImage && formik.errors.urlImage
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                    }`}
                   placeholder="https://ejemplo.com/imagen.jpg"
                 />
                 {formik.touched.urlImage && formik.errors.urlImage && (
@@ -480,17 +505,17 @@ export default function BandForm() {
                 <span className="mb-3 flex flex-row justify-between ">
                   <p className="text-sm mt-2.5 pl-0.5 text-txt2 ">
                     Escribe para buscar artistas. También puedes marcar el puesto como libre.
-                    </p>
+                  </p>
                   <button
-                  type="button"
-                  onClick={() => addMember()}
-                  className="px-4 py-2 bg-tur1 text-azul rounded-md cursor-pointer hover:bg-tur2 transition font-semibold"
-                >
-                  + Añadir miembro
-                </button>
+                    type="button"
+                    onClick={() => addMember()}
+                    className="px-4 py-2 bg-tur1 text-azul rounded-md cursor-pointer hover:bg-tur2 transition font-semibold"
+                  >
+                    + Añadir miembro
+                  </button>
                 </span>
-                
-                
+
+
 
                 <div className="space-y-3">
                   {formik.values.members.map((member, idx) => (
@@ -526,7 +551,7 @@ export default function BandForm() {
                             </ul>
                           )}
 
-                          
+
                         </div>
 
                         <button
@@ -548,30 +573,29 @@ export default function BandForm() {
 
                       {/* Validación */}
                       {Array.isArray(formik.errors.members) &&
-                      formik.touched.members &&
-                      (formik.touched.members as any)[idx] &&
-                      (formik.errors.members as any)[idx] && (
-                        <p className="mt-2 text-sm text-red-400">
-                          {(formik.errors.members as any)[idx].userId ||
-                          (formik.errors.members as any)[idx].isOpen}
-                        </p>
-                      )}
+                        formik.touched.members &&
+                        (formik.touched.members as any)[idx] &&
+                        (formik.errors.members as any)[idx] && (
+                          <p className="mt-2 text-sm text-red-400">
+                            {(formik.errors.members as any)[idx].userId ||
+                              (formik.errors.members as any)[idx].isOpen}
+                          </p>
+                        )}
                     </div>
                   ))}
                 </div>
 
-                
+
               </div>
 
               {/* Submit */}
               <button
                 type="submit"
                 disabled={formik.isSubmitting || !formik.isValid}
-                className={`w-full py-4 px-6 rounded-lg text-lg font-bold transition-all duration-300 transform ${
-                  formik.isSubmitting || !formik.isValid
-                    ? "bg-gray-400 cursor-not-allowed opacity-50"
-                    : "bg-linear-to-r from-tur1 to-tur2 text-azul cursor-pointer hover:from-tur2 hover:to-tur3 hover:shadow-xl hover:scale-105"
-                }`}
+                className={`w-full py-4 px-6 rounded-lg text-lg font-bold transition-all duration-300 transform ${formik.isSubmitting || !formik.isValid
+                  ? "bg-gray-400 cursor-not-allowed opacity-50"
+                  : "bg-linear-to-r from-tur1 to-tur2 text-azul cursor-pointer hover:from-tur2 hover:to-tur3 hover:shadow-xl hover:scale-105"
+                  }`}
               >
                 {formik.isSubmitting ? "Creando banda..." : "🚀 Publicar Banda"}
               </button>
