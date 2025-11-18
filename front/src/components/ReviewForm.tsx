@@ -70,7 +70,7 @@ export default function ReviewForm({ receptorUserName }: { receptorUserName: str
   });
 
   return (
-    <div className="max-w-xl mx-auto mt-10 bg-white/85 backdrop-blur-sm p-5 rounded-xl overflow-y-auto border-2 border-tur3/30 shadow-sm">
+    <div className="max-w-xl mx-auto mt-3 pt-10 p-5 border-t-2 border-txt2 overflow-y-auto ">
       <h2 className="text-2xl font-bold mb-4 text-oscuro1">Publicar Reseña</h2>
 
       <form onSubmit={formik.handleSubmit}>

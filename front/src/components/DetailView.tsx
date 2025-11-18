@@ -1,8 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import ReviewsView from "./ReviewsView";
 import ReviewForm from "./ReviewForm";
+import ReviewsList from "./ReviewsList";
 
 interface ProductCardProps {
   id: string;
@@ -129,7 +130,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
             )}
 
             {/* Descripción */}
-            <div className="border-t border-tur3/30 pt-4">
+            <div className="pt-3">
               <h3 className="font-bold text-oscuro1 mb-3 text-center text-lg">
                 {selectedItem.type === 'band' ? 'Descripción de la banda:' :
                   selectedItem.type === 'user' ? 'Sobre este músico:' :
@@ -147,7 +148,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                 <div className="pb-4"></div>
               ) : getTypeRating() && (
                 <div>
-                <div className="py-3 flex flex-row justify-between gap-8">
+                <div className="pt-3 flex flex-row justify-between gap-8">
                 <p className=" text-verde/40 text-shadow-sm text-3xl max-w-16 font-semibold hover:text-shadow-lg">
                   {getTypeRating()}
                 </p>
@@ -170,7 +171,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                 </div>
                 <ReviewsView isOpen={isReviewsOpen}>
                   <ReviewForm receptorUserName={selectedItem.name}/>
-                  <p>Ver Reviews del usuario</p>
+                  <ReviewsList/>
                 </ReviewsView>
                 </div>
               )}
