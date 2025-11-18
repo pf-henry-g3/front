@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
+import React, { use, useState } from "react";
+import ReviewsView from "./ReviewsView";
 
 interface ProductCardProps {
   id: string;
@@ -84,6 +86,12 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
     return null;
   };
 
+  const [isReviewsOpen, setIsReviewsOpen] = useState(false);
+  const ReviewsButtonHandler = () => {
+    if (isReviewsOpen === false) setIsReviewsOpen(true);
+    else setIsReviewsOpen(false)
+  }
+
   return (
     <div className="flex flex-col w-full max-w-2xl p-6 shadow-xl bg-white/95 backdrop-blur-sm rounded-2xl border border-tur3/30 mx-auto">
       {/* ✅ Imagen más grande */}
@@ -137,11 +145,32 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
               { selectedItem.type !== 'user' ? (
                 <div className="pb-4"></div>
               ) : getTypeRating() && (
-                <div className="py-2 flex flex-row justify-between gap-8">
-                <p className=" text-tur2 text-shadow-sm text-3xl max-w-16 font-semibold">
+                <div>
+                <div className="py-3 flex flex-row justify-between gap-8">
+                <p className=" text-verde/40 text-shadow-sm text-3xl max-w-16 font-semibold hover:text-shadow-lg">
                   {getTypeRating()}
                 </p>
-                <button className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-32 shadow-xs cursor-pointer bg-tur1/70">Ver reseñas</button>
+                { isReviewsOpen === false ? (
+                <button 
+                  className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-32 shadow-xs cursor-pointer bg-tur1/70 hover:bg-tur1 transition"
+                  onClick={ReviewsButtonHandler}
+                  >
+                  Ver reseñas
+                </button> 
+                ) : (
+                  <button 
+                  className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-36 shadow-xs cursor-pointer bg-tur1/70 hover:bg-tur1 transition"
+                  onClick={ReviewsButtonHandler}
+                  >
+                  Cerrar reseñas
+                </button> 
+                )
+                } 
+                </div>
+                <ReviewsView isOpen={isReviewsOpen}>
+                  <p>Formulario para subir Reviews de este usuario </p>
+                  <p>Ver Reviews del usuario</p>
+                </ReviewsView>
                 </div>
               )}
             </div>
