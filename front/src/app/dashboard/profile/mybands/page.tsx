@@ -1,11 +1,19 @@
+"use client"
+import { useState } from "react";
 import BandForm from "@/src/components/BandForm";
 import MyBandsList from "@/src/components/MyBandsList";
 
-export default function Bandd () {
+export default function Bandd() {
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleBandCreated = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   return (
     <div className="mt-24">
-      <MyBandsList/>
-      <BandForm/>
+      <MyBandsList refreshTrigger={refreshKey} />
+      <BandForm onBandCreated={handleBandCreated} />
     </div>
   );
 }
