@@ -60,7 +60,7 @@ export default function BandsPreview() {
           <HorizontalScroller>
             {bands.map((band) => (
               <Link
-                href={`/detail/${band.id}?type=band`}
+                href={`/band/${band.id}`}
                 key={band.id}
                 className="shrink-0 w-64 flex justify-center snap-start"
               >

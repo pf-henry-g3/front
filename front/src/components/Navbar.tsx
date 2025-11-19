@@ -2,8 +2,6 @@ import Link from "next/link";
 import AuthButtons from "./AuthButtons";
 import DonationButton from "./DonationButton";
 import VacantButton from "./VacantButton";
-import BandButton from "./BandButton";
-
 
 export default function NavBar () {
 
@@ -32,6 +30,14 @@ export default function NavBar () {
                 <Link href="/home ">
 
                 <div className="flex items-center justify-center"> <span className="text-sm bg-azul py-1.5 px-4 rounded-md text-text2 font-sans shadow-xl transition duration-300 hover:bg-verde hover:text-txt1 hover:cursor-pointer flex items-center gap-2">Busqueda</span></div>
+
+                </Link>
+
+                {/*BOTON PROVISIONAL, borrar luego*/}
+
+                <Link href="/mybands ">
+
+                <div className="flex items-center justify-center"> <span className="text-sm bg-azul py-1.5 px-4 rounded-md text-text2 font-sans shadow-xl transition duration-300 hover:bg-verde hover:text-txt1 hover:cursor-pointer flex items-center gap-2">Mis Bandas</span></div>
 
                 </Link>
 

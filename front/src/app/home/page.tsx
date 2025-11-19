@@ -186,9 +186,9 @@ export default function HomePage() {
     }
 
     return (
-        <div className="min-h-screen py-8 px-4">
+        <div className="min-h-screen bg-azul py-8 px-4">
             {/* ✅ LAYOUT SIMPLIFICADO: Una sola columna centrada */}
-            <div className="max-w-4xl  mx-auto">
+            <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-8 pt-16">
                     <h1 className="text-white text-4xl font-bold mb-2 drop-shadow-lg">
                         Bienvenidos!

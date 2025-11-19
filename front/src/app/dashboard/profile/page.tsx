@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/src/context/AuthContext'; // 👈 Usar contexto
-import BandButton from '@/src/components/BandButton';
 
 export default function ProfilePage() {
   const { user, loading, refreshUser } = useAuth(); // 👈 Obtener del contexto
@@ -208,7 +207,6 @@ export default function ProfilePage() {
 
           </form>
         </div>
-          <BandButton/>
       </div>
     </div>
   );

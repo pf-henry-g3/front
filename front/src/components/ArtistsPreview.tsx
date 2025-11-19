@@ -60,7 +60,7 @@ export default function ArtistsPreview() {
           <HorizontalScroller>
             {artists.map((artist) => (
               <Link
-                href={`/detail/${artist.id}?type=user`}
+                href={`/user/${artist.id}`}
                 key={artist.id}
                 className="shrink-0 w-64 flex justify-center snap-start"
               >

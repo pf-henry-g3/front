@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // ✅ Verificar si hay token en localStorage primero
             const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
             const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-
+            
             if (!token) {
                 console.log('⚠️ No hay token almacenado');
                 // Si no hay token pero hay usuario en localStorage, limpiarlo
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setLoading(false);
                 return null;
             }
-
+            
             console.log('🔍 Verificando token con backend...', baseURL);
             const response = await apiClient.get('/auth/me', {
                 headers: {
@@ -65,22 +65,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             const userData = response.data.data?.user || response.data.user;
             setUser(userData);
-
+            
             // Actualizar localStorage con los datos más recientes del backend (incluyendo roles actualizados)
             if (typeof window !== 'undefined' && userData) {
                 localStorage.setItem('user', JSON.stringify(userData));
             }
 
             return userData;
-
+        
         } catch (error) {
             if (error instanceof AxiosError) {
                 const errorMessage = error.response?.data?.message || error.message;
-
+                
                 // Solo limpiar localStorage si es un 401 (token inválido/expirado)
                 if (error.response?.status === 401) {
                     console.log('ℹ️ Token inválido o expirado - limpiando sesión');
-
+                    
                     // Limpiar localStorage solo si el token es realmente inválido
                     if (typeof window !== 'undefined') {
                         localStorage.removeItem('access_token');
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
                     // Error de red - NO limpiar localStorage, mantener el usuario si existe en localStorage
                     console.warn('⚠️ Error de conexión al verificar auth. Manteniendo sesión local.');
-
+                    
                     // Intentar cargar usuario desde localStorage si existe
                     if (typeof window !== 'undefined') {
                         const userStr = localStorage.getItem('user');
@@ -139,21 +139,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
                 setUser(null);
             }
+            
             return null;
-
+            
         } finally {
-
-            // setLoading(false);
+            setLoading(false);
         }
     };
 
+    // 🚀 Verificar auth al montar el componente
     useEffect(() => {
         console.log('🔄 AuthContext: Verificando autenticación al montar...');
         const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
         const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
         console.log('🔑 Token en localStorage:', token ? 'Sí existe' : 'No existe');
         console.log('👤 Usuario en localStorage:', userStr ? 'Sí existe' : 'No existe');
-
+        
         checkAuth();
     }, []);
 
@@ -161,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = (userData: IUser) => {
         console.log('🔐 Login en contexto:', userData.userName);
         setUser(userData);
-
+        
         // Guardar en localStorage
         if (typeof window !== 'undefined') {
             localStorage.setItem('user', JSON.stringify(userData));
@@ -181,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('user');
             }
-
+            
             setUser(null);
             console.log('✅ Estado y localStorage limpiados');
             router.push('/login');
@@ -193,7 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('🔄 Refrescando usuario...');
         await checkAuth();
     };
-
+  
     const value = {
         user,
         loading,
