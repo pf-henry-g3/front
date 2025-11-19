@@ -149,7 +149,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
               ) : getTypeRating() && (
                 <div>
                 <div className="pt-3 flex flex-row justify-between gap-8">
-                <p className=" text-verde/40 text-shadow-sm text-3xl max-w-16 font-semibold hover:text-shadow-lg">
+                <p className=" text-text2 text-shadow-sm text-3xl max-w-16 font-semibold hover:text-shadow-lg">
                   {getTypeRating()}
                 </p>
                 { isReviewsOpen === false ? (

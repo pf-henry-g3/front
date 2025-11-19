@@ -71,7 +71,7 @@ export default function BandForm() {
           await Swal.fire({
             icon: "warning",
             title: "Sesión requerida",
-            text: "Debes iniciar sesión para crear vacantes",
+            text: "Debes iniciar sesión para crear bandas",
             confirmButtonColor: "#F59E0B"
           });
           router.push('/login');
@@ -250,7 +250,6 @@ export default function BandForm() {
           });
 
           resetForm();
-          router.push("/mybands");
         }
       } catch (error) {
         const axiosError = error as any;

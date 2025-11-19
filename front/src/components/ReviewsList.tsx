@@ -88,7 +88,7 @@ export default function ReviewsList () {
       ) : reviews.length === 0 ? (
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <p className="text-verde text-lg mb-2 font-bold">
+            <p className="text-oscuro3 text-lg mb-2 font-bold">
               No se encontraron resultados
             </p>
             <p className="text-tur2 text-sm font-medium">

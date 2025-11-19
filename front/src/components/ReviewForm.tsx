@@ -70,31 +70,33 @@ export default function ReviewForm({ receptorUserName }: { receptorUserName: str
   });
 
   return (
-    <div className="max-w-xl mx-auto mt-3 pt-10 p-5 border-t-2 border-txt2 overflow-y-auto ">
+    <div className="max-w-xl mx-auto mt-3 pt-10 p-5  overflow-y-auto ">
       <h2 className="text-2xl font-bold mb-4 text-oscuro1">Publicar Reseña</h2>
 
       <form onSubmit={formik.handleSubmit}>
 
         {/* Score */}
+        <div className="">
         <label className="block mb-2 font-semibold text-oscuro2">Puntuación (1 a 5)</label>
         <input
           type="number"
           name="score"
-          className="w-full p-2 border rounded text-oscuro3"
+          className="bg-white/85 w-full text-oscuro3 p-2 rounded-xl border-2 border-tur3/30 shadow-sm"
           value={formik.values.score}
           onChange={formik.handleChange}
           min={1}
           max={5}
-        />
+          />
         {formik.errors.score && formik.touched.score && (
           <p className="text-red-500 text-sm">{formik.errors.score}</p>
         )}
+        </div>
 
         {/* Review */}
         <label className="block mt-4 mb-2 font-semibold text-oscuro2 ">Descripción</label>
         <textarea
           name="reviewDescription"
-          className="w-full p-2 border rounded text-oscuro3"
+          className="bg-white/85 w-full p-2 rounded-xl text-oscuro3 border-2 border-tur3/30 shadow-sm"
           rows={4}
           value={formik.values.reviewDescription}
           onChange={formik.handleChange}
@@ -107,7 +109,7 @@ export default function ReviewForm({ receptorUserName }: { receptorUserName: str
         <button
           type="submit"
           disabled={formik.isSubmitting}
-          className="mt-6 w-full bg-green-600 text-white py-2 rounded-xl hover:bg-green-700 disabled:bg-gray-400"
+          className="mt-6 w-full bg-green-600 text-white py-2 rounded-xl hover:bg-green-700 cursor-pointer transition disabled:bg-gray-400"
         >
           {formik.isSubmitting ? "Publicando..." : "Publicar Reseña"}
         </button>

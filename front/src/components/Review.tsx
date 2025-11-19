@@ -9,6 +9,14 @@ interface ReviewProps {
 }
 
 export default function Review ({id, userName, userImage, reviewDescription, rating}: ReviewProps) {
+  const starsRating = () => {
+    if (rating === 1) return "★☆☆☆☆";
+    if (rating === 2) return "★★☆☆☆";
+    if (rating === 3) return "★★★☆☆";
+    if (rating === 4) return "★★★★☆";
+    if (rating === 5) return "★★★★★";
+  }
+    
   return (
     <div className="border-t-2 flex flex-col border-txt2/40 ">
       <div className="flex flex-row items-center gap-4 py-4 ">
@@ -18,16 +26,16 @@ export default function Review ({id, userName, userImage, reviewDescription, rat
             className="w-14 h-14 rounded-full object-cover shrink-0 border-2 border-tur3/30 shadow-md"
             />
         <Link 
-        className="flex-1 min-w-0"
+        className="font-bold text-lg  text-oscuro1 truncate drop-shadow-sm"
         href={`/detail/${id}`} 
         >
-            <h3 className="font-bold text-lg text-oscuro1 truncate drop-shadow-sm">{userName}</h3>
+            {userName}
         </Link>
-        <span className="text-verde/40 text-shadow-sm text-3xl max-w-16 font-semibold hover:text-shadow-lg">
-          {rating}/5
-        </span>
+        <p className="text-text2  text-end text-shadow-md text-2xl max-w-16 ">
+          {starsRating()}
+        </p>
       </div>
-      <p className="text-oscuro3"> {reviewDescription} </p>
+      <p className="text-txt1/85"> {reviewDescription} </p>
     </div>
   )
 }
