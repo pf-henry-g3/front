@@ -13,6 +13,7 @@ interface ProductCardProps {
     city?: string;          // Para usuarios y vacantes
     country?: string;       // Para usuarios y vacantes
     isOpen?: boolean;       // Para vacantes
+    
 }
 
 export default function ProductCard({ 
@@ -26,7 +27,7 @@ export default function ProductCard({
     formationYear,
     city,
     country,
-    isOpen 
+    isOpen,
 }: ProductCardProps) {
     const getTypeText = () => {
         if (type === 'band') return '🎵 Banda';
@@ -53,7 +54,7 @@ export default function ProductCard({
             className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-5 border-2 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
                 isSelected 
                     ? 'border-tur1 bg-tur1/10 ring-4 ring-tur1/30 shadow-2xl scale-[1.02]' 
-                    : 'border-tur3/30 hover:border-tur1/60 hover:bg-tur1/5'
+                    : 'border-tur3/30 hover:border-tur1/60 hover:bg-tur2'
             }`}
             onClick={onClick}
         >
@@ -85,7 +86,7 @@ export default function ProductCard({
                         )}
                     </div>
                     
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-tur3/20">
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-tur3/20 ">
                         <span className="text-sm text-oscuro2 font-medium bg-tur2/10 px-3 py-1.5 rounded-lg border border-tur2/20">
                             {getExtraInfo()}
                         </span>

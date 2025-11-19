@@ -7,5 +7,4 @@ export default interface AuthContextType {
     login: (user: IUser) => void;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
-    getToken?: () => string | null;
 }

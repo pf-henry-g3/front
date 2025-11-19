@@ -4,7 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export default function VacantButton() {
+export default function BandButton() {
   const { isAuthenticated: isAuth0Authenticated, isLoading } = useAuth0();
   const router = useRouter();
   const [hasLocalToken, setHasLocalToken] = useState(false);
@@ -46,9 +46,9 @@ export default function VacantButton() {
     <div className='flex items-center space-x-4'>
       <button
         className="text-sm bg-azul py-1.5 px-4 rounded-md text-text2 font-sans shadow-xl transition duration-300 hover:bg-verde hover:text-txt1 hover:cursor-pointer flex items-center gap-2" 
-        onClick={() => router.push("/vacancy")}
+        onClick={() => router.push("/dashboard/profile/mybands")}
       >
-        Publicar Vacante
+        Mis bandas
       </button>
     </div>
   );

@@ -1,5 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
+import React, { useState } from "react";
+import ReviewsView from "./ReviewsView";
+import ReviewForm from "./ReviewForm";
+import ReviewsList from "./ReviewsList";
 
 interface ProductCardProps {
   id: string;
@@ -11,6 +15,7 @@ interface ProductCardProps {
   city?: string;
   country?: string;
   isOpen?: boolean;
+  averageRating?: number; 
 }
 
 interface DetailViewProps {
@@ -76,8 +81,21 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
     return null;
   };
 
+  const getTypeRating = () => {
+    if (selectedItem.type === 'user' && selectedItem.averageRating) {
+      return `${selectedItem.averageRating}`;
+    }
+    return null;
+  };
+
+  const [isReviewsOpen, setIsReviewsOpen] = useState(false);
+  const ReviewsButtonHandler = () => {
+    if (isReviewsOpen === false) setIsReviewsOpen(true);
+    else setIsReviewsOpen(false)
+  }
+
   return (
-    <div className="flex flex-col w-full max-w-2xl p-6 shadow-xl bg-white/95 backdrop-blur-sm rounded-2xl border border-tur3/30 mx-auto">
+    <div className="flex flex-col w-full max-w-2xl p-6 shadow-xl backdrop-blur-sm rounded-2xl border mx-auto bg-white/10 border-white/20">
       {/* ✅ Imagen más grande */}
       <div className="flex justify-center mb-4">
         <img
@@ -89,7 +107,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
 
       {/* Información del elemento */}
       <div className="flex-1">
-        <div className="bg-tur1/20 rounded-xl shadow-lg p-5 border border-tur3/30">
+        <div className="bg-tur1/20 rounded-xl shadow-lg pt-5 px-5 border border-tur3/30">
           {/* Encabezado con tipo e icono */}
           <div className="text-center mb-4">
             <div className="text-5xl mb-3">{getTypeIcon()}</div>
@@ -112,7 +130,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
             )}
 
             {/* Descripción */}
-            <div className="border-t border-tur3/30 pt-4">
+            <div className="pt-3 pb-2.5">
               <h3 className="font-bold text-oscuro1 mb-3 text-center text-lg">
                 {selectedItem.type === 'band' ? 'Descripción de la banda:' :
                   selectedItem.type === 'user' ? 'Sobre este músico:' :
@@ -124,6 +142,39 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                   {selectedItem.description || "No hay descripción disponible"}
                 </p>
               </div>
+
+              {/* Reviews */}
+              { selectedItem.type !== 'user' ? (
+                <div className="pb-4"></div>
+              ) : getTypeRating() && (
+                <div>
+                <div className="pt-3 flex flex-row justify-between gap-8">
+                <p className=" text-text2 text-shadow-sm text-3xl max-w-16 font-semibold hover:text-shadow-lg">
+                  {getTypeRating()}
+                </p>
+                { isReviewsOpen === false ? (
+                <button 
+                  className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-32 shadow-xs cursor-pointer bg-tur1/70 hover:bg-tur1 transition"
+                  onClick={ReviewsButtonHandler}
+                  >
+                  Ver reseñas
+                </button> 
+                ) : (
+                  <button 
+                  className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-36 shadow-xs cursor-pointer bg-tur1/70 hover:bg-tur1 transition"
+                  onClick={ReviewsButtonHandler}
+                  >
+                  Cerrar reseñas
+                </button> 
+                )
+                } 
+                </div>
+                <ReviewsView isOpen={isReviewsOpen}>
+                  <ReviewForm receptorUserName={selectedItem.name}/>
+                  <ReviewsList/>
+                </ReviewsView>
+                </div>
+              )}
             </div>
           </div>
         </div>

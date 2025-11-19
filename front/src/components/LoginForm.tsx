@@ -28,7 +28,7 @@ export default function LoginForm() {
   const handleGoogleSignIn = async () => {
     try {
       await authService.loginWithGoogle(loginWithRedirect);
-      console.log('🔐 LoginForm - Redirigiendo a Auth0 para login con Google');
+      console.log('🧨 Ejecutando la función de loginWithGoogle');
     } catch (error) {
       await Swal.fire({
         icon: "error",
@@ -51,13 +51,13 @@ export default function LoginForm() {
           password: values.password.trim(),
         };
 
-        console.log("📤 LoginForm - Enviando datos de login:", loginData);
+        console.log("Datos a enviar:", loginData);
 
-        // ✅ authService.signin ahora guarda automáticamente en COOKIES
         const response = await authService.signin(loginData);
-        const user = response.data.data.tranformedUser;
+        const user = response.data.tranformedUser;
 
-        console.log("✅ LoginForm - Login exitoso:", user.userName);
+        console.log("✅ Login exitoso:", user);
+        console.log("🍪 Cookie guardada automáticamente");
 
         // Verificar que el token se guardó correctamente
         const token = localStorage.getItem('access_token');
@@ -93,14 +93,13 @@ export default function LoginForm() {
       } catch (error) {
         const axiosError = error as AxiosError<any>;
 
-        console.error("❌ LoginForm - Error de login:", axiosError);
+        console.error("Error de login:", axiosError);
 
         if (axiosError.response?.status === 401) {
           await Swal.fire({
             icon: "error",
             title: "Credenciales incorrectas",
             text: "Email o contraseña incorrectos",
-            confirmButtonColor: "#EF4444",
           });
           return;
         }
@@ -159,7 +158,6 @@ export default function LoginForm() {
           title: "Error al iniciar sesión",
           text: errorMessage,
         });
-
       } finally {
         setSubmitting(false);
       }
@@ -185,11 +183,10 @@ export default function LoginForm() {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.email}
-              className={`w-full px-4 py-3 border-2 rounded-md text-gray-600 focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
-                formik.touched.email && formik.errors.email
-                  ? "border-red-500 bg-red-50"
-                  : "border-fondo1 bg-white focus:border-tur3"
-              }`}
+              className={`w-full px-4 py-3 border-2 rounded-md text-gray-600 focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${formik.touched.email && formik.errors.email
+                ? "border-red-500 bg-red-50"
+                : "border-fondo1 bg-white focus:border-tur3"
+                }`}
               placeholder="tu@email.com"
             />
             {formik.touched.email && formik.errors.email && (
@@ -209,11 +206,10 @@ export default function LoginForm() {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.password}
-              className={`w-full px-4 py-3 border-2 text-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${
-                formik.touched.password && formik.errors.password
-                  ? "border-red-500 bg-red-50"
-                  : "border-fondo1 bg-white focus:border-tur3"
-              }`}
+              className={`w-full px-4 py-3 border-2 text-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-tur2 transition duration-300 placeholder:text-gray-600 ${formik.touched.password && formik.errors.password
+                ? "border-red-500 bg-red-50"
+                : "border-fondo1 bg-white focus:border-tur3"
+                }`}
               placeholder="••••••••"
             />
             {formik.touched.password && formik.errors.password && (
@@ -225,11 +221,10 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={formik.isSubmitting || !formik.isValid}
-            className={`w-full py-3 px-6 rounded-md text-lg font-sans shadow-xl transition duration-300 ${
-              formik.isSubmitting || !formik.isValid
-                ? "bg-gray-400 cursor-not-allowed text-white"
-                : "bg-tur1 text-azul hover:bg-tur2 hover:text-oscuro2 hover:-translate-y-0.5 hover:cursor-pointer"
-            }`}
+            className={`w-full py-3 px-6 rounded-md text-lg font-sans shadow-xl transition duration-300 ${formik.isSubmitting || !formik.isValid
+              ? "bg-gray-400 cursor-not-allowed text-white"
+              : "bg-tur1 text-azul hover:bg-tur2 hover:text-oscuro2 hover:-translate-y-0.5 hover:cursor-pointer"
+              }`}
           >
             {formik.isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>

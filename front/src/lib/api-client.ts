@@ -1,5 +1,5 @@
 // src/lib/api-client.ts
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 // Obtener la URL base con fallback
 const getBaseURL = () => {
