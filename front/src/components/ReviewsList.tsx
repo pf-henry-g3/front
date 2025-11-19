@@ -3,7 +3,9 @@ import axios from "axios";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import Pagination from "./Pagination";
 import Review from "./Review";
-
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import * as Yup from "yup";
 import { reviewsMock } from "../mocks/ReviewsMock";
 
 interface Reviews {
@@ -12,44 +14,64 @@ interface Reviews {
   urlImage: string;
 }
 
-interface ReviewProps {
-  id: string,
-  userName: string,
-  userImage: string,
-  reviewDescription: string,
-  score: number,
-}
-
-
 export default function ReviewsList () {
-  const [userRole, setUserRole] = useState(null);
+
 
   const [reviews, setReviews] = useState<Reviews[]>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(3);
 
-  useEffect(() => {
-    async function fetchUserRole() {
-      const base = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/+$/, '');
-      const res = await axios.get(`${base}/user`); 
-      setUserRole(res.data?.data?.userRole ?? null);
-    }
+  const router = useRouter();
 
-    fetchUserRole();
-  }, []);
+  const userRole = "receptor"
+  
+
 
 
   useEffect(() => {
+  async function fetchReviews() {
     if (!userRole) return;
-    async function fetchReviews() {
-      const base = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/+$/, '');
-      const res = await axios.get(`${base}/review/${userRole}`); 
-      setReviews(res.data.data.reviews || []);
+
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Sesión requerida",
+        text: "Debes iniciar sesión para crear bandas",
+        confirmButtonColor: "#F59E0B",
+      });
+      router.push("/login");
+      return;
     }
 
-    fetchReviews();
-  }, [userRole]);
+    const base = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? "").replace(/\/+$/, "");
+
+    try {
+      const res = await axios.get(`${base}/review`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        params: {
+          role: "receptor",
+          receptor: receptorUserName, 
+          page: currentPage,
+          limit: itemsPerPage,
+        },
+      });
+
+      setReviews(res.data?.data?.reviews ?? []);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  fetchReviews();
+}, [userRole, currentPage, itemsPerPage, receptorUserName]);
+
+
 
   const paginationData = useMemo(() => {
       const totalPages = Math.ceil(reviews.length / itemsPerPage);
@@ -73,6 +95,9 @@ export default function ReviewsList () {
       setItemsPerPage(newItemsPerPage);
       setCurrentPage(1);
     }, []);
+
+  console.log(paginationData.paginatedItems)
+  console.log(userRole )
 
   return (
     <div className="p-4"> 
