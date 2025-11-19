@@ -2,6 +2,7 @@
 
 import axios from "axios";
 import { useFormik } from "formik";
+import { useRouter } from "next/router";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 
@@ -12,7 +13,7 @@ interface CreateReviewDto {
 }
 
 export default function ReviewForm({ receptorUserName }: { receptorUserName: string }) {
-
+  const router = useRouter();
   const validationSchema = Yup.object({
 
     score: Yup.number()
@@ -36,12 +37,28 @@ export default function ReviewForm({ receptorUserName }: { receptorUserName: str
     enableReinitialize: true, // importante si receptorUserName llega async
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
+        const token = localStorage.getItem('access_token');
+        
+        if (!token) {
+          console.warn('⚠️ No hay token disponible');
+          await Swal.fire({
+            icon: "warning",
+            title: "Sesión requerida",
+            text: "Debes iniciar sesión para hacer reseñas",
+            confirmButtonColor: "#F59E0B"
+          });
+          router.push('/login');
+          return;
+        }
         setSubmitting(true);
 
         const reviewRes = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/review`,
           values,
-          { headers: { "Content-Type": "application/json" } }
+          { headers: { 
+            'Authorization': `Bearer ${token}`,
+            "Content-Type": "application/json" 
+          } }
         );
 
         await Swal.fire({
