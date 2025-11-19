@@ -10,7 +10,9 @@ import IUser from "../interfaces/IUser";
 import Genre from "../interfaces/IGenre";
 import ICreateBandDto from "../interfaces/ICreateBandDto"
 
-
+interface BandFormProps {
+  onBandCreated?: () => void;
+}
 
 const validationSchema = Yup.object({
   bandName: Yup.string()
@@ -49,7 +51,7 @@ const validationSchema = Yup.object({
   )
 });
 
-export default function BandForm() {
+export default function BandForm({ onBandCreated }: BandFormProps) {
   const router = useRouter();
   const [users, setUsers] = useState<IUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState<Record<number, boolean>>({});
@@ -251,7 +253,11 @@ export default function BandForm() {
           });
 
           resetForm();
-          router.push("/dashboard/profile/mybands")
+
+          if (onBandCreated) {
+            onBandCreated();
+          }
+
         }
       } catch (error) {
         const axiosError = error as any;

@@ -14,9 +14,12 @@ interface Bands {
   averageRating: string,
   city: string,
   country: string,
-  }
+}
 
-export default function MyBandsList() {
+interface MyBandsListProps {
+  refreshTrigger?: number;
+}
+export default function MyBandsList({ refreshTrigger = 0 }: MyBandsListProps) {
   const router = useRouter();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,7 +31,7 @@ export default function MyBandsList() {
     async function fetchBands() {
       try {
         const token = localStorage.getItem('access_token');
-      
+
         if (!token) {
           await Swal.fire({
             icon: "warning",
@@ -39,22 +42,22 @@ export default function MyBandsList() {
           router.push('/login');
           return;
         }
-      
+
         const storedUser = localStorage.getItem("user");
         if (!storedUser) return;
-      
+
         const parsedUser = JSON.parse(storedUser);
         const id = parsedUser.id;
-      
+
         if (!id) {
           console.log("no se ha encontrado el id de usuario");
           return;
         }
-      
+
         console.log("id del usuario", id);
-      
+
         const base = (process.env.NEXT_PUBLIC_BACKEND_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
-      
+
         const res = await axios.get(
           `${base}/band/bandOfUser/${id}`,
           {
@@ -64,45 +67,45 @@ export default function MyBandsList() {
             }
           }
         );
-      
+
         console.log("bandas del usuario traidas con exito");
         console.log("Respuesta del backend:", res.data);
-      
+
         const bandsArray = Array.isArray(res.data?.data) ? res.data.data : [];
         setBands(bandsArray);
-      
+
       } catch (err) {
         console.log(err);
       }
     }
-  
+
     fetchBands();
+  }, [refreshTrigger]);
+
+
+
+  const paginationData = useMemo(() => {
+    const totalPages = Math.ceil(bands.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = bands.slice(startIndex, endIndex);
+
+    return {
+      totalPages,
+      paginatedItems,
+      totalItems: bands.length
+    };
+  }, [bands, currentPage, itemsPerPage]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  
-  
-  const paginationData = useMemo(() => {
-      const totalPages = Math.ceil(bands.length / itemsPerPage);
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginatedItems = bands.slice(startIndex, endIndex);
-
-      return {
-        totalPages,
-        paginatedItems,
-        totalItems: bands.length
-      };
-    }, [bands, currentPage, itemsPerPage]);
-
-    const handlePageChange = useCallback((page: number) => {
-      setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, []);
-
-    const handleItemsPerPageChange = useCallback((newItemsPerPage: number) => {
-      setItemsPerPage(newItemsPerPage);
-      setCurrentPage(1);
-    }, []);
+  const handleItemsPerPageChange = useCallback((newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  }, []);
 
   return (
     <div className="max-w-[60%] mx-auto px-8">
@@ -112,7 +115,7 @@ export default function MyBandsList() {
 
       <div className="bg-linear-to-br from-white/80 to-white/90 rounded-2xl">
         <div className="py-1.5 ">
-          
+
           {paginationData.paginatedItems.length > 0 ? (
             <div className="p-4 space-y-3">
               {paginationData.paginatedItems.map((band) => (
