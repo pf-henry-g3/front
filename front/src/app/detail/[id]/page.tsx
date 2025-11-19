@@ -16,6 +16,7 @@ interface DetailItem {
     city?: string;
     country?: string;
     isOpen?: boolean;
+    averageRating?: number;
 }
 
 export default function DetailPage() {
@@ -82,7 +83,8 @@ export default function DetailPage() {
                     formationYear: data.formationDate ? new Date(data.formationDate).getFullYear() : undefined,
                     city: data.city,
                     country: data.country,
-                    isOpen: data.isOpen
+                    isOpen: data.isOpen,
+                    averageRating: data.averageRating
                 });
 
                 console.log('✅ Datos cargados exitosamente');
