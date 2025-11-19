@@ -3,10 +3,11 @@ import axios from "axios";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import Pagination from "./Pagination";
 import Review from "./Review";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 import { reviewsMock } from "../mocks/ReviewsMock";
+
 
 interface Reviews {
   score: number;
@@ -15,62 +16,61 @@ interface Reviews {
 }
 
 export default function ReviewsList () {
-
-
   const [reviews, setReviews] = useState<Reviews[]>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [receptorUserName, setReceptorUserName] = useState<string | null>(null);
 
   const router = useRouter();
-
-  const userRole = "receptor"
-  
-
-
+  const params = useParams();
+  const userNameId = params.id as string;
 
   useEffect(() => {
-  async function fetchReviews() {
-    if (!userRole) return;
+    async function fetchUserProfile() {
+      if (!userNameId) return;
 
-    const token = localStorage.getItem("access_token");
+      
 
-    if (!token) {
-      await Swal.fire({
-        icon: "warning",
-        title: "Sesión requerida",
-        text: "Debes iniciar sesión para crear bandas",
-        confirmButtonColor: "#F59E0B",
-      });
-      router.push("/login");
-      return;
+      try {
+        const base = (process.env.NEXT_PUBLIC_API_URL ??process.env.NEXT_PUBLIC_BACKEND_URL ??"").replace(/\/+$/, "");
+        const userRes = await axios.get(`${base}/user/${userNameId}`);
+        setReceptorUserName(userRes.data.data.userName); 
+      
+        //const bandRes = await axios.get(`${base}/band/${userNameId}`);
+        //setReceptorUserName(bandRes.data.data.userName); 
+      }
+        catch (err) {
+        console.log(err);
+      }
     }
 
-    const base = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? "").replace(/\/+$/, "");
+    fetchUserProfile();
+  }, [userNameId]);
 
-    try {
-      const res = await axios.get(`${base}/review`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        params: {
-          role: "receptor",
-          receptor: receptorUserName, 
-          page: currentPage,
-          limit: itemsPerPage,
-        },
-      });
-
-      setReviews(res.data?.data?.reviews ?? []);
-    } catch (err) {
-      console.log(err);
-    }
+  useEffect(() => {
+  if (!receptorUserName) {
+    console.log("Esperando receptorUserName...");
+    return;
   }
 
-  fetchReviews();
-}, [userRole, currentPage, itemsPerPage, receptorUserName]);
+  const base = (process.env.NEXT_PUBLIC_API_URL ??process.env.NEXT_PUBLIC_BACKEND_URL ??"").replace(/\/+$/, "");
 
+  axios.get(`${base}/review`, {
+    params: {
+      role: "receptor",
+      receptor: receptorUserName,
+      page: 1,
+      limit: 10,
+    }
+  })
+  .then((res) => {
+    console.log("reviews:", res.data.data);
+    setReviews(res.data.data);
+  })
+  .catch((err) => console.error(err));
+
+}, [receptorUserName]);
 
 
   const paginationData = useMemo(() => {
@@ -97,7 +97,9 @@ export default function ReviewsList () {
     }, []);
 
   console.log(paginationData.paginatedItems)
-  console.log(userRole )
+  console.log("receptorUserName:", receptorUserName);
+  console.log("URL:", `${process.env.NEXT_PUBLIC_BACK_URL}/review?role=receptor&receptor=${receptorUserName}`);
+
 
   return (
     <div className="p-4"> 
@@ -113,7 +115,7 @@ export default function ReviewsList () {
       ) : reviews.length === 0 ? (
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <p className="text-oscuro3 text-lg mb-2 font-bold">
+            <p className="text-verde text-lg mb-2 font-bold">
               No se encontraron resultados
             </p>
             <p className="text-tur2 text-sm font-medium">
