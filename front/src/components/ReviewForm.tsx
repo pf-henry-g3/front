@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useFormik } from "formik";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 
