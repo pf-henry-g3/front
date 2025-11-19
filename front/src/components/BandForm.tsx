@@ -250,6 +250,7 @@ export default function BandForm() {
           });
 
           resetForm();
+          router.push("/dashboard/profile/mybands")
         }
       } catch (error) {
         const axiosError = error as any;

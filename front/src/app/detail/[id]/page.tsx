@@ -112,7 +112,7 @@ export default function DetailPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 flex items-center justify-center">
+            <div className="min-h-screen mt-12 bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 flex items-center justify-center">
                 <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 shadow-2xl">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-tur1 mx-auto mb-4"></div>
                     <p className="text-txt1 font-semibold text-lg">🎵 Cargando detalles...</p>
@@ -124,7 +124,7 @@ export default function DetailPage() {
 
     if (error || !item) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 flex items-center justify-center px-4">
+            <div className="min-h-screen mt-12 bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 flex items-center justify-center px-4">
                 <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 shadow-2xl max-w-md">
                     <div className="text-6xl mb-4">⚠️</div>
                     <h2 className="text-txt1 text-xl font-bold mb-2">Error</h2>
@@ -151,7 +151,7 @@ export default function DetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 mt-12 py-12 px-4 sm:px-6 lg:px-8">
             <div className="container mx-auto max-w-6xl">
                 {/* Header con botón de volver */}
                 <div className="mb-8">

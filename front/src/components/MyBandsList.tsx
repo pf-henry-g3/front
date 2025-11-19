@@ -1,55 +1,108 @@
 "use client"
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Pagination from "./Pagination";
 import axios from "axios";
+import Swal from "sweetalert2";
 import MyBandPreview from "./MyBandPreview";
 
-interface LeaderOfBand {
-  id: string;
-  bandName: string;
-  urlImage: string;
-  averageRating: string;
-}
+interface Bands {
+  id: string,
+  bandName: string,
+  bandDescription: string,
+  urlImage: string,
+  averageRating: string,
+  city: string,
+  country: string,
+  }
 
 export default function MyBandsList() {
+  const router = useRouter();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(3);
 
-  const [leaderOf, setLeaderOf] = useState<LeaderOfBand[]>([]);
+  const [bands, setBands] = useState<Bands[]>([]);
 
   useEffect(() => {
-    async function fetchLeaderOf() {
-      const base = (process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/+$/, '');
-      const res = await axios.get(`${base}/user`); 
-      setLeaderOf(res.data.data.leaderOf || []);
+    async function fetchBands() {
+      try {
+        const token = localStorage.getItem('access_token');
+      
+        if (!token) {
+          await Swal.fire({
+            icon: "warning",
+            title: "Sesión requerida",
+            text: "Debes iniciar sesión para crear bandas",
+            confirmButtonColor: "#F59E0B"
+          });
+          router.push('/login');
+          return;
+        }
+      
+        const storedUser = localStorage.getItem("user");
+        if (!storedUser) return;
+      
+        const parsedUser = JSON.parse(storedUser);
+        const id = parsedUser.id;
+      
+        if (!id) {
+          console.log("no se ha encontrado el id de usuario");
+          return;
+        }
+      
+        console.log("id del usuario", id);
+      
+        const base = (process.env.NEXT_PUBLIC_BACKEND_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
+      
+        const res = await axios.get(
+          `${base}/band/bandOfUser/${id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      
+        console.log("bandas del usuario traidas con exito");
+        console.log("Respuesta del backend:", res.data);
+      
+        const bandsArray = Array.isArray(res.data?.data) ? res.data.data : [];
+        setBands(bandsArray);
+      
+      } catch (err) {
+        console.log(err);
+      }
     }
-
-    fetchLeaderOf();
+  
+    fetchBands();
   }, []);
 
+  
+  
   const paginationData = useMemo(() => {
-    const totalPages = Math.ceil(leaderOf.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedItems = leaderOf.slice(startIndex, endIndex);
+      const totalPages = Math.ceil(bands.length / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedItems = bands.slice(startIndex, endIndex);
 
-    return {
-      totalPages,
-      paginatedItems,
-      totalItems: leaderOf.length
-    };
-  }, [leaderOf, currentPage, itemsPerPage]);
+      return {
+        totalPages,
+        paginatedItems,
+        totalItems: bands.length
+      };
+    }, [bands, currentPage, itemsPerPage]);
 
-  const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+    const handlePageChange = useCallback((page: number) => {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, []);
 
-  const handleItemsPerPageChange = useCallback((newItemsPerPage: number) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-  }, []);
+    const handleItemsPerPageChange = useCallback((newItemsPerPage: number) => {
+      setItemsPerPage(newItemsPerPage);
+      setCurrentPage(1);
+    }, []);
 
   return (
     <div className="max-w-[60%] mx-auto px-8">
@@ -70,7 +123,7 @@ export default function MyBandsList() {
               ))}
             </div>
 
-          ) : leaderOf.length === 0 ? (
+          ) : bands.length === 0 ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
                 <p className="text-verde text-lg mb-2 font-bold">
@@ -95,7 +148,7 @@ export default function MyBandsList() {
         </div>
 
         <div>
-          {leaderOf.length > 0 && (
+          {bands.length > 0 && (
             <div className="px-4 pb-4 mx-auto">
               <Pagination
                 currentPage={currentPage}

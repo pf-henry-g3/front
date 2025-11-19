@@ -1,5 +1,9 @@
 export default interface IMyBandPreviewDetailProps {
-  name: string,
+  id: string,
+  bandName: string,
+  bandDescription: string,
+  urlImage: string,
   averageRating: string,
-  bandImage: string,
+  city: string,
+  country: string,
 }
