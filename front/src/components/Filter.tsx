@@ -187,8 +187,8 @@ export default function Filter({ allItems, onFilterResults }: FilterProps) {
         {/* Resultados y botón limpiar (dentro de la sección de filtros) */}
         {(selectedType !== "all" || searchText) && (
           <div className="flex items-center justify-between pt-4 mt-4 border-t border-tur3/30">
-            <p className="text-sm text-oscuro2 font-medium">
-              Mostrando <span className="font-bold text-tur1">{counts.filtered}</span> de <span className="font-bold text-oscuro1">{counts.total}</span> resultados
+            <p className="text-sm text-txt1 font-medium">
+              Mostrando <span className="font-bold text-tur1">{counts.filtered}</span> de <span className="font-bold text-tur2">{counts.total}</span> resultados
             </p>
             <button
               onClick={clearFilters}

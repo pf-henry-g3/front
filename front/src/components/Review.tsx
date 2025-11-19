@@ -6,7 +6,7 @@ interface ReviewProps {
   userImage: string,
   reviewDescription: string,
   score: number,
-  date: string;
+  date: string,
 }
 
 export default function Review (
@@ -48,7 +48,7 @@ export default function Review (
         </p>
         </div>
         <span className="text-sm text-right text-txt1/70">
-          {new Date(date).toLocaleDateString()}
+          {date}
         </span>
       </div>
       <p className="text-txt1/85"> {reviewDescription} </p>

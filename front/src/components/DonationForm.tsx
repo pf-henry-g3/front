@@ -70,7 +70,7 @@ export default function DonationForm() {
     },
   });
 
-  const presetAmounts = [1000, 5000, 20000];
+  const presetAmounts = [1000, 5000, 10000];
 
   return (
     <div className="flex flex-col justify-center items-center py-8 px-4">

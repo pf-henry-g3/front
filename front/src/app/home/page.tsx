@@ -158,7 +158,7 @@ export default function HomePage() {
     // Mostrar loading
     if (loading) {
         return (
-            <div className="min-h-screen bg-azul py-8 px-4 flex justify-center items-center">
+            <div className="min-h-screen py-8 px-4 flex justify-center items-center">
                 <div className="text-center bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-tur1 mx-auto mb-4"></div>
                     <p className="text-oscuro1 font-semibold text-lg">⏳ Cargando datos del servidor...</p>
@@ -170,7 +170,7 @@ export default function HomePage() {
     // Mostrar error
     if (error) {
         return (
-            <div className="min-h-screen bg-azul py-8 px-4 flex justify-center items-center">
+            <div className="min-h-screen py-8 px-4 flex justify-center items-center">
                 <div className="text-center bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl max-w-md">
                     <h2 className="text-red-700 text-xl font-bold mb-2">❌ Error</h2>
                     <p className="text-oscuro2 mb-6 font-medium">{error}</p>

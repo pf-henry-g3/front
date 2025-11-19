@@ -11,6 +11,7 @@ import Genre from "../interfaces/IGenre";
 import ICreateBandDto from "../interfaces/ICreateBandDto"
 
 
+
 const validationSchema = Yup.object({
   bandName: Yup.string()
     .min(2, "El nombre debe tener al menos 2 caracteres")
@@ -183,7 +184,7 @@ export default function BandForm() {
           await Swal.fire({
             icon: "warning",
             title: "Sesión requerida",
-            text: "Debes iniciar sesión para crear vacantes",
+            text: "Debes iniciar sesión para crear bandas",
             confirmButtonColor: "#F59E0B"
           });
           router.push('/login');
