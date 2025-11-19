@@ -130,7 +130,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
             )}
 
             {/* Descripción */}
-            <div className="pt-3">
+            <div className="pt-3 pb-2.5">
               <h3 className="font-bold text-oscuro1 mb-3 text-center text-lg">
                 {selectedItem.type === 'band' ? 'Descripción de la banda:' :
                   selectedItem.type === 'user' ? 'Sobre este músico:' :
