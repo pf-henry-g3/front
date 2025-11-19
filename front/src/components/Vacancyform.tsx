@@ -5,40 +5,32 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
-
-export interface CreatevacancyDto {
-    name: string;
-    vacancyDescription: string;
-    vacancyType: string;
-    urlImage: string;
-    genres: string[];
-}
-
-// ✅ Interface para los géneros del backend
-interface Genre {
-    id: string;
-    name: string;
-}
+import Genre from "../interfaces/IGenre";
+import { CreatevacancyDto } from "../interfaces/ICreateVacancyDto";
 
 const validationSchema = Yup.object({
     name: Yup.string()
         .min(3, "El nombre debe tener al menos 3 caracteres")
         .max(100, "El nombre no puede exceder 100 caracteres")
         .required("El nombre de la vacante es requerido"),
-    
+
     vacancyType: Yup.string()
         .max(50, "El tipo no puede exceder 50 caracteres")
         .required("El tipo de vacante es requerido"),
-    
+
     vacancyDescription: Yup.string()
         .min(10, "La descripción debe tener al menos 10 caracteres")
         .max(500, "La descripción no puede exceder 500 caracteres")
         .required("La descripción es requerida"),
-    
+
     urlImage: Yup.string()
         .url("Debe ser una URL válida")
-        .required("La imagen es requerida"),
-    
+        .optional()
+        .nullable()
+        .transform((value, originalValue) =>
+            originalValue === '' ? '' : value
+        ),
+
     genres: Yup.array()
         .of(Yup.string())
         .min(1, "Debes seleccionar al menos un género")
@@ -56,7 +48,7 @@ export default function VacancyForm() {
         const fetchGenres = async () => {
             try {
                 const token = localStorage.getItem('access_token');
-                
+
                 // ✅ Verificar que hay token antes de hacer la petición
                 if (!token) {
                     console.warn('⚠️ No hay token disponible');
@@ -71,9 +63,9 @@ export default function VacancyForm() {
                 }
 
                 console.log('🔑 Token encontrado, cargando géneros...');
-                
+
                 const response = await axios.get(
-                    `${process.env.NEXT_PUBLIC_API_URL}/genre`,
+                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/genre`,
                     {
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -81,17 +73,17 @@ export default function VacancyForm() {
                         }
                     }
                 );
-                
+
                 // Ajustar según la estructura de respuesta de tu backend
-                const genres = response.data?.data || response.data;
+                const genres = response.data?.data || response.data || [];
                 setAvailableGenres(genres);
                 console.log('✅ Géneros cargados:', genres.length, 'géneros');
-                
+
             } catch (error: any) {
                 console.error('❌ Error cargando géneros:', error);
                 console.error('❌ Status:', error.response?.status);
                 console.error('❌ Message:', error.response?.data?.message);
-                
+
                 // ✅ Manejo específico del error 401
                 if (error.response?.status === 401) {
                     await Swal.fire({
@@ -100,14 +92,14 @@ export default function VacancyForm() {
                         text: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
                         confirmButtonColor: "#EF4444"
                     });
-                    
+
                     // Limpiar localStorage y redirigir
                     localStorage.removeItem('access_token');
                     localStorage.removeItem('user');
                     window.dispatchEvent(new Event('auth-changed'));
                     window.dispatchEvent(new Event('storage'));
                     router.push('/login');
-                    
+
                 } else if (error.response?.status === 403) {
                     await Swal.fire({
                         icon: "error",
@@ -116,7 +108,7 @@ export default function VacancyForm() {
                         confirmButtonColor: "#EF4444"
                     });
                     router.push('/home');
-                    
+
                 } else {
                     await Swal.fire({
                         icon: "error",
@@ -152,23 +144,13 @@ export default function VacancyForm() {
         },
         validationSchema,
         onSubmit: async (values, { setSubmitting, resetForm }) => {
-            const { name, vacancyDescription, vacancyType, urlImage, genres } = values;
-            
-            if (!name || !vacancyDescription || !vacancyType || !urlImage || genres.length === 0) {
-                return Swal.fire({
-                    icon: "error",
-                    title: "Faltan datos",
-                    text: "Por favor completa todos los campos obligatorios"
-                });
-            }
-
             try {
                 setSubmitting(true);
-                
+
                 const token = localStorage.getItem('access_token');
-                
+
                 console.log('🔑 Token disponible:', token ? 'SÍ' : 'NO');
-                
+
                 if (!token) {
                     await Swal.fire({
                         icon: "error",
@@ -180,25 +162,29 @@ export default function VacancyForm() {
                     return;
                 }
 
-                // ✅ CAMBIO PRINCIPAL: Convertir IDs a nombres
+                // ✅ CORRECCIÓN PRINCIPAL: Usar nombres de géneros en lugar de IDs
                 const genreNames = values.genres.map(genreId => {
                     const genre = availableGenres.find(g => g.id === genreId);
                     return genre?.name || '';
                 }).filter(name => name !== '');
-                
+
+                // ✅ Preparar datos para enviar - siempre enviar urlImage como string
                 const vacancyData = {
                     name: values.name,
                     vacancyDescription: values.vacancyDescription,
                     vacancyType: values.vacancyType,
-                    urlImage: values.urlImage,
-                    genres: 'genresNames', // ✅ Ya son IDs
+                    urlImage: values.urlImage || "", // ✅ Siempre enviar string, vacío si no hay valor
+                    genres: genreNames,
                 };
-                
+
                 console.log('📤 Datos a enviar:', vacancyData);
-                console.log('📡 URL:', `${process.env.NEXT_PUBLIC_API_URL}/vacancy`);
-                
+
+                // ✅ CORRECCIÓN: Usar la variable de entorno correcta
+                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+                console.log('📡 URL del backend:', backendUrl);
+
                 const response = await axios.post(
-                    `${process.env.NEXT_PUBLIC_API_URL}/vacancy`,
+                    `${backendUrl}/vacancy`,
                     vacancyData,
                     {
                         headers: {
@@ -207,22 +193,13 @@ export default function VacancyForm() {
                         }
                     }
                 );
-                
+
                 console.log('✅ Respuesta exitosa:', response.status);
-                
+                console.log('📨 Datos de respuesta:', response.data);
+
                 if (response.status === 200 || response.status === 201) {
-                    resetForm({
-                        values: {
-                            name: "",
-                            vacancyDescription: "",
-                            vacancyType: "",
-                            urlImage: "",
-                            genres: [],
-                        },
-                        errors: {},
-                        touched: {}
-                    });
-                    
+                    resetForm();
+
                     await Swal.fire({
                         icon: "success",
                         title: "¡Vacante creada!",
@@ -234,16 +211,17 @@ export default function VacancyForm() {
 
                     router.push('/home');
                 }
-                
+
             } catch (error) {
                 const axiosError = error as any;
                 console.error('❌ Error completo:', axiosError);
                 console.error('❌ Status:', axiosError.response?.status);
                 console.error('❌ Data:', axiosError.response?.data);
-                
+                console.error('❌ URL intentada:', axiosError.config?.url);
+
                 if (axiosError.response?.status === 400) {
                     const errorData = axiosError.response.data;
-                    
+
                     if (errorData.message && Array.isArray(errorData.message)) {
                         await Swal.fire({
                             icon: "error",
@@ -278,15 +256,22 @@ export default function VacancyForm() {
                         text: "No tienes permisos para crear vacantes",
                         confirmButtonColor: "#EF4444"
                     });
-                } else {
+                } else if (axiosError.code === 'NETWORK_ERROR' || !axiosError.response) {
                     await Swal.fire({
                         icon: "error",
                         title: "Error de conexión",
+                        text: "No se pudo conectar con el servidor. Verifica tu conexión a internet.",
+                        confirmButtonColor: "#EF4444"
+                    });
+                } else {
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Error del servidor",
                         text: axiosError.response?.data?.message || "Hubo un error al crear la vacante. Inténtalo de nuevo más tarde.",
                         confirmButtonColor: "#EF4444"
                     });
                 }
-                
+
             } finally {
                 setSubmitting(false);
             }
@@ -296,7 +281,7 @@ export default function VacancyForm() {
     // ✅ Función para manejar selección de géneros
     const handleGenreToggle = (genreId: string) => {
         const currentGenres = formik.values.genres;
-        
+
         if (currentGenres.includes(genreId)) {
             // Remover género
             formik.setFieldValue('genres', currentGenres.filter(id => id !== genreId));
@@ -344,7 +329,7 @@ export default function VacancyForm() {
                     <p className="text-txt2 text-sm mb-6">
                         Es necesario cargar los géneros para crear una vacante
                     </p>
-                    
+
                     <div className="flex gap-3 justify-center flex-wrap">
                         <button
                             onClick={() => router.push('/home')}
@@ -352,7 +337,7 @@ export default function VacancyForm() {
                         >
                             ← Volver al inicio
                         </button>
-                        
+
                         <button
                             onClick={() => window.location.reload()}
                             className="px-6 py-3 bg-gradient-to-r from-tur2 to-tur1 text-azul font-bold rounded-xl hover:from-tur1 hover:to-tur2 transition-all duration-300"
@@ -371,7 +356,7 @@ export default function VacancyForm() {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <h2 className="text-4xl font-bold text-txt1 mb-2">
-                         Crear Nueva Vacante
+                        Crear Nueva Vacante
                     </h2>
                     <p className="text-txt2 text-lg">
                         Encuentra al músico perfecto para tu proyecto
@@ -380,14 +365,12 @@ export default function VacancyForm() {
 
                 <form onSubmit={formik.handleSubmit} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl p-6 md:p-8 lg:p-10">
                     <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 lg:gap-8">
-                        
-                      
 
                         {/* Columna Izquierda: Géneros */}
                         <div className="xl:col-span-1">
                             <div className="bg-white/5 border border-white/10 rounded-xl p-4 lg:p-6 xl:sticky xl:top-6">
                                 <label className="block text-xl font-bold text-txt1 mb-4 flex items-center gap-2">
-                                     Géneros Musicales *
+                                    Géneros Musicales *
                                     <span className="text-sm font-normal text-txt2">
                                         ({formik.values.genres.length}/5)
                                     </span>
@@ -395,20 +378,19 @@ export default function VacancyForm() {
                                 <p className="text-sm text-txt2 mb-4">
                                     Selecciona de 1 a 5 géneros
                                 </p>
-                                
+
                                 {/* ✅ Géneros con checkboxes */}
                                 <div className="grid grid-cols-1 gap-3">
                                     {availableGenres.map((genre) => {
                                         const isSelected = formik.values.genres.includes(genre.id);
-                                        
+
                                         return (
                                             <label
                                                 key={genre.id}
-                                                className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-300 border-2 ${
-                                                    isSelected
-                                                        ? 'bg-gradient-to-r from-tur2/30 to-tur1/30 border-tur1 shadow-md'
-                                                        : 'bg-white/5 hover:bg-white/10 border-transparent hover:border-tur2/50'
-                                                }`}
+                                                className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-300 border-2 ${isSelected
+                                                    ? 'bg-gradient-to-r from-tur2/30 to-tur1/30 border-tur1 shadow-md'
+                                                    : 'bg-white/5 hover:bg-white/10 border-transparent hover:border-tur2/50'
+                                                    }`}
                                             >
                                                 <input
                                                     type="checkbox"
@@ -423,7 +405,7 @@ export default function VacancyForm() {
                                         );
                                     })}
                                 </div>
-                                
+
                                 {formik.touched.genres && formik.errors.genres && (
                                     <p className="mt-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
                                         ⚠️ {formik.errors.genres}
@@ -439,19 +421,13 @@ export default function VacancyForm() {
                             </div>
                         </div>
 
-
-
-            
-
-
-
                         {/* Columna Derecha: Resto del formulario */}
                         <div className="xl:col-span-3 space-y-6">
-                            
+
                             {/* Campo Name */}
                             <div>
                                 <label htmlFor="name" className="block text-lg font-bold text-txt1 mb-2 flex items-center gap-2">
-                                     Nombre de la Vacante *
+                                    Nombre de la Vacante *
                                 </label>
                                 <input
                                     id="name"
@@ -460,11 +436,10 @@ export default function VacancyForm() {
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     value={formik.values.name}
-                                    className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${
-                                        formik.touched.name && formik.errors.name
-                                            ? "border-red-500 focus:ring-red-500"
-                                            : "border-white/20 focus:ring-tur2 focus:border-tur2"
-                                    }`}
+                                    className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${formik.touched.name && formik.errors.name
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                                        }`}
                                     placeholder="Ej: Guitarrista para banda de rock"
                                 />
                                 {formik.touched.name && formik.errors.name && (
@@ -483,11 +458,10 @@ export default function VacancyForm() {
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     value={formik.values.vacancyType}
-                                    className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 focus:outline-none focus:ring-2 transition duration-300 ${
-                                        formik.touched.vacancyType && formik.errors.vacancyType
-                                            ? "border-red-500 focus:ring-red-500"
-                                            : "border-white/20 focus:ring-tur2 focus:border-tur2"
-                                    }`}
+                                    className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 focus:outline-none focus:ring-2 transition duration-300 ${formik.touched.vacancyType && formik.errors.vacancyType
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                                        }`}
                                 >
                                     <option value="" disabled className="bg-oscuro1 text-txt2">
                                         Selecciona el tipo de músico
@@ -514,7 +488,7 @@ export default function VacancyForm() {
                             {/* Campo Description */}
                             <div>
                                 <label htmlFor="vacancyDescription" className="block text-lg font-bold text-txt1 mb-2 flex items-center gap-2">
-                                     Descripción *
+                                    Descripción *
                                 </label>
                                 <textarea
                                     id="vacancyDescription"
@@ -523,11 +497,10 @@ export default function VacancyForm() {
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     value={formik.values.vacancyDescription}
-                                    className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 resize-none ${
-                                        formik.touched.vacancyDescription && formik.errors.vacancyDescription
-                                            ? "border-red-500 focus:ring-red-500"
-                                            : "border-white/20 focus:ring-tur2 focus:border-tur2"
-                                    }`}
+                                    className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 resize-none ${formik.touched.vacancyDescription && formik.errors.vacancyDescription
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                                        }`}
                                     placeholder="Describe los requisitos, experiencia requerida, detalles del proyecto..."
                                 />
                                 {formik.touched.vacancyDescription && formik.errors.vacancyDescription && (
@@ -535,10 +508,10 @@ export default function VacancyForm() {
                                 )}
                             </div>
 
-                            {/* Campo URL Image */}
+                            {/* Campo URL Image (Opcional) */}
                             <div>
                                 <label htmlFor="urlImage" className="block text-lg font-bold text-txt1 mb-2 flex items-center gap-2">
-                                    URL de Imagen *
+                                    URL de Imagen <span className="text-sm font-normal text-txt2">(Opcional)</span>
                                 </label>
                                 <input
                                     id="urlImage"
@@ -547,48 +520,46 @@ export default function VacancyForm() {
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     value={formik.values.urlImage}
-                                    className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${
-                                        formik.touched.urlImage && formik.errors.urlImage
-                                            ? "border-red-500 focus:ring-red-500"
-                                            : "border-white/20 focus:ring-tur2 focus:border-tur2"
-                                    }`}
-                                    placeholder="https://ejemplo.com/imagen.jpg"
+                                    className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 transition duration-300 ${formik.touched.urlImage && formik.errors.urlImage
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-white/20 focus:ring-tur2 focus:border-tur2"
+                                        }`}
+                                    placeholder="https://ejemplo.com/imagen.jpg (opcional)"
                                 />
                                 {formik.touched.urlImage && formik.errors.urlImage && (
                                     <p className="mt-2 text-sm text-red-400">{formik.errors.urlImage}</p>
                                 )}
-                                
-                                {/* Preview de imagen */}
-                                {/* {formik.values.urlImage && !formik.errors.urlImage && (
+
+                                {/* Preview de imagen - solo si hay URL */}
+                                {formik.values.urlImage && formik.values.urlImage.trim() !== '' && !formik.errors.urlImage && (
                                     <div className="mt-4">
                                         <p className="text-sm text-txt2 mb-2">Vista previa:</p>
-                                        <img 
-                                            src={formik.values.urlImage} 
-                                            alt="Preview" 
+                                        <img
+                                            src={formik.values.urlImage}
+                                            alt="Preview"
                                             className="w-full h-48 object-cover rounded-lg border-2 border-white/20"
                                             onError={(e) => {
                                                 (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Imagen+no+disponible';
                                             }}
                                         />
                                     </div>
-                                )} */}
+                                )}
                             </div>
 
                             {/* Botón Submit */}
                             <button
                                 type="submit"
                                 disabled={formik.isSubmitting || !formik.isValid}
-                                className={`w-full py-4 px-6 rounded-lg text-lg font-bold transition-all duration-300 transform ${
-                                    formik.isSubmitting || !formik.isValid
-                                        ? "bg-gray-400 cursor-not-allowed opacity-50"
-                                        : "bg-gradient-to-r from-tur1 to-tur2 text-azul hover:from-tur2 hover:to-tur3 hover:shadow-xl hover:scale-105"
-                                }`}
+                                className={`w-full py-4 px-6 rounded-lg text-lg font-bold transition-all duration-300 transform ${formik.isSubmitting || !formik.isValid
+                                    ? "bg-gray-400 cursor-not-allowed opacity-50"
+                                    : "bg-gradient-to-r from-tur1 to-tur2 text-azul hover:from-tur2 hover:to-tur3 hover:shadow-xl hover:scale-105"
+                                    }`}
                             >
                                 {formik.isSubmitting ? (
                                     <span className="flex items-center justify-center gap-2">
                                         <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                         </svg>
                                         Creando vacante...
                                     </span>
@@ -601,18 +572,13 @@ export default function VacancyForm() {
                 </form>
             </div>
 
-            
-        </div>
-    );
-}
-
-{/* ✅ Estilos mejorados para checkboxes */}
+            {/* ✅ Estilos mejorados para checkboxes */}
             <style jsx>{`
                 input[type="checkbox"] {
                     appearance: none;
                     -webkit-appearance: none;
                     display: flex;
-                    align-items: center;
+                    align-content: center;
                     justify-content: center;
                     flex-shrink: 0;
                 }
@@ -634,3 +600,6 @@ export default function VacancyForm() {
                     background-color: rgba(79, 209, 197, 0.1);
                 }
             `}</style>
+        </div>
+    );
+}

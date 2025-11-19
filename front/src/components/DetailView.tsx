@@ -95,7 +95,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
   }
 
   return (
-    <div className="flex flex-col w-full max-w-2xl p-6 shadow-xl bg-white/95 backdrop-blur-sm rounded-2xl border border-tur3/30 mx-auto">
+    <div className="flex flex-col w-full max-w-2xl p-6 shadow-xl backdrop-blur-sm rounded-2xl border mx-auto bg-white/10 border-white/20">
       {/* ✅ Imagen más grande */}
       <div className="flex justify-center mb-4">
         <img
