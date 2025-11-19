@@ -48,7 +48,10 @@ apiClient.interceptors.response.use(
                 ? 'Error de conexión: La URL del backend no está configurada. Verifica NEXT_PUBLIC_API_URL o NEXT_PUBLIC_BACKEND_URL en las variables de entorno.'
                 : `Error de conexión: No se pudo conectar al backend en ${baseURL}. Verifica que el servidor esté corriendo.`;
             console.error('❌ Network Error:', helpfulMessage);
-            return Promise.reject(new Error(helpfulMessage));
+            
+            // Mantener AxiosError pero con mensaje más útil
+            (error as AxiosError).message = helpfulMessage;
+            return Promise.reject(error);
         }
         
         // No mostrar errores 401 como críticos (token inválido/expirado es normal cuando no hay sesión)
@@ -61,7 +64,9 @@ apiClient.interceptors.response.use(
             console.error('❌ Error en la petición:', errorMessage);
         }
         
-        return Promise.reject(new Error(errorMessage));
+        // Rechazar el AxiosError original para que los consumidores (AuthContext, etc.) puedan
+        // inspeccionar status, response, etc. correctamente.
+        return Promise.reject(error);
     }
 );
 

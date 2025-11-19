@@ -142,8 +142,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return null;
 
         } finally {
-
-            // setLoading(false);
+            // Aseguramos que el estado de carga se desactive siempre,
+            // incluso si hubo errores en la verificación.
+            setLoading(false);
         }
     };
 

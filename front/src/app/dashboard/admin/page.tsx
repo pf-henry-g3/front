@@ -32,15 +32,28 @@ type Review = {
   score: number;
   reviewDescription?: string;
   date: string;
-  owner: { name?: string; email?: string; userName?: string };
-  receptor: { name?: string; email?: string; userName?: string };
+  owner: { id?: string; name?: string; email?: string; userName?: string };
+  receptor: { id?: string; name?: string; email?: string; userName?: string };
   urlImage?: string;
+  ownerId?: string;
+  receptorId?: string;
+  isFlagged?: boolean;
+  moderationReason?: string;
 };
 
-function ReviewsSection({ refreshToken }: { refreshToken: number }) {
+type ReviewUserOption = {
+  id: string;
+  name?: string;
+  userName?: string;
+  email?: string;
+};
+
+function ReviewsSection({ refreshToken, users }: { refreshToken: number; users: ReviewUserOption[] }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [userRoleFilter, setUserRoleFilter] = useState<'all' | 'owner' | 'receptor'>('all');
   const [page, setPage] = useState(1);
   const [rowsPerPage] = useState(10);
 
@@ -60,8 +73,22 @@ function ReviewsSection({ refreshToken }: { refreshToken: number }) {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const reviewsData = res.data?.data || res.data || [];
-      setReviews(reviewsData);
+      const raw = res.data?.data || res.data || [];
+      const mapped: Review[] = (Array.isArray(raw) ? raw : []).map((r: any) => ({
+        id: String(r.id),
+        score: Number(r.score || 0),
+        reviewDescription: r.reviewDescription,
+        date: r.date,
+        owner: r.owner || {},
+        receptor: r.receptor || {},
+        urlImage: r.urlImage,
+        ownerId: r.owner?.id,
+        receptorId: r.receptor?.id,
+        isFlagged: r.isFlagged,
+        moderationReason: r.moderationReason,
+      }));
+
+      setReviews(mapped);
     } catch (err) {
       // ignore
     } finally {
@@ -70,38 +97,122 @@ function ReviewsSection({ refreshToken }: { refreshToken: number }) {
   };
 
   const filtered = useMemo(() => {
-    if (!searchTerm) return reviews;
-    const term = searchTerm.toLowerCase();
-    return reviews.filter(r =>
-      r.owner?.name?.toLowerCase().includes(term) ||
-      r.owner?.email?.toLowerCase().includes(term) ||
-      r.receptor?.name?.toLowerCase().includes(term) ||
-      r.receptor?.email?.toLowerCase().includes(term) ||
-      r.reviewDescription?.toLowerCase().includes(term)
-    );
-  }, [reviews, searchTerm]);
+    let result = reviews;
+
+    if (selectedUserId) {
+      result = result.filter((r) => {
+        const isOwner = r.ownerId === selectedUserId;
+        const isReceptor = r.receptorId === selectedUserId;
+
+        if (userRoleFilter === 'owner') return isOwner;
+        if (userRoleFilter === 'receptor') return isReceptor;
+        return isOwner || isReceptor;
+      });
+    }
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((r) =>
+        r.owner?.name?.toLowerCase().includes(term) ||
+        r.owner?.userName?.toLowerCase().includes(term) ||
+        r.owner?.email?.toLowerCase().includes(term) ||
+        r.receptor?.name?.toLowerCase().includes(term) ||
+        r.receptor?.userName?.toLowerCase().includes(term) ||
+        r.receptor?.email?.toLowerCase().includes(term) ||
+        r.reviewDescription?.toLowerCase().includes(term)
+      );
+    }
+
+    return result;
+  }, [reviews, searchTerm, selectedUserId, userRoleFilter]);
 
   const pageRows = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     return filtered.slice(start, start + rowsPerPage);
   }, [filtered, page, rowsPerPage]);
 
-  const totalPages = Math.ceil(filtered.length / rowsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+
+  const handleDelete = async (review: Review) => {
+    const result = await Swal.fire({
+      title: '¿Eliminar review?',
+      text: 'Esta acción solo puede realizarla un administrador. La review se eliminará del historial.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        await Swal.fire('Error', 'No hay token de autenticación', 'error');
+        return;
+      }
+
+      await axios.delete(`${apiBase}/admin/soft-delete/reviews/${review.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      await Swal.fire('Eliminada', 'La review ha sido eliminada correctamente.', 'success');
+      loadReviews();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'No se pudo eliminar la review';
+      await Swal.fire('Error', msg, 'error');
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Historial de Reviews</h3>
-        <input
-          type="text"
-          placeholder="Buscar por usuario, email o descripción..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500"
-        />
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedUserId}
+              onChange={(e) => {
+                setSelectedUserId(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 min-w-[200px]"
+            >
+              <option value="">Todos los usuarios</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name || u.userName || u.email || u.id}
+                </option>
+              ))}
+            </select>
+            {selectedUserId && (
+              <select
+                value={userRoleFilter}
+                onChange={(e) => {
+                  setUserRoleFilter(e.target.value as any);
+                  setPage(1);
+                }}
+                className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+              >
+                <option value="all">Hechas y recibidas</option>
+                <option value="owner">Solo hechas por él</option>
+                <option value="receptor">Solo recibidas por él</option>
+              </select>
+            )}
+          </div>
+          <input
+            type="text"
+            placeholder="Buscar por usuario, email o descripción..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1);
+            }}
+            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500"
+          />
+        </div>
       </div>
 
       {loading ? (
@@ -119,12 +230,13 @@ function ReviewsSection({ refreshToken }: { refreshToken: number }) {
                   <th className="px-4 py-3">Puntuación</th>
                   <th className="px-4 py-3">Descripción</th>
                   <th className="px-4 py-3">Fecha</th>
+                  <th className="px-4 py-3 text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {pageRows.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-gray-700">
+                    <td colSpan={6} className="px-4 py-6 text-center text-gray-700">
                       No hay reviews
                     </td>
                   </tr>
@@ -138,6 +250,14 @@ function ReviewsSection({ refreshToken }: { refreshToken: number }) {
                       </td>
                       <td className="px-4 py-3 max-w-xs truncate">{review.reviewDescription || '—'}</td>
                       <td className="px-4 py-3">{review.date ? new Date(review.date).toLocaleDateString() : '—'}</td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => handleDelete(review)}
+                          className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                          Eliminar
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -1614,7 +1734,7 @@ export default function AdminMetricsPage() {
       {activeTab === 'publications' && <PublicationsSection refreshToken={refreshToken} />}
 
       {/* Reviews Tab */}
-      {activeTab === 'reviews' && <ReviewsSection refreshToken={refreshToken} />}
+      {activeTab === 'reviews' && <ReviewsSection refreshToken={refreshToken} users={users} />}
 
       {/* Orders Tab */}
       {activeTab === 'orders' && <OrdersSection refreshToken={refreshToken} />}

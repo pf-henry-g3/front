@@ -1,5 +1,5 @@
-"use client"
-import axios from "axios";
+ "use client"
+import { apiClient } from "../lib/api-client";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -64,12 +64,11 @@ export default function VacancyForm() {
 
                 console.log('🔑 Token encontrado, cargando géneros...');
 
-                const response = await axios.get(
-                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/genre`,
+                const response = await apiClient.get(
+                    '/genre',
                     {
                         headers: {
                             'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
                         }
                     }
                 );
@@ -179,16 +178,11 @@ export default function VacancyForm() {
 
                 console.log('📤 Datos a enviar:', vacancyData);
 
-                // ✅ CORRECCIÓN: Usar la variable de entorno correcta
-                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-                console.log('📡 URL del backend:', backendUrl);
-
-                const response = await axios.post(
-                    `${backendUrl}/vacancy`,
+                const response = await apiClient.post(
+                    '/vacancy',
                     vacancyData,
                     {
                         headers: {
-                            'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         }
                     }
