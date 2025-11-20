@@ -45,7 +45,7 @@ export default function BandButton() {
   return (
     <div className='flex items-center space-x-4'>
       <button
-        className="text-sm bg-azul py-1.5 px-4 rounded-md text-text2 font-sans shadow-xl transition duration-300 hover:bg-verde hover:text-txt1 hover:cursor-pointer flex items-center gap-2" 
+        className="jsx-fd0de145dd41e0c2 inline-block px-8 py-4 bg-gradient-to-r from-tur2 to-tur1 text-oscuro2 font-bold text-lg rounded-xl cursor-pointer hover:from-tur1 hover:to-tur2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
         onClick={() => router.push("/dashboard/profile/mybands")}
       >
         Mis bandas
