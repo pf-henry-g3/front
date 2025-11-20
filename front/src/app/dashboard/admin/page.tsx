@@ -301,153 +301,6 @@ type Order = {
   description?: string;
 };
 
-function DonationsSection({ refreshToken }: { refreshToken: number }) {
-  const [donations, setDonations] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [page, setPage] = useState(1);
-  const [rowsPerPage] = useState(10);
-
-  const apiBase = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
-
-  useEffect(() => {
-    loadDonations();
-  }, [refreshToken]);
-
-  const loadDonations = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) return;
-
-      const res = await axios.get(`${apiBase}/payment`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const allPayments = res.data?.data || res.data || [];
-      const donationsData = allPayments.filter((p: any) => {
-        const desc = (p.description || '').toLowerCase();
-        const isDonation = desc.includes('donación') || desc.includes('donacion') || desc.includes('donation');
-        return isDonation && p.transactionStatus === 'APPROVED';
-      });
-
-      setDonations(donationsData);
-    } catch (err) {
-      // ignore
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filtered = useMemo(() => {
-    if (!searchTerm) return donations;
-    const term = searchTerm.toLowerCase();
-    return donations.filter(d =>
-      d.id.toLowerCase().includes(term) ||
-      d.description?.toLowerCase().includes(term) ||
-      d.paymentMethod.toLowerCase().includes(term)
-    );
-  }, [donations, searchTerm]);
-
-  const pageRows = useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    return filtered.slice(start, start + rowsPerPage);
-  }, [filtered, page, rowsPerPage]);
-
-  const totalPages = Math.ceil(filtered.length / rowsPerPage);
-
-  const totalAmount = useMemo(() => {
-    return filtered.reduce((sum, d) => sum + Number(d.amount || 0), 0);
-  }, [filtered]);
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Donaciones</h3>
-          <p className="text-base font-semibold text-gray-800">
-            Total recaudado: <span className="text-green-700 text-xl font-bold">${totalAmount.toFixed(2)}</span>
-          </p>
-        </div>
-        <input
-          type="text"
-          placeholder="Buscar por ID, descripción..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-md border-2 border-gray-400 bg-white px-4 py-2 text-sm font-medium text-gray-900 placeholder-gray-600 focus:border-tur1 focus:outline-none focus:ring-2 focus:ring-tur1/50"
-        />
-      </div>
-
-      {loading ? (
-        <div className="text-center py-12">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-t-transparent border-tur1"></div>
-          <p className="mt-4 text-gray-800 font-medium">Cargando donaciones...</p>
-        </div>
-      ) : (
-        <div className="rounded-xl bg-white shadow-lg border-2 border-gray-300 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-gray-100 text-xs uppercase tracking-wider font-bold">
-                <tr>
-                  <th className="px-4 py-4 text-gray-900 border-b-2 border-gray-300">ID</th>
-                  <th className="px-4 py-4 text-gray-900 border-b-2 border-gray-300">Monto</th>
-                  <th className="px-4 py-4 text-gray-900 border-b-2 border-gray-300">Método</th>
-                  <th className="px-4 py-4 text-gray-900 border-b-2 border-gray-300">Fecha</th>
-                  <th className="px-4 py-4 text-gray-900 border-b-2 border-gray-300">Descripción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-gray-800 font-medium">
-                      No hay donaciones
-                    </td>
-                  </tr>
-                ) : (
-                  pageRows.map((donation) => (
-                    <tr key={donation.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs text-gray-900">{donation.id}</td>
-                      <td className="px-4 py-3 font-bold text-green-700 text-base">${Number(donation.amount || 0).toFixed(2)}</td>
-                      <td className="px-4 py-3 text-gray-900 font-medium">{donation.paymentMethod}</td>
-                      <td className="px-4 py-3 text-gray-900">{donation.dateTime ? new Date(donation.dateTime).toLocaleString() : '—'}</td>
-                      <td className="px-4 py-3 max-w-xs truncate text-gray-900">{donation.description || '—'}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="px-4 py-4 flex items-center justify-between border-t-2 border-gray-300 bg-gray-50">
-            <div className="text-sm font-medium text-gray-800">
-              Mostrando {(page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, filtered.length)} de {filtered.length}
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                className="rounded-md border-2 border-gray-400 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-100 hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                disabled={page === 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Anterior
-              </button>
-              <div className="text-sm font-semibold text-gray-900">Página {page} de {totalPages}</div>
-              <button
-                className="rounded-md border-2 border-gray-400 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-100 hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function OrdersSection({ refreshToken }: { refreshToken: number }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1476,13 +1329,12 @@ export default function AdminMetricsPage() {
       <div className="border-b-2 border-gray-300 mb-6 bg-white/10 backdrop-blur-sm rounded-t-lg px-2">
         <nav className="flex space-x-8" aria-label="Tabs">
           {[
-            { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-            { id: 'users', label: 'Usuarios', icon: '👥' },
-            { id: 'publications', label: 'Publicaciones', icon: '📝' },
-            { id: 'reviews', label: 'Reviews', icon: '⭐' },
-            { id: 'orders', label: 'Órdenes', icon: '💳' },
-            { id: 'donations', label: 'Donaciones', icon: '💰' },
-            { id: 'tools', label: 'Herramientas', icon: '🔧' },
+            { id: 'dashboard', label: 'Dashboard', icon: '' },
+            { id: 'users', label: 'Usuarios', icon: '' },
+            { id: 'publications', label: 'Publicaciones', icon: '' },
+            { id: 'reviews', label: 'Reviews', icon: '' },
+            { id: 'orders', label: 'Órdenes', icon: '' },
+            { id: 'tools', label: 'Herramientas', icon: '' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1618,6 +1470,7 @@ export default function AdminMetricsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
+                        {/* SuperAdmin puede asignar o quitar rol Admin */}
                         {currentUserRoles.includes('SuperAdmin') && !u.roles?.some(r => r.name === 'Admin' || r.name === 'SuperAdmin') && (
                           <button
                             className="rounded-md border border-green-300 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 hover:bg-green-100"
@@ -1629,10 +1482,21 @@ export default function AdminMetricsPage() {
                                   alert('No hay token de autenticación');
                                   return;
                                 }
-                                const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
-                                await axios.patch(`${base}/admin/${u.id}`, {}, {
+                                const base = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
+                                await axios.patch(`${base}/admin/newAdmin/${u.id}`, {}, {
                                   headers: { Authorization: `Bearer ${token}` }
                                 });
+                                // Actualizar UI inmediatamente
+                                setUsers(prev =>
+                                  prev.map(user =>
+                                    user.id === u.id
+                                      ? {
+                                          ...user,
+                                          roles: [...(user.roles || []), { name: 'Admin' } as any],
+                                        }
+                                      : user,
+                                  ),
+                                );
                                 setRefreshToken((x) => x + 1);
                               } catch (e: any) {
                                 const errorMsg = e.response?.data?.message || e.message || 'No se pudo asignar Admin';
@@ -1641,6 +1505,42 @@ export default function AdminMetricsPage() {
                             }}
                           >
                             Hacer Admin
+                          </button>
+                        )}
+                        {currentUserRoles.includes('SuperAdmin') && u.roles?.some(r => r.name === 'Admin') && !u.roles?.some(r => r.name === 'SuperAdmin') && (
+                          <button
+                            className="rounded-md border border-yellow-300 bg-yellow-50 px-3 py-1 text-xs font-semibold text-yellow-700 hover:bg-yellow-100"
+                            onClick={async () => {
+                              if (!confirm('¿Quitar rol Admin a este usuario?')) return;
+                              try {
+                                const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+                                if (!token) {
+                                  alert('No hay token de autenticación');
+                                  return;
+                                }
+                                const base = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
+                                await axios.patch(`${base}/admin/removeAdmin/${u.id}`, {}, {
+                                  headers: { Authorization: `Bearer ${token}` }
+                                });
+                                // Actualizar UI inmediatamente
+                                setUsers(prev =>
+                                  prev.map(user =>
+                                    user.id === u.id
+                                      ? {
+                                          ...user,
+                                          roles: (user.roles || []).filter(r => r.name !== 'Admin'),
+                                        }
+                                      : user,
+                                  ),
+                                );
+                                setRefreshToken((x) => x + 1);
+                              } catch (e: any) {
+                                const errorMsg = e.response?.data?.message || e.message || 'No se pudo quitar el rol Admin';
+                                alert(`Error: ${errorMsg}`);
+                              }
+                            }}
+                          >
+                            Quitar Admin
                           </button>
                         )}
                         {u.isBanned ? (
@@ -1658,6 +1558,14 @@ export default function AdminMetricsPage() {
                                 await axios.patch(`${base}/admin/unban/${u.id}`, {}, {
                                   headers: { Authorization: `Bearer ${token}` }
                                 });
+                                // Actualizar UI inmediatamente
+                                setUsers(prev =>
+                                  prev.map(user =>
+                                    user.id === u.id
+                                      ? { ...user, isBanned: false }
+                                      : user,
+                                  ),
+                                );
                                 setRefreshToken((x) => x + 1);
                               } catch (e: any) {
                                 const errorMsg = e.response?.data?.message || e.message || 'No se pudo desbanear al usuario';
@@ -1682,6 +1590,14 @@ export default function AdminMetricsPage() {
                                 await axios.patch(`${base}/admin/ban/${u.id}`, { reason: 'Baneado por administrador' }, {
                                   headers: { Authorization: `Bearer ${token}` }
                                 });
+                                // Actualizar UI inmediatamente
+                                setUsers(prev =>
+                                  prev.map(user =>
+                                    user.id === u.id
+                                      ? { ...user, isBanned: true }
+                                      : user,
+                                  ),
+                                );
                                 setRefreshToken((x) => x + 1);
                               } catch (e: any) {
                                 const errorMsg = e.response?.data?.message || e.message || 'No se pudo banear al usuario';
@@ -1738,9 +1654,6 @@ export default function AdminMetricsPage() {
 
       {/* Orders Tab */}
       {activeTab === 'orders' && <OrdersSection refreshToken={refreshToken} />}
-
-      {/* Donations Tab */}
-      {activeTab === 'donations' && <DonationsSection refreshToken={refreshToken} />}
 
       {/* Tools Tab */}
       {activeTab === 'tools' && <ToolsSection refreshToken={refreshToken} />}
