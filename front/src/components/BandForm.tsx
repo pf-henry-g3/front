@@ -27,7 +27,8 @@ const validationSchema = Yup.object({
     .required("Los géneros son requeridos"),
 
   urlImage: Yup.string()
-    .url("Debe ser una URL válida"),
+  .url("Debe ser una URL válida")
+  .notRequired(),
 
   bandDescription: Yup.string()
     .min(10, "La descripción debe tener al menos 10 caracteres")
@@ -133,6 +134,7 @@ export default function BandForm({ onBandCreated }: BandFormProps) {
         }
       }
     };
+
     fetchGenres();
 
     return () => { mounted = false; };
