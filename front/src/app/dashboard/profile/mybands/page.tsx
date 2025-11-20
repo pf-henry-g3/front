@@ -15,7 +15,7 @@ export default function Bandd() {
     <div className="mt-24">
       <MyBandsList refreshTrigger={refreshKey} />
       <BandForm onBandCreated={handleBandCreated} />
-      <BandAddMemberForm/>
+      <BandAddMemberForm />
     </div>
   );
 }

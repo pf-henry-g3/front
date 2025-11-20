@@ -1,215 +1,683 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/src/context/AuthContext'; // 👈 Usar contexto
-import BandButton from '@/src/components/BandButton';
+import { useEffect, useState, useRef } from 'react';
 
-export default function ProfilePage() {
-  const { user, loading, refreshUser } = useAuth(); // 👈 Obtener del contexto
+interface IUser {
+  id: string;
+  email: string;
+  userName: string;
+  name: string;
+  birthDate?: string;
+  aboutMe?: string;
+  city?: string;
+  country?: string;
+  address?: string;
+  urlImage?: string;
+  genres?: Array<{ id: string; name: string }>;
+  roles?: Array<{ id: string; name: string }>;
+}
 
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [ok, setOk] = useState<string | null>(null);
+interface IGenre {
+  id: string;
+  name: string;
+}
 
-  const [form, setForm] = useState({
-    name: '',
+export default function ProfileEditForm() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [user, setUser] = useState<IUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [availableGenres, setAvailableGenres] = useState<IGenre[]>([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string>('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const [formData, setFormData] = useState({
     userName: '',
+    name: '',
     email: '',
-    urlImage: '',
-    birthDate: '',
+    password: '',
+    confirmPassword: '',
+    aboutMe: '',
     city: '',
     country: '',
-    aboutMe: ''
-    // roles: [],
+    address: '',
+    newGenres: [] as string[],
   });
 
-  // ✅ Actualizar form cuando user cambie
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
-    if (user) {
-      setForm({
-        name: user.name || '',
-        userName: user.userName || '',
-        email: user.email || '',
-        urlImage: user.profilePicture || '',
-        birthDate: user.birthDate || '',
-        city: user.city || '',
-        country: user.country || '',
-        aboutMe: user.aboutMe || ''
-        // roles: user.roles || [],
-      });
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const userData = localStorage.getItem('user');
+
+        if (!token || !userData) {
+          alert('Debes iniciar sesión para ver tu perfil');
+          window.location.href = '/login';
+          return;
+        }
+
+        const parsedUser: IUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setPhotoPreview(parsedUser.urlImage || '');
+
+        setFormData({
+          userName: parsedUser.userName || '',
+          name: parsedUser.name || '',
+          email: parsedUser.email || '',
+          password: '',
+          confirmPassword: '',
+          aboutMe: parsedUser.aboutMe || '',
+          city: parsedUser.city || '',
+          country: parsedUser.country || '',
+          address: parsedUser.address || '',
+          newGenres: parsedUser.genres?.map(g => g.id) || [],
+        });
+
+        const genresResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/genre`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!genresResponse.ok) throw new Error('Error cargando géneros');
+
+        const genresData = await genresResponse.json();
+        const genres = genresData?.data || genresData || [];
+        setAvailableGenres(genres);
+
+      } catch (error: any) {
+        console.error('Error cargando datos:', error);
+        alert('No se pudo cargar la información del perfil');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const validateField = (name: string, value: string) => {
+    let error = '';
+
+    switch (name) {
+      case 'userName':
+        if (value && value.length < 3) error = 'Mínimo 3 caracteres';
+        if (value && value.length > 50) error = 'Máximo 50 caracteres';
+        break;
+      case 'name':
+        if (value && value.length < 2) error = 'Mínimo 2 caracteres';
+        if (value && value.length > 100) error = 'Máximo 100 caracteres';
+        break;
+      case 'email':
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          error = 'Email inválido';
+        }
+        break;
+      case 'password':
+        if (value && value.length < 8) error = 'Mínimo 8 caracteres';
+        if (value && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(value)) {
+          error = 'Debe contener mayúscula, minúscula, número y carácter especial';
+        }
+        break;
+      case 'confirmPassword':
+        if (value !== formData.password) error = 'Las contraseñas no coinciden';
+        break;
+      case 'aboutMe':
+        if (value && value.length > 500) error = 'Máximo 500 caracteres';
+        break;
+      case 'city':
+      case 'country':
+        if (value && value.length > 100) error = 'Máximo 100 caracteres';
+        break;
+      case 'address':
+        if (value && value.length > 200) error = 'Máximo 200 caracteres';
+        break;
     }
-  }, [user]);
+
+    return error;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setErrors(prev => ({ ...prev, [name]: error }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const token = localStorage.getItem('access_token');
+
+      if (!token || !user) {
+        alert('Debes iniciar sesión');
+        window.location.href = '/login';
+        return;
+      }
+
+      const newErrors: Record<string, string> = {};
+      Object.keys(formData).forEach(key => {
+        const error = validateField(key, (formData as any)[key]);
+        if (error) newErrors[key] = error;
+      });
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        setTouched(Object.keys(formData).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
+        return;
+      }
+
+      setSubmitting(true);
+
+      const genreNames = formData.newGenres.map(genreId => {
+        const genre = availableGenres.find(g => g.id === genreId);
+        return genre?.name || '';
+      }).filter(name => name !== '');
+
+      const updatePayload: any = {};
+
+      if (formData.userName && formData.userName !== user.userName) updatePayload.userName = formData.userName;
+      if (formData.name && formData.name !== user.name) updatePayload.name = formData.name;
+      if (formData.email && formData.email !== user.email) updatePayload.email = formData.email;
+      if (formData.password) {
+        updatePayload.password = formData.password;
+        updatePayload.confirmPassword = formData.confirmPassword;
+      }
+      if (formData.aboutMe !== user.aboutMe) updatePayload.aboutMe = formData.aboutMe;
+      if (formData.city !== user.city) updatePayload.city = formData.city;
+      if (formData.country !== user.country) updatePayload.country = formData.country;
+      if (formData.address !== user.address) updatePayload.address = formData.address;
+      if (genreNames.length > 0) updatePayload.newGenres = genreNames;
+
+      console.log('📤 Datos a actualizar:', updatePayload);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/${user.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updatePayload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || 'Error actualizando perfil');
+      }
+
+      const responseData = await response.json();
+
+      const updatedUser = { ...user, ...responseData };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+
+      alert('✅ ¡Perfil actualizado correctamente!');
+
+      setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
+
+    } catch (error: any) {
+      console.error('Error actualizando perfil:', error);
+      alert('❌ Error: ' + (error.message || 'No se pudo actualizar el perfil'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const maxSize = 200000; // 200kb
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+    if (file.size > maxSize) {
+      alert('❌ La imagen debe ser máximo de 200kb');
+      return;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('❌ Solo se permiten imágenes JPG, JPEG, PNG o WEBP');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('access_token');
+
+      if (!token || !user) {
+        alert('Debes iniciar sesión');
+        window.location.href = '/login';
+        return;
+      }
+
+      setUploadingPhoto(true);
+
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/photo/${user.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formDataUpload,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || 'Error subiendo foto');
+      }
+
+      const responseData = await response.json();
+      const newPhotoUrl = responseData?.urlImage || responseData?.url || responseData;
+
+      setPhotoPreview(newPhotoUrl);
+
+      const updatedUser = { ...user, urlImage: newPhotoUrl };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+
+      alert('✅ ¡Foto actualizada correctamente!');
+
+    } catch (error: any) {
+      console.error('Error subiendo foto:', error);
+      alert('❌ Error: ' + (error.message || 'No se pudo subir la foto'));
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleGenreToggle = (genreId: string) => {
+    const currentGenres = formData.newGenres;
+    const isSelected = currentGenres.includes(genreId);
+
+    if (isSelected) {
+      setFormData(prev => ({
+        ...prev,
+        newGenres: currentGenres.filter(id => id !== genreId),
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        newGenres: [...currentGenres, genreId],
+      }));
+    }
+  };
 
   if (loading) {
     return (
-      <div className="pt-20 px-6 md:px-12 lg:px-24">
-        <div className="rounded-xl border bg-white/70 p-6 shadow-sm text-center">
-          <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-t-transparent border-tur1 mr-2"></div>
-          <span className="text-gray-900">Cargando perfil…</span>
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-xl text-gray-600">Cargando perfil...</div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="pt-20 px-6 md:px-12 lg:px-24">
-        <div className="rounded-xl border bg-white/70 p-6 shadow-sm text-center text-gray-900">
-          Redirigiendo...
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <p className="text-gray-600">Redirigiendo...</p>
       </div>
     );
   }
 
-  const handleChange =
-    (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setForm(prev => ({ ...prev, [key]: e.target.value }));
-    };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-    setOk(null);
-
-    try {
-      const base = (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
-      if (!base) throw new Error('URL del backend no configurada');
-
-      const res = await fetch(`${base}/user/${user.id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name,
-          userName: form.userName,
-          urlImage: form.urlImage,
-          birthDate: form.birthDate,
-          city: form.city,
-          country: form.country,
-          aboutMe: form.aboutMe,
-        }),
-      });
-
-      if (!res.ok) throw new Error('Error actualizando el perfil');
-
-      setOk('Perfil actualizado');
-
-      await refreshUser(); // ✅ REFRESCAR EL USUARIO EN EL CONTEXTO
-
-    } catch (err: any) {
-      setError(err.message || 'Error actualizando el perfil');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return (
-    <div className="pt-20 px-6 md:px-12 lg:px-24">
-      <div className="grid grid-cols-1 gap-6">
-        <div className="rounded-xl border bg-white/70 p-6 shadow-sm">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">Mi perfil</h2>
+    <div className="min-h-screen bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 pt-26 px-4 sm:px-6 lg:px-8">
+      <div className="container max-w-7xl mx-auto">
+        <div className="text-center mb-8">
+          <h2 className="jsx-f082eaee8797ef3b text-4xl font-bold text-txt1 mb-2">👤 Editar Perfil</h2>
+          <p className="jsx-f082eaee8797ef3b text-txt2 text-lg">Actualiza tu información personal</p>
+        </div>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white border border-gray-200 rounded-3xl shadow-2xl p-8 md:p-10 lg:p-12">
 
-            <div className="md:col-span-2 flex items-center gap-4">
+          {/* Foto de perfil */}
+          <div className="mb-10 text-center">
+            <div className="relative inline-block group">
               <img
-                src={form.urlImage || '/default-user.jpg'}
-                alt="avatar"
-                className="h-16 w-16 rounded-full object-cover border"
+                src={photoPreview || 'https://via.placeholder.com/200x200?text=Sin+Foto'}
+                alt="Foto de perfil"
+                className="w-48 h-48 rounded-full object-cover border-4 border-blue-500 shadow-xl transition-all duration-300 group-hover:border-blue-600 group-hover:shadow-2xl"
               />
-              <div className="flex-1">
-                <label className="text-sm font-medium text-gray-800 mb-1 block">URL Imagen</label>
-                <input
-                  className="w-full rounded-md border px-3 py-2 text-gray-900"
-                  value={form.urlImage}
-                  onChange={handleChange('urlImage')}
-                />
-              </div>
+              {uploadingPhoto && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 rounded-full">
+                  <div className="text-white text-lg font-semibold">Subiendo...</div>
+                </div>
+              )}
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-800 mb-1">Nombre</label>
-              <input className="rounded-md border px-3 py-2 text-gray-900"
-                value={form.name}
-                onChange={handleChange('name')} />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-800 mb-1">Usuario</label>
-              <input className="rounded-md border px-3 py-2 text-gray-900"
-                value={form.userName}
-                onChange={handleChange('userName')} />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-800 mb-1">Email</label>
-              <input disabled className="rounded-md border px-3 py-2 bg-gray-100 text-gray-900"
-                value={form.email} />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-800 mb-1">Fecha de nacimiento</label>
+            <div className="mt-6">
               <input
-                type="date"
-                className="rounded-md border px-3 py-2 text-gray-900"
-                value={form.birthDate || ''}
-                onChange={handleChange('birthDate')}
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handlePhotoUpload}
+                className="hidden"
+                id="photo-upload"
               />
+              <label
+                htmlFor="photo-upload"
+                className="inline-block px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-lg rounded-xl cursor-pointer hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                📷 Cambiar Foto
+              </label>
+              <p className="mt-3 text-sm text-gray-500">
+                JPG, JPEG, PNG o WEBP (máx. 200kb)
+              </p>
             </div>
+          </div>
 
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-800 mb-1">Ciudad</label>
-              <input className="rounded-md border px-3 py-2 text-gray-900"
-                value={form.city}
-                onChange={handleChange('city')} />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-800 mb-1">País</label>
-              <input className="rounded-md border px-3 py-2 text-gray-900"
-                value={form.country}
-                onChange={handleChange('country')} />
-            </div>
+            {/* Géneros - Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 lg:sticky lg:top-6">
+                <label className="block text-2xl font-bold text-gray-900 mb-4">
+                  🎵 Géneros Musicales
+                </label>
+                <p className="text-sm text-gray-600 mb-4">
+                  Selecciona tus géneros favoritos
+                </p>
 
-            <div className="flex flex-col md:col-span-2">
-              <label className="text-sm font-medium text-gray-800 mb-1">Sobre mí</label>
-              <textarea
-                className="rounded-md border px-3 py-2 text-gray-900"
-                rows={4}
-                value={form.aboutMe}
-                onChange={handleChange('aboutMe')}
-              />
-            </div>
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                  {availableGenres.map((genre) => {
+                    const isSelected = formData.newGenres.includes(genre.id);
 
-            {/* {Array.isArray(form.roles) && form.roles.length > 0 && (
-              <div className="md:col-span-2">
-                <label className="text-sm font-medium text-gray-800 mb-1 block">Roles</label>
-                <div className="flex flex-wrap gap-2">
-                  {form.roles.map((r, idx) => (
-                    <span key={idx} className="px-2 py-1 rounded-md bg-gray-200 text-gray-900 text-sm font-medium">
-                      {r?.name}
-                    </span>
-                  ))}
+                    return (
+                      <label
+                        key={genre.id}
+                        className={`flex items-center p-4 rounded-xl cursor-pointer transition-all duration-300 border-2 ${isSelected
+                          ? 'bg-blue-500 border-blue-600 shadow-lg transform scale-105'
+                          : 'bg-white hover:bg-blue-50 border-gray-200 hover:border-blue-300 hover:shadow-md'
+                          }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleGenreToggle(genre.id)}
+                          className="w-5 h-5 rounded border-2 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <span className={`ml-3 font-semibold ${isSelected ? 'text-white' : 'text-gray-800'}`}>
+                          {genre.name}
+                        </span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
-            )} */}
-
-            <div className="md:col-span-2 flex gap-3 items-center">
-              <button
-                disabled={saving}
-                className="px-4 py-2 rounded-md bg-tur1 text-azul hover:bg-tur2 transition disabled:opacity-60"
-              >
-                {saving ? 'Guardando…' : 'Guardar cambios'}
-              </button>
-              {ok && <span className="text-green-600 text-sm">{ok}</span>}
-              {error && <span className="text-red-600 text-sm">{error}</span>}
             </div>
 
-          </form>
+            {/* Formulario principal */}
+            <div className="lg:col-span-3 space-y-6">
+
+              {/* Nombre de usuario */}
+              <div>
+                <label htmlFor="userName" className="block text-lg font-bold text-gray-900 mb-2">
+                  🏷️ Nombre de Usuario
+                </label>
+                <input
+                  id="userName"
+                  name="userName"
+                  type="text"
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  value={formData.userName}
+                  className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 text-lg placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 ${touched.userName && errors.userName
+                    ? 'border-red-500 focus:ring-red-200'
+                    : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
+                    }`}
+                  placeholder="Tu nombre de usuario"
+                />
+                {touched.userName && errors.userName && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">{errors.userName}</p>
+                )}
+              </div>
+
+              {/* Nombre completo */}
+              <div>
+                <label htmlFor="name" className="block text-lg font-bold text-gray-900 mb-2">
+                  👤 Nombre Completo
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  value={formData.name}
+                  className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 text-lg placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 ${touched.name && errors.name
+                    ? 'border-red-500 focus:ring-red-200'
+                    : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
+                    }`}
+                  placeholder="Tu nombre completo"
+                />
+                {touched.name && errors.name && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">{errors.name}</p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-lg font-bold text-gray-900 mb-2">
+                  📧 Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  value={formData.email}
+                  className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 text-lg placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 ${touched.email && errors.email
+                    ? 'border-red-500 focus:ring-red-200'
+                    : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
+                    }`}
+                  placeholder="tu@email.com"
+                />
+                {touched.email && errors.email && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Contraseña */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="password" className="block text-lg font-bold text-gray-900 mb-2">
+                    🔒 Nueva Contraseña
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    value={formData.password}
+                    className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 text-lg placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 ${touched.password && errors.password
+                      ? 'border-red-500 focus:ring-red-200'
+                      : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
+                      }`}
+                    placeholder="Dejar vacío para no cambiar"
+                  />
+                  {touched.password && errors.password && (
+                    <p className="mt-2 text-xs text-red-600 font-medium">{errors.password}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-lg font-bold text-gray-900 mb-2">
+                    🔒 Confirmar Contraseña
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    value={formData.confirmPassword}
+                    className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 text-lg placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 ${touched.confirmPassword && errors.confirmPassword
+                      ? 'border-red-500 focus:ring-red-200'
+                      : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
+                      }`}
+                    placeholder="Confirma tu contraseña"
+                  />
+                  {touched.confirmPassword && errors.confirmPassword && (
+                    <p className="mt-2 text-sm text-red-600 font-medium">{errors.confirmPassword}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Sobre mí */}
+              <div>
+                <label htmlFor="aboutMe" className="block text-lg font-bold text-gray-900 mb-2">
+                  📝 Sobre Mí
+                </label>
+                <textarea
+                  id="aboutMe"
+                  name="aboutMe"
+                  rows={5}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  value={formData.aboutMe}
+                  className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 text-lg placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 resize-none ${touched.aboutMe && errors.aboutMe
+                    ? 'border-red-500 focus:ring-red-200'
+                    : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
+                    }`}
+                  placeholder="Cuéntanos sobre ti, tus intereses musicales, experiencia..."
+                />
+                {touched.aboutMe && errors.aboutMe && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">{errors.aboutMe}</p>
+                )}
+              </div>
+
+              {/* Ubicación */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="city" className="block text-lg font-bold text-gray-900 mb-2">
+                    🏙️ Ciudad
+                  </label>
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    value={formData.city}
+                    className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 text-lg placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 ${touched.city && errors.city
+                      ? 'border-red-500 focus:ring-red-200'
+                      : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
+                      }`}
+                    placeholder="Tu ciudad"
+                  />
+                  {touched.city && errors.city && (
+                    <p className="mt-2 text-sm text-red-600 font-medium">{errors.city}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="country" className="block text-lg font-bold text-gray-900 mb-2">
+                    🌍 País
+                  </label>
+                  <input
+                    id="country"
+                    name="country"
+                    type="text"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    value={formData.country}
+                    className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 text-lg placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 ${touched.country && errors.country
+                      ? 'border-red-500 focus:ring-red-200'
+                      : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
+                      }`}
+                    placeholder="Tu país"
+                  />
+                  {touched.country && errors.country && (
+                    <p className="mt-2 text-sm text-red-600 font-medium">{errors.country}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Dirección */}
+              <div>
+                <label htmlFor="address" className="block text-lg font-bold text-gray-900 mb-2">
+                  📍 Dirección
+                </label>
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  value={formData.address}
+                  className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 text-lg placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 ${touched.address && errors.address
+                    ? 'border-red-500 focus:ring-red-200'
+                    : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
+                    }`}
+                  placeholder="Tu dirección"
+                />
+                {touched.address && errors.address && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">{errors.address}</p>
+                )}
+              </div>
+
+              {/* Botón Submit */}
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className={`w-full py-5 px-8 rounded-xl text-xl font-bold transition-all duration-300 transform shadow-lg ${submitting
+                  ? 'bg-gray-400 cursor-not-allowed opacity-50'
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white cursor-pointer hover:from-blue-700 hover:to-indigo-800 hover:shadow-2xl hover:scale-105'
+                  }`}
+              >
+                {submitting ? '💾 Guardando cambios...' : '✅ Guardar Cambios'}
+              </button>
+            </div>
+          </div>
         </div>
-          <BandButton/>
       </div>
+
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #3b82f6;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #2563eb;
+        }
+      `}</style>
     </div>
   );
 }
