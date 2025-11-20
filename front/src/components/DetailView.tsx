@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 "use client"
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import ReviewsView from "./ReviewsView";
 import ReviewForm from "./ReviewForm";
 import ReviewsList from "./ReviewsList";
@@ -15,7 +15,7 @@ interface ProductCardProps {
   city?: string;
   country?: string;
   isOpen?: boolean;
-  averageRating?: number; 
+  averageRating?: number;
 }
 
 interface DetailViewProps {
@@ -23,6 +23,14 @@ interface DetailViewProps {
 }
 
 export default function DetailView({ selectedItem }: DetailViewProps) {
+  const router = useRouter();
+
+  const handleApply = () => {
+    if (selectedItem?.id) {
+      router.push(`/application/${selectedItem.id}`);
+    }
+  };
+
   if (!selectedItem) {
     return (
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-tur3/30 p-8 max-w-2xl mx-auto">
@@ -143,36 +151,48 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                 </p>
               </div>
 
-              {/* Reviews */}
-              { selectedItem.type !== 'user' ? (
+              {/* 4. Integración: Botón Postular (Solo para vacantes) */}
+              {selectedItem.type === 'vacancy' && (
+                <div className="pt-6 pb-2">
+                  <button
+                    onClick={handleApply}
+                    className="w-full py-3 px-6 bg-gradient-to-r from-tur1 to-tur2 hover:from-tur2 hover:to-tur3 text-azul rounded-xl text-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                  >
+                    Postular a Vacante
+                  </button>
+                </div>
+              )}
+
+              {/* Reviews (Solo para usuarios) */}
+              {selectedItem.type !== 'user' ? (
                 <div className="pb-4"></div>
               ) : getTypeRating() && (
                 <div>
-                <div className="pt-3 flex flex-row justify-between gap-8">
-                <p className=" text-text2 text-shadow-sm text-3xl max-w-16 font-semibold hover:text-shadow-lg">
-                  {getTypeRating()}
-                </p>
-                { isReviewsOpen === false ? (
-                <button 
-                  className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-32 shadow-xs cursor-pointer bg-tur1/70 hover:bg-tur1 transition"
-                  onClick={ReviewsButtonHandler}
-                  >
-                  Ver reseñas
-                </button> 
-                ) : (
-                  <button 
-                  className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-36 shadow-xs cursor-pointer bg-tur1/70 hover:bg-tur1 transition"
-                  onClick={ReviewsButtonHandler}
-                  >
-                  Cerrar reseñas
-                </button> 
-                )
-                } 
-                </div>
-                <ReviewsView isOpen={isReviewsOpen}>
-                  <ReviewForm receptorUserName={selectedItem.name}/>
-                  <ReviewsList/>
-                </ReviewsView>
+                  <div className="pt-3 flex flex-row justify-between gap-8">
+                    <p className=" text-text2 text-shadow-sm text-3xl max-w-16 font-semibold hover:text-shadow-lg">
+                      {getTypeRating()}
+                    </p>
+                    {isReviewsOpen === false ? (
+                      <button
+                        className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-32 shadow-xs cursor-pointer bg-tur1/70 hover:bg-tur1 transition"
+                        onClick={ReviewsButtonHandler}
+                      >
+                        Ver reseñas
+                      </button>
+                    ) : (
+                      <button
+                        className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-36 shadow-xs cursor-pointer bg-tur1/70 hover:bg-tur1 transition"
+                        onClick={ReviewsButtonHandler}
+                      >
+                        Cerrar reseñas
+                      </button>
+                    )
+                    }
+                  </div>
+                  <ReviewsView isOpen={isReviewsOpen}>
+                    <ReviewForm receptorUserName={selectedItem.name} />
+                    <ReviewsList />
+                  </ReviewsView>
                 </div>
               )}
             </div>
