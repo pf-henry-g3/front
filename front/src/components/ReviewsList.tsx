@@ -48,6 +48,7 @@ export default function ReviewsList() {
 
   // === 2. Obtener reviews del receptor ===
   useEffect(() => {
+    async function fetchReviews() {
     if (!receptorUserName) return;
 
     const base = (
@@ -56,7 +57,7 @@ export default function ReviewsList() {
       ""
     ).replace(/\/+$/, "");
 
-    axios
+    await axios
       .get(`${base}/review`, {
         params: {
           role: "receptor",
@@ -68,16 +69,26 @@ export default function ReviewsList() {
       .then((res) => {
         const mapped = res.data.data.map((item: any) => ({
           id: item.id,
-          userName: item.owner.userName,
-          userImage: item.owner.urlImage,
+          userName: item.owner.userName, // (owner)
+          userImage: item.owner.urlImage, // (owner)
+          receptorName: item.receptor.userName,
+          receptorId: item.receptor.id,
           reviewDescription: item.reviewDescription,
           score: Number(item.score),
           date: item.date,
         }));
 
-        setReviews(mapped);
+      const filtered = mapped.filter(
+        (item: any) => item.receptorName === receptorUserName
+      );
+
+      setReviews(filtered);
+
       })
       .catch(console.error);
+    }
+    
+    fetchReviews();
   }, [receptorUserName]);
 
   // === 3. Paginación ===

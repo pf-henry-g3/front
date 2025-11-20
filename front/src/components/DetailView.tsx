@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import ReviewsView from "./ReviewsView";
 import ReviewForm from "./ReviewForm";
 import ReviewsList from "./ReviewsList";
+import Swal from "sweetalert2";
 
 interface ProductCardProps {
   id: string;
@@ -102,6 +103,21 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
     else setIsReviewsOpen(false)
   }
 
+  const IsLoggedHandler = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.warn('⚠️ No hay token disponible');
+        await Swal.fire({
+          icon: "warning",
+          title: "Sesión requerida",
+          text: "Debes iniciar sesión para ver las reseñas",
+          confirmButtonColor: "#F59E0B"
+        });
+        router.push('/login');
+        return;
+      } return;
+    }
+      
   return (
     <div className="flex flex-col w-full max-w-2xl p-6 shadow-xl backdrop-blur-sm rounded-2xl border mx-auto bg-white/10 border-white/20">
       {/* ✅ Imagen más grande */}
@@ -164,9 +180,9 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
               )}
 
               {/* Reviews (Solo para usuarios) */}
-              {selectedItem.type !== 'user' ? (
+              {selectedItem.type === 'vacancy' ? (
                 <div className="pb-4"></div>
-              ) : getTypeRating() && (
+              ) : (selectedItem.type === 'user' && getTypeRating() && (
                 <div>
                   <div className="pt-3 flex flex-row justify-between gap-8">
                     <p className=" text-text2 text-shadow-sm text-3xl max-w-16 font-semibold hover:text-shadow-lg">
@@ -175,7 +191,10 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                     {isReviewsOpen === false ? (
                       <button
                         className="text-oscuro3 py-1.5 px-2.5 font-semibold rounded-lg max-w-32 shadow-xs cursor-pointer bg-tur1/70 hover:bg-tur1 transition"
-                        onClick={ReviewsButtonHandler}
+                        onClick={async () => {
+                          await IsLoggedHandler();
+                          ReviewsButtonHandler();
+                        }}
                       >
                         Ver reseñas
                       </button>
@@ -194,7 +213,7 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                     <ReviewsList />
                   </ReviewsView>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>

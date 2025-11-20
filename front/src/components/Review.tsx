@@ -43,7 +43,7 @@ export default function Review (
           >
           {userName}
         </Link>
-        <p className="text-text2  text-end text-shadow-md text-2xl max-w-16 ">
+        <p className="text-text2 text-end text-2xl max-w-16 ">
           {starsRating()}
         </p>
         </div>
