@@ -4,7 +4,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { CreateApplicationDto } from '../../../interfaces/ICreateAplication'
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -19,12 +19,15 @@ export const CreateApplicationValidationSchema = Yup.object({
         .max(500, 'La descripción no puede exceder 500 caracteres'),
 });
 
-interface ApplicationFormProps {
-    vacancyId: string;
-}
+// interface ApplicationFormProps {
+//     vacancyId: string;
+// }
 
-export default function ApplicationForm({ vacancyId }: ApplicationFormProps) {
+export default function ApplicationForm() {
     const router = useRouter();
+    const params = useParams();
+    const vacancyId = params.id as string;
+
     const [applicantId, setApplicantId] = useState<string>("");
     const [applicantUserName, setApplicantUserName] = useState<string>("");
     const [vacancyInfo, setVacancyInfo] = useState<any>(null);
@@ -61,7 +64,6 @@ export default function ApplicationForm({ vacancyId }: ApplicationFormProps) {
                         `${process.env.NEXT_PUBLIC_BACKEND_URL}vacancy/${vacancyId}`,
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
-                    // ✅ CORRECCIÓN: Acceder a data.data para obtener la vacante
                     setVacancyInfo(response.data.data || response.data);
                     console.log('✅ Información de vacante:', response.data);
                 }
@@ -102,9 +104,8 @@ export default function ApplicationForm({ vacancyId }: ApplicationFormProps) {
 
                 console.log('📤 Enviando postulación:', values);
 
-                // ✅ ENVIAR CON UUIDs (sabemos que esta estructura funciona)
                 const response = await axios.post(
-                    `${process.env.NEXT_PUBLIC_BACKEND_URL}application`,
+                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/application`,
                     {
                         vacancyId: values.vacancyId,
                         applicantId: values.applicantId,
@@ -216,61 +217,63 @@ export default function ApplicationForm({ vacancyId }: ApplicationFormProps) {
     }
 
     return (
-        <form onSubmit={formik.handleSubmit} className="space-y-6">
-            {/* Información de la postulación */}
-            {vacancyInfo && (
-                <div className="bg-white/10 rounded-xl p-6 border border-white/20">
-                    <h3 className="text-xl font-bold text-txt1 mb-4">Postulando a:</h3>
-                    <div className="space-y-2">
-                        <p className="text-txt1">
-                            <strong>Vacante:</strong> {vacancyInfo.name || vacancyInfo.bandName || 'No disponible'}
-                        </p>
-                        <p className="text-txt1">
-                            <strong>Tipo:</strong> {vacancyInfo.vacancyType || 'No disponible'}
-                        </p>
-                        <p className="text-txt2 text-sm">
-                            <strong>Tu usuario:</strong> {applicantUserName}
-                        </p>
+        <div className='max-w-[75%] mx-auto'>
+            <form onSubmit={formik.handleSubmit} className="space-y-6 mt-24">
+                {/* Información de la postulación */}
+                {vacancyInfo && (
+                    <div className="bg-white/10 rounded-xl p-6 border border-white/20">
+                        <h3 className="text-xl font-bold text-txt1 mb-4">Postulando a:</h3>
+                        <div className="space-y-2">
+                            <p className="text-txt1">
+                                <strong>Vacante:</strong> {vacancyInfo.name || vacancyInfo.bandName || 'No disponible'}
+                            </p>
+                            <p className="text-txt1">
+                                <strong>Tipo:</strong> {vacancyInfo.vacancyType || 'No disponible'}
+                            </p>
+                            <p className="text-txt2 text-sm">
+                                <strong>Tu usuario:</strong> {applicantUserName}
+                            </p>
+                        </div>
                     </div>
+                )}
+
+                <div>
+                    <label htmlFor="applicationDescription" className="block text-lg font-bold text-txt1 mb-2">
+                        Mensaje de Postulación (Opcional)
+                    </label>
+                    <textarea
+                        id="applicationDescription"
+                        name="applicationDescription"
+                        rows={6}
+                        value={formik.values.applicationDescription}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className="w-full px-4 py-3 bg-white/10 border-2 border-white/20 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 focus:ring-tur2 focus:border-tur2 transition duration-300 resize-none"
+                        placeholder="Explica por qué eres el candidato ideal para esta vacante..."
+                    />
+                    {formik.touched.applicationDescription && formik.errors.applicationDescription && (
+                        <p className="mt-2 text-sm text-red-400">{formik.errors.applicationDescription}</p>
+                    )}
                 </div>
-            )}
 
-            <div>
-                <label htmlFor="applicationDescription" className="block text-lg font-bold text-txt1 mb-2">
-                    Mensaje de Postulación (Opcional)
-                </label>
-                <textarea
-                    id="applicationDescription"
-                    name="applicationDescription"
-                    rows={6}
-                    value={formik.values.applicationDescription}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full px-4 py-3 bg-white/10 border-2 border-white/20 rounded-lg text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 focus:ring-tur2 focus:border-tur2 transition duration-300 resize-none"
-                    placeholder="Explica por qué eres el candidato ideal para esta vacante..."
-                />
-                {formik.touched.applicationDescription && formik.errors.applicationDescription && (
-                    <p className="mt-2 text-sm text-red-400">{formik.errors.applicationDescription}</p>
-                )}
-            </div>
-
-            <button
-                type="submit"
-                disabled={formik.isSubmitting || !formik.isValid}
-                className={`w-full py-4 px-6 rounded-lg text-lg font-bold transition-all duration-300 ${formik.isSubmitting || !formik.isValid
-                    ? "bg-gray-400 cursor-not-allowed opacity-50"
-                    : "bg-gradient-to-r from-tur1 to-tur2 text-azul hover:from-tur2 hover:to-tur3 hover:shadow-xl hover:scale-105"
-                    }`}
-            >
-                {formik.isSubmitting ? (
-                    <span className="flex items-center justify-center gap-2">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-azul"></div>
-                        Enviando postulación...
-                    </span>
-                ) : (
-                    "📨 Enviar Postulación"
-                )}
-            </button>
-        </form>
+                <button
+                    type="submit"
+                    disabled={formik.isSubmitting || !formik.isValid}
+                    className={`w-full py-4 px-6 rounded-lg text-lg font-bold transition-all duration-300 ${formik.isSubmitting || !formik.isValid
+                        ? "bg-gray-400 cursor-not-allowed opacity-50"
+                        : "bg-gradient-to-r from-tur1 to-tur2 text-azul hover:from-tur2 hover:to-tur3 hover:shadow-xl hover:scale-105"
+                        }`}
+                >
+                    {formik.isSubmitting ? (
+                        <span className="flex items-center justify-center gap-2">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-azul"></div>
+                            Enviando postulación...
+                        </span>
+                    ) : (
+                        "📨 Enviar Postulación"
+                    )}
+                </button>
+            </form>
+        </div>
     );
 }
