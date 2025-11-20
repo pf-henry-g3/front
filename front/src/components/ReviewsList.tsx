@@ -94,17 +94,17 @@ export default function ReviewsList() {
   // === 3. Paginación ===
   const paginationData = useMemo(() => {
     const sortedReviews = [...reviews].sort((a, b) => {
-        let comparison = 0;
-        if (sortCriterion === 'date') {
-            const dateA = new Date(a.date).getTime();
-            const dateB = new Date(b.date).getTime();
-            comparison = dateB - dateA; // Descendente por fecha por defecto
-        } else if (sortCriterion === 'score') {
-            comparison = b.score - a.score; // Descendente por score por defecto
-        }
-        
-        // Si la dirección es ascendente, invertir el resultado de la comparación
-        return sortOrder === 'asc' ? -comparison : comparison;
+      let comparison = 0;
+      if (sortCriterion === 'date') {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        comparison = dateB - dateA; // Descendente por fecha por defecto
+      } else if (sortCriterion === 'score') {
+          comparison = b.score - a.score; // Descendente por score por defecto
+      }
+      
+      // Si la dirección es ascendente, invertir el resultado de la comparación
+      return sortOrder === 'asc' ? -comparison : comparison;
     });
     
     // 2. Calcular paginación

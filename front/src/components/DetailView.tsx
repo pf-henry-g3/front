@@ -5,6 +5,10 @@ import ReviewsView from "./ReviewsView";
 import ReviewForm from "./ReviewForm";
 import ReviewsList from "./ReviewsList";
 import Swal from "sweetalert2";
+import BandMember from "./BandMember";
+import LeaderBand from "./BandLeader";
+import BandLeader from "./BandLeader";
+import BandGenres from "./BandGenres";
 
 interface ProductCardProps {
   id: string;
@@ -182,6 +186,15 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
               {/* Reviews (Solo para usuarios) */}
               {selectedItem.type === 'vacancy' ? (
                 <div className="pb-4"></div>
+              ) : selectedItem.type === 'band' ? (
+                <div className="flex flex-col gap-4 mt-8 mb-4">
+                  <h2 className="text-center text-3xl text-oscuro2 font-bold">Lider de la banda</h2>
+                  <BandLeader/>
+                  <h2 className="text-center text-3xl text-oscuro2 font-bold">Lista de miembros</h2>
+                  <BandMember/>
+                  <h2 className="text-center text-3xl text-oscuro2 font-bold">Géneros de interés</h2>
+                  <BandGenres/>
+                </div>
               ) : (selectedItem.type === 'user' && getTypeRating() && (
                 <div>
                   <div className="pt-3 flex flex-row justify-between gap-8">
