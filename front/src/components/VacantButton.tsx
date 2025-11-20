@@ -45,7 +45,7 @@ export default function VacantButton() {
   return (
     <div className='flex items-center space-x-4'>
       <button
-        className="text-sm bg-azul py-1.5 px-4 rounded-md text-text2 font-sans shadow-xl transition duration-300 hover:bg-verde hover:text-txt1 hover:cursor-pointer flex items-center gap-2" 
+        className="text-md text-text2 font-sans shadow-xl transition duration-300 hover:text-tur2 hover:cursor-pointer flex items-center gap-22"
         onClick={() => router.push("/vacancy")}
       >
         Publicar Vacante
