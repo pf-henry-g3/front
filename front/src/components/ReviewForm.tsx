@@ -38,7 +38,7 @@ export default function ReviewForm({ receptorUserName }: { receptorUserName: str
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
         const token = localStorage.getItem('access_token');
-        
+
         if (!token) {
           console.warn('⚠️ No hay token disponible');
           await Swal.fire({
@@ -55,10 +55,12 @@ export default function ReviewForm({ receptorUserName }: { receptorUserName: str
         const reviewRes = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/review`,
           values,
-          { headers: { 
-            'Authorization': `Bearer ${token}`,
-            "Content-Type": "application/json" 
-          } }
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
         );
 
         await Swal.fire({
@@ -71,13 +73,13 @@ export default function ReviewForm({ receptorUserName }: { receptorUserName: str
         });
 
         resetForm();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error creando reseña:", error);
 
         await Swal.fire({
           icon: "error",
           title: "Error",
-          text: "Hubo un error al crear la reseña.",
+          text: ("Hubo un error al crear la reseña. " + error.response.data.message),
           confirmButtonColor: "#EF4444"
         });
       } finally {
@@ -94,19 +96,19 @@ export default function ReviewForm({ receptorUserName }: { receptorUserName: str
 
         {/* Score */}
         <div className="">
-        <label className="block mb-2 font-semibold text-oscuro2">Puntuación (1 a 5)</label>
-        <input
-          type="number"
-          name="score"
-          className="bg-white/85 w-full text-oscuro3 p-2 rounded-xl border-2 border-tur3/30 shadow-sm"
-          value={formik.values.score}
-          onChange={formik.handleChange}
-          min={1}
-          max={5}
+          <label className="block mb-2 font-semibold text-oscuro2">Puntuación (1 a 5)</label>
+          <input
+            type="number"
+            name="score"
+            className="bg-white/85 w-full text-oscuro3 p-2 rounded-xl border-2 border-tur3/30 shadow-sm"
+            value={formik.values.score}
+            onChange={formik.handleChange}
+            min={1}
+            max={5}
           />
-        {formik.errors.score && formik.touched.score && (
-          <p className="text-red-500 text-sm">{formik.errors.score}</p>
-        )}
+          {formik.errors.score && formik.touched.score && (
+            <p className="text-red-500 text-sm">{formik.errors.score}</p>
+          )}
         </div>
 
         {/* Review */}

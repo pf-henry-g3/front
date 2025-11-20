@@ -1,5 +1,6 @@
 'use client';
 
+import BandButton from '@/src/components/BandButton';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import Swal from 'sweetalert2';
@@ -58,8 +59,14 @@ export default function ProfileEditForm() {
         const userData = localStorage.getItem('user');
 
         if (!token || !userData) {
-          alert('Debes iniciar sesión para ver tu perfil');
-          window.location.href = '/login';
+          console.warn('⚠️ No hay token disponible');
+          await Swal.fire({
+            icon: "warning",
+            title: "Sesión requerida",
+            text: "Debes iniciar sesión para crear bandas",
+            confirmButtonColor: "#F59E0B"
+          });
+          router.push('/login');
           return;
         }
 
@@ -98,7 +105,13 @@ export default function ProfileEditForm() {
 
       } catch (error: any) {
         console.error('Error cargando datos:', error);
-        alert('No se pudo cargar la información del perfil');
+        console.warn('⚠️ No se pudo cargar la información del perfil');
+        await Swal.fire({
+          icon: "warning",
+          title: "Error",
+          text: "No se pudo cargar la información del perfil",
+          confirmButtonColor: "#F59E0B"
+        });
       } finally {
         setLoading(false);
       }
@@ -241,7 +254,6 @@ export default function ProfileEditForm() {
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
 
-      alert('✅ ¡Perfil actualizado correctamente!');
       await Swal.fire({
         icon: "success",
         title: "Perfil actualizado!",
@@ -254,9 +266,15 @@ export default function ProfileEditForm() {
       setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
 
     } catch (error: any) {
-      console.error('Error actualizando perfil:', error);
-      alert('❌ Error: ' + (error.message || 'No se pudo actualizar el perfil'));
-    } finally {
+      console.error('❌ Error: ' + (error.message || 'No se pudo actualizar el perfil'));
+      await Swal.fire({
+        icon: "warning",
+        title: "Error",
+        text: ('No se pudo actualizar el perfil' + error.message),
+        confirmButtonColor: "#F59E0B"
+      });
+    }
+    finally {
       setSubmitting(false);
     }
   };
@@ -270,12 +288,23 @@ export default function ProfileEditForm() {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
     if (file.size > maxSize) {
-      alert('❌ La imagen debe ser máximo de 200kb');
+      await Swal.fire({
+        icon: "warning",
+        title: "Tamaño inválido",
+        text: "❌ La imagen debe ser máximo de 200kb",
+        confirmButtonColor: "#F59E0B"
+      });
       return;
     }
 
     if (!allowedTypes.includes(file.type)) {
-      alert('❌ Solo se permiten imágenes JPG, JPEG, PNG o WEBP');
+      console.error('❌ Solo se permiten imágenes JPG, JPEG, PNG o WEBP');
+      await Swal.fire({
+        icon: "warning",
+        title: "Formato inválido",
+        text: "❌ Solo se permiten imágenes JPG, JPEG, PNG o WEBP",
+        confirmButtonColor: "#F59E0B"
+      });
       return;
     }
 
@@ -283,9 +312,12 @@ export default function ProfileEditForm() {
       const token = localStorage.getItem('access_token');
 
       if (!token || !user) {
-        alert('Debes iniciar sesión');
-        window.location.href = '/login';
-        return;
+        await Swal.fire({
+          icon: "warning",
+          title: "Sesión requerida",
+          text: "Debes iniciar sesión.",
+          confirmButtonColor: "#F59E0B"
+        });
       }
 
       setUploadingPhoto(true);
@@ -318,11 +350,22 @@ export default function ProfileEditForm() {
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
 
-      alert('✅ ¡Foto actualizada correctamente!');
+      await Swal.fire({
+        icon: "success",
+        title: "Foto Actualizada",
+        text: "✅ ¡Foto actualizada correctamente!",
+        confirmButtonColor: "#10B981"
+      });
 
     } catch (error: any) {
       console.error('Error subiendo foto:', error);
-      alert('❌ Error: ' + (error.message || 'No se pudo subir la foto'));
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo subir la foto",
+        confirmButtonColor: "#F59E0B"
+      });
+
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) {
@@ -370,6 +413,9 @@ export default function ProfileEditForm() {
         <div className="text-center mb-8">
           <h2 className="jsx-f082eaee8797ef3b text-4xl font-bold text-txt1 mb-2">👤 Editar Perfil</h2>
           <p className="jsx-f082eaee8797ef3b text-txt2 text-lg">Actualiza tu información personal</p>
+          <div className='flex justify-center mt-3'>
+            < BandButton />
+          </div>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-3xl shadow-2xl p-8 md:p-10 lg:p-12">
@@ -380,7 +426,7 @@ export default function ProfileEditForm() {
               <img
                 src={photoPreview || 'https://via.placeholder.com/200x200?text=Sin+Foto'}
                 alt="Foto de perfil"
-                className="w-48 h-48 rounded-full object-cover border-4 border-blue-500 shadow-xl transition-all duration-300 group-hover:border-blue-600 group-hover:shadow-2xl"
+                className="w-48 h-48 rounded-full object-cover border-4 border-tur3 shadow-xl transition-all duration-300 group-hover:border-tur2 group-hover:shadow-2xl"
               />
               {uploadingPhoto && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 rounded-full">
@@ -430,7 +476,7 @@ export default function ProfileEditForm() {
                       <label
                         key={genre.id}
                         className={`flex items-center p-4 rounded-xl cursor-pointer transition-all duration-300 border-2 ${isSelected
-                          ? 'bg-blue-500 border-blue-600 shadow-lg transform scale-105'
+                          ? 'bg-tur2 border-oscuro3-500 shadow-lg transform scale-105'
                           : 'bg-white hover:bg-blue-50 border-gray-200 hover:border-blue-300 hover:shadow-md'
                           }`}
                       >
@@ -438,7 +484,7 @@ export default function ProfileEditForm() {
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handleGenreToggle(genre.id)}
-                          className="w-5 h-5 rounded border-2 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                          className="w-5 h-5 rounded border-2 text-tur2-600 focus:ring-2 focus:ring-tur2-500 cursor-pointer"
                         />
                         <span className={`ml-3 font-semibold ${isSelected ? 'text-white' : 'text-gray-800'}`}>
                           {genre.name}
