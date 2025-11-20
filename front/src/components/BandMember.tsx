@@ -58,7 +58,7 @@ export default function BandMembersList() {
   if(members.length <= 0) return <p className="text-txt1/80 text-xl font-semibold">No se han encontrado los miembros de la banda</p>
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-4">
       {members.map((member) => (
         <BandMemberCard
         key={member.userName}

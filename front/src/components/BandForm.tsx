@@ -365,8 +365,8 @@ export default function BandForm({ onBandCreated }: BandFormProps) {
 
               {/* Imagen */}
               <div>
-                <label htmlFor="urlImage" className="block text-lg font-bold text-txt1 mb-2">
-                  🖼️ URL de Imagen *
+                <label htmlFor="urlImage" className="flex flex-row items-center gap-1.5 text-lg font-bold text-txt1 mb-2">
+                  🖼️ URL de Imagen <p className="text-txt2 text-sm font-semibold">(opcional)</p>
                 </label>
                 <input
                   id="urlImage"

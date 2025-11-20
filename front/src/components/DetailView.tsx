@@ -188,11 +188,11 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                 <div className="pb-4"></div>
               ) : selectedItem.type === 'band' ? (
                 <div className="flex flex-col gap-4 mt-8 mb-4">
-                  <h2 className="text-center text-3xl text-oscuro2 font-bold">Lider de la banda</h2>
+                  <h2 className="text-center text-3xl text-oscuro2 font-bold mt-2 mb-1">Lider de la banda</h2>
                   <BandLeader/>
-                  <h2 className="text-center text-3xl text-oscuro2 font-bold">Lista de miembros</h2>
+                  <h2 className="text-center text-3xl text-oscuro2 font-bold mt-5 mb-1">Lista de miembros</h2>
                   <BandMember/>
-                  <h2 className="text-center text-3xl text-oscuro2 font-bold">Géneros de interés</h2>
+                  <h2 className="text-center text-3xl text-oscuro2 font-bold mt-6 mb-2">Géneros de interés</h2>
                   <BandGenres/>
                 </div>
               ) : (selectedItem.type === 'user' && getTypeRating() && (
