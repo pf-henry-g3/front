@@ -349,11 +349,11 @@ export default function ProfileEditForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-fondo1 via-fondo2 to-fondo3 pt-26 px-4 sm:px-6 lg:px-8">
       <div className="container max-w-7xl mx-auto">
         <div className="text-center mb-8">
-          <h2 className="text-5xl font-bold text-gray-900 mb-3">👤 Editar Perfil</h2>
-          <p className="text-gray-600 text-xl">Actualiza tu información personal</p>
+          <h2 className="jsx-f082eaee8797ef3b text-4xl font-bold text-txt1 mb-2">👤 Editar Perfil</h2>
+          <p className="jsx-f082eaee8797ef3b text-txt2 text-lg">Actualiza tu información personal</p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-3xl shadow-2xl p-8 md:p-10 lg:p-12">
