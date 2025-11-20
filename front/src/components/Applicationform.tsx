@@ -111,4 +111,4 @@ export default function ApplicationForm({ vacancyId }: ApplicationFormProps) {
             </button>
         </form>
     );
-}
+} 
