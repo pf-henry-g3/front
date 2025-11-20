@@ -1,6 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
+import Swal from 'sweetalert2';
 
 interface IUser {
   id: string;
@@ -23,6 +25,7 @@ interface IGenre {
 }
 
 export default function ProfileEditForm() {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [user, setUser] = useState<IUser | null>(null);
@@ -169,8 +172,14 @@ export default function ProfileEditForm() {
       const token = localStorage.getItem('access_token');
 
       if (!token || !user) {
-        alert('Debes iniciar sesión');
-        window.location.href = '/login';
+        console.warn('⚠️ No hay token disponible');
+        await Swal.fire({
+          icon: "warning",
+          title: "Sesión requerida",
+          text: "Debes iniciar sesión para crear bandas",
+          confirmButtonColor: "#F59E0B"
+        });
+        router.push('/login');
         return;
       }
 
@@ -197,7 +206,6 @@ export default function ProfileEditForm() {
 
       if (formData.userName && formData.userName !== user.userName) updatePayload.userName = formData.userName;
       if (formData.name && formData.name !== user.name) updatePayload.name = formData.name;
-      if (formData.email && formData.email !== user.email) updatePayload.email = formData.email;
       if (formData.password) {
         updatePayload.password = formData.password;
         updatePayload.confirmPassword = formData.confirmPassword;
@@ -234,6 +242,14 @@ export default function ProfileEditForm() {
       setUser(updatedUser);
 
       alert('✅ ¡Perfil actualizado correctamente!');
+      await Swal.fire({
+        icon: "success",
+        title: "Perfil actualizado!",
+        text: "✅ ¡Perfil actualizado correctamente!",
+        confirmButtonText: "Continuar",
+        confirmButtonColor: "#10B981",
+        timer: 2000
+      });
 
       setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
 
@@ -384,7 +400,7 @@ export default function ProfileEditForm() {
               />
               <label
                 htmlFor="photo-upload"
-                className="inline-block px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-lg rounded-xl cursor-pointer hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="jsx-fd0de145dd41e0c2 inline-block px-8 py-4 bg-gradient-to-r from-tur2 to-oscuro1 text-white font-bold text-lg rounded-xl cursor-pointer hover:from-oscuro1 hover:to-tur2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 📷 Cambiar Foto
               </label>
@@ -492,18 +508,15 @@ export default function ProfileEditForm() {
                   id="email"
                   name="email"
                   type="email"
-                  onChange={handleInputChange}
-                  onBlur={handleBlur}
+                  disabled={true}
                   value={formData.email}
-                  className={`w-full px-5 py-4 bg-gray-50 border-2 rounded-xl text-gray-900 text-lg placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 ${touched.email && errors.email
-                    ? 'border-red-500 focus:ring-red-200'
-                    : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
-                    }`}
-                  placeholder="tu@email.com"
+                  className="w-full px-5 py-4 bg-gray-200 border-2 border-gray-300 rounded-xl text-gray-500 text-lg cursor-not-allowed opacity-70" // <--- Estilos visuales de bloqueado
+                  placeholder={user.email}
                 />
-                {touched.email && errors.email && (
-                  <p className="mt-2 text-sm text-red-600 font-medium">{errors.email}</p>
-                )}
+                {/* Nota informativa opcional */}
+                <p className="mt-1 text-xs text-gray-500">
+                  El correo electrónico no se puede modificar.
+                </p>
               </div>
 
               {/* Contraseña */}
@@ -650,9 +663,9 @@ export default function ProfileEditForm() {
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className={`w-full py-5 px-8 rounded-xl text-xl font-bold transition-all duration-300 transform shadow-lg ${submitting
+                className={`w-full py-4 px-6 rounded-lg text-lg font-bold transition-all duration-300 transform ${submitting
                   ? 'bg-gray-400 cursor-not-allowed opacity-50'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white cursor-pointer hover:from-blue-700 hover:to-indigo-800 hover:shadow-2xl hover:scale-105'
+                  : 'bg-gradient-to-r from-oscuro2 to-tur2 text-white cursor-pointer hover:from-tur2 hover:to-oscuro3 hover:shadow-xl hover:scale-105'
                   }`}
               >
                 {submitting ? '💾 Guardando cambios...' : '✅ Guardar Cambios'}
@@ -671,11 +684,11 @@ export default function ProfileEditForm() {
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #3b82f6;
+          background: #23484d7a;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #2563eb;
+          background: #23484d8c;
         }
       `}</style>
     </div>
