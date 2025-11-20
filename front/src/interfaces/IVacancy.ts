@@ -1,3 +1,7 @@
+interface applications {
+
+}
+
 export default interface IVacancy {
   id: string, // {PK}
   ownerId: string, // {FK}
@@ -7,4 +11,5 @@ export default interface IVacancy {
   requiredEntityType: string,
   isOpen: boolean,
   vacancyImage: string,
+  applications: applications,
 }

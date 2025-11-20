@@ -115,7 +115,7 @@ export default function MyVacantList({ refreshTrigger = 0 }: MyVacancyListProps)
                             {paginationData.paginatedItems.map((vacancies) => (
                                 <Link
                                     className="flex items-center bg-white/95 hover:bg-white/55 transition gap-4 rounded-xl shadow-xl"
-                                    href={`/detail/${vacancies.id}?type=vacancies`}
+                                    href={`/dashboard/profile/myvacancies/list/${vacancies.id}`}
                                 >
                                     <img
                                         src={vacancies.vacancyImage || '/default-image.jpg'}
@@ -126,14 +126,7 @@ export default function MyVacantList({ refreshTrigger = 0 }: MyVacancyListProps)
                                         <h3 className="font-bold text-lg text-oscuro1 drop-shadow-sm">{vacancies.name}</h3>
                                         <h3 className="font-normal text-md text-txt2 line-clamp-1">{vacancies.vacancyDescription}</h3>
                                     </div>
-                                    {/*<div className="text-right pr-4">
-          <span className="text-xs text-oscuro2 font-medium bg-tur2/20 w-7 px-2 py-1 rounded-full">
-              {averageRating}
-          </span>
-          <span className="flex mt-6 text-oscuro3/75">
-              {city}ciudad, {country}pais
-          </span>
-      </div> */}
+                                    <div>Buscar la manera de avisar si hay postulantes</div>
                                 </Link>
                             ))}
                         </div>
