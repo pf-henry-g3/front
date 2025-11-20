@@ -14,11 +14,16 @@ interface ReviewItem {
   date: string;
 }
 
+type SortCriterion = 'date' | 'score';
+type SortOrder = 'asc' | 'desc';
+
 export default function ReviewsList() {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [receptorUserName, setReceptorUserName] = useState<string | null>(null);
+  const [sortCriterion, setSortCriterion] = useState<SortCriterion>('date'); // Por defecto: fecha
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   const params = useParams();
   const userNameId = params.id as string;
@@ -77,20 +82,34 @@ export default function ReviewsList() {
 
   // === 3. Paginación ===
   const paginationData = useMemo(() => {
-    const totalPages = Math.ceil(reviews.length / itemsPerPage);
+    const sortedReviews = [...reviews].sort((a, b) => {
+        let comparison = 0;
+        if (sortCriterion === 'date') {
+            const dateA = new Date(a.date).getTime();
+            const dateB = new Date(b.date).getTime();
+            comparison = dateB - dateA; // Descendente por fecha por defecto
+        } else if (sortCriterion === 'score') {
+            comparison = b.score - a.score; // Descendente por score por defecto
+        }
+        
+        // Si la dirección es ascendente, invertir el resultado de la comparación
+        return sortOrder === 'asc' ? -comparison : comparison;
+    });
+    
+    // 2. Calcular paginación
+    const totalPages = Math.ceil(sortedReviews.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedItems = reviews.slice(startIndex, startIndex + itemsPerPage);
+    const paginatedItems = sortedReviews.slice(startIndex, startIndex + itemsPerPage);
 
     return {
       totalPages,
       paginatedItems,
-      totalItems: reviews.length,
+      totalItems: sortedReviews.length, 
     };
-  }, [reviews, currentPage, itemsPerPage]);
+  }, [reviews, currentPage, itemsPerPage, sortCriterion, sortOrder]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const handleItemsPerPageChange = useCallback((newItemsPerPage: number) => {
@@ -98,8 +117,49 @@ export default function ReviewsList() {
     setCurrentPage(1);
   }, []);
 
+    const handleSortByDate = useCallback(() => {
+    if (sortCriterion === 'date') {
+        setSortOrder(prevOrder => prevOrder === 'desc' ? 'asc' : 'desc');
+    } else {
+        setSortCriterion('date');
+        setSortOrder('desc'); 
+    }
+    setCurrentPage(1);
+  }, [sortCriterion]);
+
+  const handleSortByScore = useCallback(() => {
+    if (sortCriterion === 'score') {
+        setSortOrder(prevOrder => prevOrder === 'desc' ? 'asc' : 'desc');
+    } else {
+        setSortCriterion('score');
+        setSortOrder('desc'); 
+    }
+    setCurrentPage(1);
+  }, [sortCriterion]);
+
   return (
     <div className="p-4">
+      {/* Interfaz de ordenamiento */}
+        <div className="justify-end mb-4 ml-4 flex space-x-4">
+          <button 
+            onClick={handleSortByDate}
+            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 transform hover:scale-105 shadow-md 
+              ${sortCriterion === 'date' 
+                ? 'bg-gradient-to-r from-tur2 to-tur1 text-azul border-2 border-tur3 shadow-lg scale-105' 
+                : 'bg-white/90 text-oscuro1 border-2 border-tur3/30 hover:border-tur3/60 hover:bg-white cursor-pointer'}`}
+          >
+            Fecha ({sortCriterion === 'date' ? (sortOrder === 'desc' ? 'Antiguo-Reciente' : 'Antiguo-Reciente'): '⬇'})
+          </button>
+          <button 
+            onClick={handleSortByScore}
+            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 transform hover:scale-105 shadow-md 
+              ${sortCriterion === 'score' 
+                ? 'bg-tur2 text-oscuro3 border-2 border-tur3 shadow-lg scale-105 hover:scale-108 hover:text-oscuro1 hover:bg-tur2/80 cursor-pointer' 
+                : 'bg-white/90 text-oscuro1 border-2 border-tur3/30 hover:border-tur3/60 hover:bg-white cursor-pointer'}`}
+          >
+            Puntuación ({sortCriterion === 'score' ? (sortOrder === 'desc' ? 'Mayor ⬇' : 'Menor ⬆') : '⬇'})
+          </button>
+        </div>
       {paginationData.paginatedItems.length > 0 ? (
         <div className="p-4 space-y-3">
           {paginationData.paginatedItems.map((review) => (
