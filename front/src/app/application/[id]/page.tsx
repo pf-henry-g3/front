@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { apiClient } from "@/src/lib/api-client";
-import ApplicationForm from "@/src/components/Aplicationform";
+import ApplicationForm from "@/src/components/Applicationform";
 
 interface VacancyInfo {
     id: string;
