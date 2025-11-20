@@ -38,26 +38,11 @@ const validationSchema = Yup.object({
     .typeError("Debe ser una fecha válida")
     .max(new Date(), "La fecha no puede ser posterior a hoy")
     .required("La fecha de formación es obligatoria"),
-
-  members: Yup.array().of(
-    Yup.object().shape({
-      isOpen: Yup.boolean().required(),
-      userId: Yup.string().when("isOpen", {
-        is: false,
-        then: schema => schema.required("Selecciona un usuario o marca como puesto libre"),
-        otherwise: schema => schema.notRequired()
-      })
-    })
-  )
 });
 
 export default function BandForm({ onBandCreated }: BandFormProps) {
   const router = useRouter();
-  const [users, setUsers] = useState<IUser[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState<Record<number, boolean>>({});
-  const [suggestions, setSuggestions] = useState<Record<number, IUser[]>>({});
-  const [searchTerms, setSearchTerms] = useState<string[]>([""]);
-  const debounceRef = useRef<Record<number, number>>({});
+  
 
   const [availableGenres, setAvailableGenres] = useState<Genre[]>([]);
   const [loadingGenres, setLoadingGenres] = useState(true);
@@ -148,21 +133,7 @@ export default function BandForm({ onBandCreated }: BandFormProps) {
         }
       }
     };
-
-    const fetchAllUsers = async () => {
-      try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user`);
-        if (mounted) {
-          const data = Array.isArray(res.data) ? res.data : res.data.data || [];
-          setUsers(data);
-        }
-      } catch (err) {
-        console.error("Error cargando usuarios:", err);
-      }
-    };
-
     fetchGenres();
-    fetchAllUsers();
 
     return () => { mounted = false; };
   }, [router]);
@@ -174,7 +145,6 @@ export default function BandForm({ onBandCreated }: BandFormProps) {
       urlImage: "",
       bandDescription: "",
       formationDate: "",
-      members: [{ userId: "", isOpen: false }]
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
@@ -224,25 +194,7 @@ export default function BandForm({ onBandCreated }: BandFormProps) {
         if (bandRes.status === 200 || bandRes.status === 201) {
           const bandId = bandRes.data.id || bandRes.data._id;
 
-          for (const member of values.members) {
-            if (member.userId && !member.isOpen) {
-              try {
-                await axios.post(
-                  `${process.env.NEXT_PUBLIC_BACKEND_URL}/band/addMember/${bandId}`,
-                  { userId: member.userId },
-                  {
-                    headers: {
-                      'Authorization': `Bearer ${token}`,
-                      "Content-Type": "application/json"
-                    }
-                  }
-                );
-              } catch (err) {
-                console.error("Error al agregar miembro:", err);
-              }
-            }
-          }
-
+          
           await Swal.fire({
             icon: "success",
             title: "¡Banda creada!",
@@ -288,112 +240,7 @@ export default function BandForm({ onBandCreated }: BandFormProps) {
     }
   };
 
-  useEffect(() => {
-    const len = formik.values.members.length;
-    setSearchTerms(prev => {
-      const copy = [...prev];
-      while (copy.length < len) copy.push("");
-      while (copy.length > len) copy.pop();
-      return copy;
-    });
-    setSuggestions(prev => {
-      const copy: Record<number, IUser[]> = {};
-      for (let i = 0; i < len; i++) {
-        copy[i] = prev[i] || [];
-      }
-      return copy;
-    });
-    setLoadingUsers(prev => {
-      const copy: Record<number, boolean> = {};
-      for (let i = 0; i < len; i++) copy[i] = prev[i] || false;
-      return copy;
-    });
-  }, [formik.values.members.length]);
 
-  const filterUsers = (term: string): IUser[] => {
-    const t = term?.trim().toLowerCase();
-    if (!t || t.length === 0) return [];
-    return users.filter(u =>
-    (u.name?.toLowerCase().includes(t) ||
-      u.userName?.toLowerCase().includes(t) ||
-      u.email?.toLowerCase().includes(t))
-    );
-  };
-
-  const onSearchInput = (index: number, value: string) => {
-    const membersCopy = [...formik.values.members];
-    membersCopy[index] = { ...membersCopy[index], userId: "", isOpen: false };
-    formik.setFieldValue("members", membersCopy);
-
-    setSearchTerms(prev => {
-      const copy = [...prev];
-      copy[index] = value;
-      return copy;
-    });
-
-    if (debounceRef.current[index]) {
-      window.clearTimeout(debounceRef.current[index]);
-    }
-    debounceRef.current[index] = window.setTimeout(() => {
-      const filtered = filterUsers(value);
-      setSuggestions(s => ({ ...s, [index]: filtered }));
-    }, 300);
-  };
-
-  const selectUser = (index: number, user: IUser) => {
-    const membersCopy = [...formik.values.members];
-    membersCopy[index] = { userId: user.id, isOpen: false };
-    formik.setFieldValue("members", membersCopy);
-
-    setSearchTerms(prev => {
-      const copy = [...prev];
-      copy[index] = user.name;
-      return copy;
-    });
-    setSuggestions(s => ({ ...s, [index]: [] }));
-  };
-
-  const markAsOpen = (index: number) => {
-    const membersCopy = [...formik.values.members];
-    membersCopy[index] = { userId: "", isOpen: true };
-    formik.setFieldValue("members", membersCopy);
-
-    setSearchTerms(prev => {
-      const copy = [...prev];
-      copy[index] = "Puesto libre";
-      return copy;
-    });
-    setSuggestions(s => ({ ...s, [index]: [] }));
-  };
-
-  const addMember = () => {
-    formik.setFieldValue("members", [
-      ...formik.values.members,
-      { userId: "", isOpen: false }
-    ]);
-    setSearchTerms(prev => [...prev, ""]);
-  };
-
-  const removeMember = (index: number) => {
-    const arr = [...formik.values.members];
-    arr.splice(index, 1);
-    formik.setFieldValue("members", arr);
-
-    setSearchTerms(prev => {
-      const copy = [...prev];
-      copy.splice(index, 1);
-      return copy;
-    });
-    setSuggestions(s => {
-      const copy: Record<number, IUser[]> = {};
-      Object.keys(s).forEach(k => {
-        const i = Number(k);
-        if (i < index) copy[i] = s[i];
-        else if (i > index) copy[i - 1] = s[i];
-      });
-      return copy;
-    });
-  };
 
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8">
@@ -571,86 +418,6 @@ export default function BandForm({ onBandCreated }: BandFormProps) {
                 {formik.touched.formationDate && formik.errors.formationDate && (
                   <p className="mt-2 text-sm text-red-400">{formik.errors.formationDate}</p>
                 )}
-              </div>
-
-              {/* Miembros */}
-              <div>
-                <label className="block text-lg font-bold text-txt1 mb-2">
-                  👥 Miembros
-                </label>
-                <span className="mb-3 flex flex-row justify-between">
-                  <p className="text-sm mt-2.5 pl-0.5 text-txt2">
-                    Escribe para buscar artistas. También puedes marcar el puesto como libre.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => addMember()}
-                    className="px-4 py-2 bg-tur1 text-azul rounded-md cursor-pointer hover:bg-tur2 transition font-semibold"
-                  >
-                    + Añadir miembro
-                  </button>
-                </span>
-
-                <div className="space-y-3">
-                  {formik.values.members.map((member, idx) => (
-                    <div key={idx} className="relative">
-                      <div className="flex gap-3 items-end">
-                        <div className="flex-1">
-                          <input
-                            type="text"
-                            value={searchTerms[idx] ?? ""}
-                            onChange={e => onSearchInput(idx, e.target.value)}
-                            placeholder="Buscar usuario por nombre..."
-                            className="w-full bg-transparent border border-white/20 rounded-md px-3 py-2 text-txt1 placeholder-txt2/50 focus:outline-none focus:ring-2 focus:ring-tur2 focus:border-tur2"
-                          />
-
-                          {suggestions[idx] && suggestions[idx].length > 0 && (
-                            <ul className="absolute z-20 left-3 right-3 mt-1 bg-white/95 text-black rounded-md shadow-lg max-h-56 overflow-auto">
-                              {suggestions[idx].map(user => (
-                                <li
-                                  key={user.id}
-                                  onClick={() => selectUser(idx, user)}
-                                  className="px-4 py-2 hover:bg-gray-200 cursor-pointer flex flex-col"
-                                >
-                                  <span className="font-semibold">{user.name}</span>
-                                  <span className="text-xs text-gray-600">
-                                    @{user.userName}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => markAsOpen(idx)}
-                          className="px-3 py-2 bg-yellow-400 text-black rounded-md cursor-pointer hover:bg-yellow-500 transition"
-                        >
-                          Libre
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeMember(idx)}
-                          className="px-3 py-2 bg-red-500 text-white rounded-md cursor-pointer hover:bg-red-600 transition disabled:opacity-50"
-                          disabled={formik.values.members.length === 1}
-                        >
-                          X
-                        </button>
-                      </div>
-
-                      {Array.isArray(formik.errors.members) &&
-                        formik.touched.members &&
-                        (formik.touched.members as any)[idx] &&
-                        (formik.errors.members as any)[idx] && (
-                          <p className="mt-2 text-sm text-red-400">
-                            {(formik.errors.members as any)[idx].userId ||
-                              (formik.errors.members as any)[idx].isOpen}
-                          </p>
-                        )}
-                    </div>
-                  ))}
-                </div>
               </div>
 
               {/* Submit */}
