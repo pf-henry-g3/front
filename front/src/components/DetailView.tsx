@@ -1,7 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 "use client"
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; // 1. Importamos useRouter
+import { useRouter } from "next/navigation";
 import ReviewsView from "./ReviewsView";
 import ReviewForm from "./ReviewForm";
 import ReviewsList from "./ReviewsList";
@@ -24,12 +23,11 @@ interface DetailViewProps {
 }
 
 export default function DetailView({ selectedItem }: DetailViewProps) {
-  const router = useRouter(); // 2. Inicializamos el router
+  const router = useRouter();
 
-  // 3. Agregamos la función de postular
   const handleApply = () => {
     if (selectedItem?.id) {
-      router.push(`/aplication/${selectedItem.id}`);
+      router.push(`/application/${selectedItem.id}`);
     }
   };
 
