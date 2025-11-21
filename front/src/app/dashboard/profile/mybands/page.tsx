@@ -4,7 +4,7 @@ import BandForm from "@/src/components/BandForm";
 import MyBandsList from "@/src/components/MyBandsList";
 import BandAddMemberForm from "@/src/components/BandAddMemberForm";
 
-export default function Bandd() {
+export default function MyBands() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleBandCreated = () => {

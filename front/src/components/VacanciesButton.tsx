@@ -46,7 +46,7 @@ export default function VacanciesButton() {
     <div className='flex items-center space-x-4'>
       <button
         className="jsx-fd0de145dd41e0c2 inline-block px-8 py-4 bg-gradient-to-r from-tur2 to-tur1 text-oscuro2 font-bold text-lg rounded-xl cursor-pointer hover:from-tur1 hover:to-tur2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-        onClick={() => router.push("/dashboard/profile/myvacants")}
+        onClick={() => router.push("/dashboard/profile/myvacancies")}
       >
         Mis vacantes
       </button>

@@ -1,9 +1,12 @@
+import IBandMember from "./IBandMemberDto";
+
 export interface IBand {
   id: number, // {PK}
   leaderId: string, // {FK}
-  name: string,
+  bandName: string,
   bandDescription: string,
   category: string,
   formationDate: string,
-  bandImage: string,
+  urlImage: string,
+  averageRating: string,
 }

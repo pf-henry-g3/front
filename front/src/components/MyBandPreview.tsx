@@ -5,7 +5,7 @@ export default function MyBandPreview ({id, bandName, averageRating, urlImage, b
   return (
     <Link 
       className="flex items-center bg-white/95 hover:bg-white/55 transition gap-4 rounded-xl shadow-xl"
-      href={`/detail/${id}?type=band`}
+      href={`/dashboard/profile/mybands/band/${id}`}
     >
       <img 
           src={urlImage || '/default-image.jpg'} 

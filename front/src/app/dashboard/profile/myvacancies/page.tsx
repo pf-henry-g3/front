@@ -110,15 +110,16 @@ export default function MyVacantList({ refreshTrigger = 0 }: MyVacancyListProps)
                 <div className="py-1.5 ">
 
                     {paginationData.paginatedItems.length > 0 ? (
-                        <div className="p-4 space-y-3">
+                        <div className="p-4 space-y-3"
+                        >
                             {paginationData.paginatedItems.map((vacancy) => (
                                 <Link
                                     className="flex items-center bg-white/95 hover:bg-white/55 transition gap-4 rounded-xl shadow-xl"
-                                    href={`/dashboard/profile/myvacants/applications/${vacancy.id}`}
+                                    href={`/dashboard/profile/myvacancies/applications/${vacancy.id}`}
                                 >
                                     <img
-                                        src={vacancy.vacancyImage || '/default-image.jpg'}
-                                        alt={vacancy.vacancyImage}
+                                        src={vacancy.urlImage || '/default-image.jpg'}
+                                        alt={vacancy.name}
                                         className="w-14 h-14 rounded-full object-cover shrink-0 border-2 m-4 border-tur3/30 shadow-md"
                                     />
                                     <div className="flex-1 min-w-0">

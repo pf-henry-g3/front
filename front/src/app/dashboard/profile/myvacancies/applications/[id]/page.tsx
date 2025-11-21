@@ -12,6 +12,7 @@ interface ApplicationsProps {
 }
 
 interface IApplication {
+  id: string,
   applicantId: ApplicationId,
   applicationDate: string,
   applicationDescription: string,
@@ -140,22 +141,25 @@ export default function Applications( {refreshTrigger = 0}: ApplicationsProps) {
       <div className=" mx-auto">
         <span className="flex flex-row items-center justify-center gap-6">
           <img
-            src={vacancy.vacancyImage}
-            alt={vacancy.name || '/default-image.jpg'}
+            src={vacancy.urlImage || '/default-image.jpg'}
+            alt={vacancy.name}
             className="w-24 h-24 border-tur1 border rounded-full hover:border-2 hover:border-tur2 transition"
           />
-          <h1 className="text-3xl text-oscuro1 font-bold">{vacancy.name}</h1>
+          <h1 className="text-3xl text-shadow-oscuro3 text-shadow-xs text-oscuro1 font-bold">{vacancy.name}</h1>
         </span>
         <p className="mt-8 text-lg text-oscuro2 border-2 border-txt2 bg-txt1/90 p-2 rounded-2xl min-h-48 min-w-lg">{vacancy.vacancyDescription}</p>
       </div>
       { applications.length > 0 ? (
       <div className="flex flex-col my-12 gap-8">
         {paginationData.paginatedItems.map((application) => (
-        <div className="w-[75%] mx-auto bg-tur2/20 p-2 rounded-4xl shadow-md">
+        <div 
+        key={application.id}
+        className="w-[75%] mx-auto bg-tur2/20 p-2 rounded-4xl shadow-md"
+        >
           <div className="flex flex-row bg-tur2/40 items-center shadow-md justify-between rounded-full px-1.5">
             <div className="flex flex-row items-center gap-3">
               <img 
-                src={application.applicantId.urlImage}
+                src={application.applicantId.urlImage  || '/default-image.jpg'}
                 alt={application.applicantId.userName}
                 className="w-16 h-16 rounded-full  my-1.5 object-cover shrink-0 border-2 border-tur3/30 shadow-md"
               />
