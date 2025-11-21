@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-
+import DonationButton from "./DonationButton";
 import Link from "next/link";
 
 export default function Footer() {
@@ -18,8 +18,9 @@ export default function Footer() {
             Inicio
           </Link>
           <Link href="/home" className="text-sm text-txt1 hover:text-tur2 transition">
-            Home
+            Explorar
           </Link>
+          <DonationButton/>
         </div>
 
         <div className="flex flex-col items-center md:items-end gap-3">

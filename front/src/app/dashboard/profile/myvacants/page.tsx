@@ -5,7 +5,6 @@ import Pagination from "@/src/components/Pagination";
 import axios from "axios";
 import Swal from "sweetalert2";
 import IVacancy from "@/src/interfaces/IVacancy";
-import MyBandPreview from "@/src/components/MyBandPreview";
 import Link from "next/link";
 
 interface MyVacancyListProps {
@@ -16,9 +15,9 @@ export default function MyVacantList({ refreshTrigger = 0 }: MyVacancyListProps)
     const router = useRouter();
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(3);
+    const [itemsPerPage, setItemsPerPage] = useState(6);
 
-    const [vacancy, setVacancy] = useState<IVacancy[]>([]);
+    const [vacancies, setVacancies] = useState<IVacancy[]>([]);
 
     useEffect(() => {
         async function fetchVacancy() {
@@ -66,7 +65,7 @@ export default function MyVacantList({ refreshTrigger = 0 }: MyVacancyListProps)
                 console.log("Respuesta del backend:", res.data);
 
                 const vacArray = Array.isArray(res.data?.data) ? res.data.data : [];
-                setVacancy(vacArray);
+                setVacancies(vacArray);
 
             } catch (err) {
                 console.log(err);
@@ -79,17 +78,17 @@ export default function MyVacantList({ refreshTrigger = 0 }: MyVacancyListProps)
 
 
     const paginationData = useMemo(() => {
-        const totalPages = Math.ceil(vacancy.length / itemsPerPage);
+        const totalPages = Math.ceil(vacancies.length / itemsPerPage);
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
-        const paginatedItems = vacancy.slice(startIndex, endIndex);
+        const paginatedItems = vacancies.slice(startIndex, endIndex);
 
         return {
             totalPages,
             paginatedItems,
-            totalItems: vacancy.length
+            totalItems: vacancies.length
         };
-    }, [vacancy, currentPage, itemsPerPage]);
+    }, [vacancies, currentPage, itemsPerPage]);
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
@@ -112,33 +111,26 @@ export default function MyVacantList({ refreshTrigger = 0 }: MyVacancyListProps)
 
                     {paginationData.paginatedItems.length > 0 ? (
                         <div className="p-4 space-y-3">
-                            {paginationData.paginatedItems.map((vacancies) => (
+                            {paginationData.paginatedItems.map((vacancy) => (
                                 <Link
                                     className="flex items-center bg-white/95 hover:bg-white/55 transition gap-4 rounded-xl shadow-xl"
-                                    href={`/detail/${vacancies.id}?type=vacancies`}
+                                    href={`/dashboard/profile/myvacants/applications/${vacancy.id}`}
                                 >
                                     <img
-                                        src={vacancies.vacancyImage || '/default-image.jpg'}
-                                        alt={vacancies.vacancyImage}
+                                        src={vacancy.vacancyImage || '/default-image.jpg'}
+                                        alt={vacancy.vacancyImage}
                                         className="w-14 h-14 rounded-full object-cover shrink-0 border-2 m-4 border-tur3/30 shadow-md"
                                     />
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-lg text-oscuro1 drop-shadow-sm">{vacancies.name}</h3>
-                                        <h3 className="font-normal text-md text-txt2 line-clamp-1">{vacancies.vacancyDescription}</h3>
+                                        <h3 className="font-bold text-lg text-oscuro1 drop-shadow-sm">{vacancy.name}</h3>
+                                        <h3 className="font-normal text-md text-txt2 line-clamp-1">{vacancy.vacancyDescription}</h3>
                                     </div>
-                                    {/*<div className="text-right pr-4">
-          <span className="text-xs text-oscuro2 font-medium bg-tur2/20 w-7 px-2 py-1 rounded-full">
-              {averageRating}
-          </span>
-          <span className="flex mt-6 text-oscuro3/75">
-              {city}ciudad, {country}pais
-          </span>
-      </div> */}
+                                    {/* mostrar cantidad de postulantes */}
                                 </Link>
                             ))}
                         </div>
 
-                    ) : vacancy.length === 0 ? (
+                    ) : vacancies.length === 0 ? (
                         <div className="flex items-center justify-center py-20">
                             <div className="text-center">
                                 <p className="text-verde text-lg mb-2 font-bold">
@@ -163,7 +155,7 @@ export default function MyVacantList({ refreshTrigger = 0 }: MyVacancyListProps)
                 </div>
 
                 <div>
-                    {vacancy.length > 0 && (
+                    {vacancies.length > 0 && (
                         <div className="px-4 pb-4 mx-auto">
                             <Pagination
                                 currentPage={currentPage}

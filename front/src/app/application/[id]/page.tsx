@@ -198,7 +198,7 @@ export default function ApplicationForm() {
 
     if (alreadyApplied) {
         return (
-            <div className="text-center p-8">
+            <div className="text-center p-8 mt-24">
                 <div className="bg-blue-100 border border-blue-400 rounded-xl p-6 mb-6">
                     <div className="text-6xl mb-4">📨</div>
                     <h3 className="text-xl font-bold text-blue-800 mb-2">Ya te has postulado</h3>
@@ -207,7 +207,7 @@ export default function ApplicationForm() {
                     </p>
                 </div>
                 <button
-                    onClick={() => router.push('/vacancies')}
+                    onClick={() => router.push('/home')}
                     className="px-6 py-3 bg-gradient-to-r from-tur1 to-tur2 text-azul rounded-lg font-bold hover:from-tur2 hover:to-tur3 transition-all duration-300"
                 >
                     Ver Otras Vacantes

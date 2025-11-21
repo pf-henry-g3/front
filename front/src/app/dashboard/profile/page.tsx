@@ -1,6 +1,7 @@
 'use client';
 
 import BandButton from '@/src/components/BandButton';
+import VacanciesButton from '@/src/components/VacanciesButton';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import Swal from 'sweetalert2';
@@ -413,8 +414,9 @@ export default function ProfileEditForm() {
         <div className="text-center mb-8">
           <h2 className="jsx-f082eaee8797ef3b text-4xl font-bold text-txt1 mb-2">👤 Editar Perfil</h2>
           <p className="jsx-f082eaee8797ef3b text-txt2 text-lg">Actualiza tu información personal</p>
-          <div className='flex justify-center mt-3'>
+          <div className='flex justify-center mt-3 gap-4'>
             < BandButton />
+            < VacanciesButton />
           </div>
         </div>
 
