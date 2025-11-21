@@ -9,6 +9,7 @@ import BandMember from "./BandMember";
 import LeaderBand from "./BandLeader";
 import BandLeader from "./BandLeader";
 import BandGenres from "./BandGenres";
+import VacancyGenres from "./VacancyGenres";
 
 interface ProductCardProps {
   id: string;
@@ -172,8 +173,10 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
               </div>
 
               {/* 4. Integración: Botón Postular (Solo para vacantes) */}
-              {selectedItem.type === 'vacancy' && (
+              {selectedItem.type === 'vacancy' ? (
+                
                 <div className="pt-6 pb-2">
+                  <VacancyGenres/>
                   <button
                     onClick={handleApply}
                     className="w-full py-3 px-6 bg-gradient-to-r from-tur1 to-tur2 hover:from-tur2 hover:to-tur3 text-azul rounded-xl text-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
@@ -181,19 +184,13 @@ export default function DetailView({ selectedItem }: DetailViewProps) {
                     Postular a Vacante
                   </button>
                 </div>
-              )}
-
-              {/* Reviews (Solo para usuarios) */}
-              {selectedItem.type === 'vacancy' ? (
-                <div className="pb-4"></div>
               ) : selectedItem.type === 'band' ? (
                 <div className="flex flex-col gap-4 mt-8 mb-4">
+                  <BandGenres/>
                   <h2 className="text-center text-3xl text-oscuro2 font-bold mt-2 mb-1">Lider de la banda</h2>
                   <BandLeader/>
                   <h2 className="text-center text-3xl text-oscuro2 font-bold mt-5 mb-1">Lista de miembros</h2>
                   <BandMember/>
-                  <h2 className="text-center text-3xl text-oscuro2 font-bold mt-6 mb-2">Géneros de interés</h2>
-                  <BandGenres/>
                 </div>
               ) : (selectedItem.type === 'user' && getTypeRating() && (
                 <div>

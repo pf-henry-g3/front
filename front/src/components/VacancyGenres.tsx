@@ -3,21 +3,21 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "next/navigation";
 
-interface BandGenre {
+interface VacancyGenre {
   id: string;
   name: string;
 }
 
-export default function BandGenres() {
+export default function VacancyGenres() {
   const params = useParams();
-  const bandId = params.id as string; 
+  const vacancyId = params.id as string; 
 
-  const [genres, setGenres] = useState<BandGenre[]>([]);
+  const [genres, setGenres] = useState<VacancyGenre[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!bandId) return;
+    if (!vacancyId) return;
 
     async function fetchGenres() {
       try {
@@ -27,15 +27,15 @@ export default function BandGenres() {
           ""
         ).replace(/\/+$/, "");
 
-        const res = await axios.get(`${base}/band/${bandId}`);
-        const bandData = res.data.data;
+        const res = await axios.get(`${base}/vacancy/${vacancyId}`);
+        const vacantData = res.data.data;
 
-        if (!bandData?.genres) {
+        if (!vacantData?.genres) {
           setGenres([]);
           return;
         }
 
-        const mappedGenres: BandGenre[] = bandData.genres.map((genre: any) => ({
+        const mappedGenres: VacancyGenre[] = vacantData.genres.map((genre: any) => ({
           id: genre.id,
           name: genre.name,
         }));
@@ -43,21 +43,21 @@ export default function BandGenres() {
         setGenres(mappedGenres);
       } catch (err: any) {
         console.error(err);
-        setError("Error al cargar los géneros de la banda");
+        setError("Error al cargar los géneros de la vacante");
       } finally {
         setLoading(false);
       }
     }
 
     fetchGenres();
-  }, [bandId]);
+  }, [vacancyId]);
 
   if (loading) return <p>Cargando géneros...</p>;
   if (error) return <p>{error}</p>;
   if (genres.length === 0) return <p>No se encontraron géneros</p>;
 
   return (
-    <div className="flex flex-wrap mb-1 justify-center gap-4">
+    <div className="flex flex-wrap pb-6 justify-center gap-4">
       {genres.map((genre) => (
         <span
           key={genre.id}

@@ -86,20 +86,11 @@ export default function ProductCard({
                         )}
                     </div>
                     
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-tur3/20 ">
+                    <div className="flex items-center justify-center mt-3 pt-3 border-t border-tur3/20 ">
                         <span className="text-sm text-oscuro2 font-medium bg-tur2/10 px-3 py-1.5 rounded-lg border border-tur2/20">
                             {getExtraInfo()}
                         </span>
                         
-                        <div className="shrink-0">
-                            {isSelected ? (
-                                <span className="text-tur1 text-sm font-bold animate-pulse">
-                                    Seleccionado
-                                </span>
-                            ) : (
-                                <div className="w-8 h-8 border-2 border-tur3/50 rounded-full bg-white/70 hover:border-tur1 hover:bg-tur1/10 transition-all"></div>
-                            )}
-                        </div>
                     </div>
                 </div>
             </div>
