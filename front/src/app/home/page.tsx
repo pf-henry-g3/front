@@ -140,7 +140,7 @@ export default function HomePage() {
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
         // Scroll suave hacia arriba al cambiar de página
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
     }, []);
 
     // Función para cambiar items por página
