@@ -3,8 +3,10 @@ import { useState } from "react";
 import BandForm from "@/src/components/BandForm";
 import MyBandsList from "@/src/components/MyBandsList";
 import BandAddMemberForm from "@/src/components/BandAddMemberForm";
+import { useRouter } from "next/navigation";
 
 export default function MyBands() {
+  const router = useRouter
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleBandCreated = () => {
